@@ -93,6 +93,35 @@
     </div>
   </div>
 
+  <div id="shared-time-filters" style="display: none; margin-bottom: 20px;">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('all', this)">All Time</div>
+      <div class="tab" onclick="switchTab('daily', this)">Daily</div>
+      <div class="tab" onclick="switchTab('weekly', this)">Weekly</div>
+      <div class="tab" onclick="switchTab('monthly', this)">Monthly</div>
+      <div class="tab" onclick="switchTab('custom', this)">Custom</div>
+    </div>
+
+    <div class="period-navigation-bar" id="period-nav-container" style="display: none;">
+      <button class="period-nav-btn" onclick="adjustPeriodOffset(-1)">◀ Prev</button>
+      <span id="period-display-label">Current Period Boundaries</span>
+      <button class="period-nav-btn" onclick="adjustPeriodOffset(1)">Next ▶</button>
+    </div>
+
+    <div class="search-box" id="custom-range-container" style="display: none; margin-bottom: 0;">
+      <div class="range-inputs">
+        <div>
+          <label>Start Date</label>
+          <input type="date" id="start-date" onchange="applyFilters()">
+        </div>
+        <div>
+          <label>End Date</label>
+          <input type="date" id="end-date" onchange="applyFilters()">
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="view-add" class="view-panel active-view">
     
     <div class="reconcile-view-card" id="reconcile-status-widget">
@@ -199,33 +228,7 @@
   </div>
 
   <div id="view-logs" class="view-panel">
-    <div class="tabs">
-      <div class="tab active" onclick="switchTab('all', this)">All Time</div>
-      <div class="tab" onclick="switchTab('daily', this)">Daily</div>
-      <div class="tab" onclick="switchTab('weekly', this)">Weekly</div>
-      <div class="tab" onclick="switchTab('monthly', this)">Monthly</div>
-      <div class="tab" onclick="switchTab('custom', this)">Custom</div>
-    </div>
-
-    <div class="period-navigation-bar" id="period-nav-container" style="display: none;">
-      <button class="period-nav-btn" onclick="adjustPeriodOffset(-1)">◀ Prev</button>
-      <span id="period-display-label">Current Period Boundaries</span>
-      <button class="period-nav-btn" onclick="adjustPeriodOffset(1)">Next ▶</button>
-    </div>
-
-    <div class="search-box" id="custom-range-container" style="display: none; margin-bottom: 16px;">
-      <div class="range-inputs">
-        <div>
-          <label>Start Date</label>
-          <input type="date" id="start-date" onchange="applyFilters()">
-        </div>
-        <div>
-          <label>End Date</label>
-          <input type="date" id="end-date" onchange="applyFilters()">
-        </div>
-      </div>
-    </div>
-
+    
     <div class="filtered-summary-strip" id="filtered-totals-strip">
       <div class="filtered-stat">
         <small>Filtered Bal</small>
@@ -1461,7 +1464,7 @@
   }
 
   // ==========================================
-  // NAVIGATION & VIEW SWITCHING
+  // NAVIGATION & VIEW SWITCHING (SHARED FILTERS LOGIC)
   // ==========================================
   function switchMainScreen(targetView) {
     currentActiveMainScreen = targetView;
@@ -1471,6 +1474,14 @@
 
     document.getElementById(`view-${targetView}`).classList.add('active-view');
     document.getElementById(`nav-btn-${targetView}`).classList.add('nav-active');
+
+    // SHARED DATE FILTER LOGIC: Show on Logs and Insights
+    const sharedFilters = document.getElementById('shared-time-filters');
+    if(targetView === 'logs' || targetView === 'insights') {
+       sharedFilters.style.display = 'block';
+    } else {
+       sharedFilters.style.display = 'none';
+    }
 
     if(targetView === 'add') {
       if (DOM.searchInput) DOM.searchInput.value = '';
