@@ -13,26 +13,21 @@
 </head>
 <body>
 
-<div id="security-lock-screen" style="display: none;">
-  <div class="lock-icon-shield">🔐</div>
-  <h2 id="lock-title" style="margin-bottom: 8px; font-size: 1.8rem;">Enter PIN</h2>
-  <p id="lock-subtitle" style="color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem; font-weight: 500;">To access FinWise</p>
+<div id="security-lock-screen" style="display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; padding: 20px; box-sizing: border-box;">
+  <div class="lock-icon-shield" style="font-size: 3.5rem; margin-bottom: 12px; display: flex; justify-content: center; width: 100%;">🔐</div>
+  <h2 id="lock-title" style="margin-bottom: 8px; font-size: 1.8rem; text-align: center; width: 100%;">Enter PIN</h2>
+  <p id="lock-subtitle" style="color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem; font-weight: 500; text-align: center; width: 100%;">To access FinWise</p>
   
-  <div id="biometric-auto-ui" style="display: none; flex-direction: column; align-items: center; width: 100%;">
-    <div style="font-size: 4rem; margin-bottom: 10px;">👆</div>
-    <p style="color: var(--primary); font-weight: bold; margin-bottom: 30px;">Verify biometric to unlock</p>
-    <button onclick="switchToPinMode()" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); padding: 14px 24px; border-radius: 12px; font-weight: bold; width: auto; box-shadow: none;">🔢 Use PIN Instead</button>
-  </div>
-
-  <div id="pin-entry-ui" style="display: block; width: 100%; max-width: 320px; margin: 0 auto;">
-    <div class="pin-display" id="pin-display">
+  <div id="pin-entry-ui" style="display: block; width: 100%; max-width: 320px; margin: 0 auto; text-align: center;">
+    
+    <div class="pin-display" id="pin-display" style="display: flex; justify-content: center; align-items: center; gap: 20px; margin: 0 auto 40px auto; width: 100%;">
       <div class="pin-dot"></div>
       <div class="pin-dot"></div>
       <div class="pin-dot"></div>
       <div class="pin-dot"></div>
     </div>
     
-    <div class="numpad">
+    <div class="numpad" style="margin: 0 auto; justify-content: center;">
       <div class="num-key" onclick="handlePinInput('1')">1</div>
       <div class="num-key" onclick="handlePinInput('2')">2</div>
       <div class="num-key" onclick="handlePinInput('3')">3</div>
@@ -47,7 +42,7 @@
       <div class="num-key" style="background: transparent; border: none; box-shadow: none; color: var(--expense); font-size: 1.8rem;" onclick="handlePinBackspace()">⌫</div>
     </div>
 
-    <button id="biometric-unlock-btn" onclick="unlockWithBiometrics()" style="margin-top: 30px; padding: 14px 24px; width: 100%; background: transparent; color: var(--primary); border: 2px dashed var(--primary); box-shadow: none; font-weight: 700; border-radius: 12px; display: none;">
+    <button id="biometric-unlock-btn" onclick="unlockWithBiometrics(false)" style="margin: 30px auto 0 auto; padding: 14px 24px; width: 100%; background: transparent; color: var(--primary); border: 2px dashed var(--primary); box-shadow: none; font-weight: 700; border-radius: 12px; display: none;">
       🔍 Retry Biometric Unlock
     </button>
   </div>
@@ -570,16 +565,14 @@
       currentPinInput = "";
       updatePinDisplay();
 
+      document.getElementById('pin-entry-ui').style.display = 'block';
+
       if (localStorage.getItem('finwise-biometric-id')) {
-          // BIOMETRIC PRIMARY: Hide PIN Pad, show Touch UI, Auto-trigger sensor
-          document.getElementById('pin-entry-ui').style.display = 'none';
-          document.getElementById('biometric-auto-ui').style.display = 'flex';
-          setTimeout(() => unlockWithBiometrics(), 300);
+          document.getElementById('biometric-unlock-btn').style.display = 'block';
+          document.getElementById('biometric-unlock-btn').innerText = "🔍 Retry Biometric Unlock";
+          // Auto-trigger biometric prompt
+          setTimeout(() => unlockWithBiometrics(true), 300);
       } else {
-          // PIN PRIMARY
-          document.getElementById('pin-entry-ui').style.display = 'block';
-          document.getElementById('biometric-auto-ui').style.display = 'none';
-          
           if (window.PublicKeyCredential) {
             PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(isAvail => {
               if (isAvail) {
@@ -592,15 +585,6 @@
     } else {
       document.getElementById('security-lock-screen').style.display = 'none';
     }
-  }
-
-  // SWAP UI TO MANUAL PIN (e.g. if fingerprint fails or user clicks button)
-  function switchToPinMode() {
-      document.getElementById('biometric-auto-ui').style.display = 'none';
-      document.getElementById('pin-entry-ui').style.display = 'block';
-      document.getElementById('lock-subtitle').innerText = "Enter PIN to continue";
-      document.getElementById('biometric-unlock-btn').style.display = 'block'; // Show retry button
-      document.getElementById('biometric-unlock-btn').innerText = "🔍 Retry Biometric Unlock";
   }
 
   // FORCE LOCK ON APP RESUME (BACKGROUND TO FOREGROUND)
@@ -629,14 +613,10 @@
       document.getElementById('lock-title').innerText = "Verify Identity";
       document.getElementById('lock-subtitle').innerText = "Enter PIN to disable security";
       document.getElementById('pin-cancel-btn').innerText = "Cancel";
+      document.getElementById('pin-entry-ui').style.display = 'block';
       
       if(localStorage.getItem('finwise-biometric-id')) {
-          document.getElementById('pin-entry-ui').style.display = 'none';
-          document.getElementById('biometric-auto-ui').style.display = 'flex';
-          setTimeout(() => unlockWithBiometrics(), 300);
-      } else {
-          document.getElementById('pin-entry-ui').style.display = 'block';
-          document.getElementById('biometric-auto-ui').style.display = 'none';
+          setTimeout(() => unlockWithBiometrics(true), 300);
       }
       
       closeModal('preferences-modal');
@@ -658,7 +638,6 @@
       document.getElementById('pin-cancel-btn').innerText = "Cancel";
       
       document.getElementById('pin-entry-ui').style.display = 'block';
-      document.getElementById('biometric-auto-ui').style.display = 'none';
       document.getElementById('biometric-unlock-btn').style.display = 'none';
     }
   }
@@ -777,7 +756,7 @@
   }
 
   // BIOMETRIC ENGINE RE-WRITE (Forces Device Fingerprint/FaceID)
-  async function unlockWithBiometrics() {
+  async function unlockWithBiometrics(isAuto = false) {
     try {
       const challenge = new Uint8Array(32);
       window.crypto.getRandomValues(challenge);
@@ -807,6 +786,7 @@
           if (credential) {
               const base64Id = btoa(String.fromCharCode.apply(null, new Uint8Array(credential.rawId)));
               localStorage.setItem('finwise-biometric-id', base64Id);
+              document.getElementById('biometric-unlock-btn').innerText = "🔍 Retry Biometric Unlock";
               unlockAppSuccess("Biometrics Linked & Unlocked!");
           }
       } else {
@@ -827,9 +807,11 @@
       }
     } catch (err) { 
         console.error("Biometric Error: ", err);
-        // If fingerprint gets canceled (e.g. wet hands), drop instantly to PIN pad
-        switchToPinMode();
-        triggerPinError("Fingerprint failed or canceled. Please use PIN."); 
+        // If it was auto-triggered and failed/canceled, do nothing because the PIN pad is already on screen!
+        // Only show error text if they manually clicked the "Retry" button and it failed again.
+        if (!isAuto) {
+            triggerPinError("Fingerprint failed or canceled. Please use PIN."); 
+        }
     }
   }
 
@@ -902,7 +884,9 @@
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `FinWise_Backup_${new Date().toISOString().split('T')[0]}.csv`);
+    // Explicit IST timestamp for export filename
+    const exportDateStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+    link.setAttribute("download", `FinWise_Backup_${exportDateStr}.csv`);
     document.body.appendChild(link); 
     link.click(); 
     document.body.removeChild(link);
@@ -934,15 +918,16 @@
           let cleanText = parts[1].trim();
           let cleanCat = parts[3].trim();
           let amt = parseFloat(parts[2]);
-          let dateStr = parts[4].trim();
+          let dateStr = parts[4].trim(); // YYYY-MM-DD from export
           
           if(!isNaN(amt) && dateStr) {
+             const parsedDate = new Date(dateStr);
              store.add({
                text: cleanText || 'Imported Entry', 
                amount: amt, 
                category: cleanCat || 'Other',
-               date: new Date(dateStr).toLocaleDateString('en-IN'),
-               timestamp: new Date(dateStr).getTime(), 
+               date: parsedDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }),
+               timestamp: parsedDate.getTime(), 
                dateString: dateStr,
                batchId: importBatchId 
              });
@@ -953,7 +938,9 @@
       
       tx.oncomplete = () => {
         let history = JSON.parse(localStorage.getItem('finwise-import-history') || '[]');
-        history.push({ id: importBatchId, date: new Date().toLocaleString(), count: importedCount, fileName: fileName });
+        // Force IST formatting on history logs
+        const istLogTime = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true });
+        history.push({ id: importBatchId, date: istLogTime, count: importedCount, fileName: fileName });
         localStorage.setItem('finwise-import-history', JSON.stringify(history));
         
         fetchAndDisplay();
@@ -1079,15 +1066,15 @@
     inputField.value = integerPart + decimalPart;
   }
 
+  // GLOBAL IST 12-HOUR FORMAT FIX
   function formatTo12HourTime(timestamp) {
-    const d = new Date(timestamp);
-    let hours = d.getHours(); 
-    const minutes = d.getMinutes().toString().padStart(2, '0'); 
-    const seconds = d.getSeconds().toString().padStart(2, '0');
-    const marker = hours >= 12 ? 'PM' : 'AM'; 
-    hours = hours % 12; 
-    hours = hours ? hours : 12; 
-    return `${hours.toString().padStart(2, '0')}:${minutes}:${seconds} ${marker}`;
+    return new Date(timestamp).toLocaleTimeString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+    }).toUpperCase();
   }
 
   function triggerSuccessNotification(msg) {
@@ -1351,7 +1338,7 @@
         let en = document.getElementById('end-date').value || 'Present'; 
         labelLabel.innerText = `Timeline Window: ${st} to ${en}`; 
     } else { 
-        labelLabel.innerText = `Timeline Window: ${bounds.startDate.toLocaleDateString('en-IN')} - ${bounds.endDate.toLocaleDateString('en-IN')}`; 
+        labelLabel.innerText = `Timeline Window: ${bounds.startDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })} - ${bounds.endDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}`; 
     }
 
     if(allTransactions.length === 0 || DOM.emptyMsg.style.display === 'flex') { 
@@ -1368,7 +1355,9 @@
     allTransactions.forEach(t => {
       let tDate = t.timestamp ? new Date(t.timestamp) : new Date(); 
       const itemTimestamp = tDate.getTime(); 
-      const itemDateString = tDate.toISOString().split('T')[0];
+      
+      // Enforce IST formatting for custom date boundary checks
+      const itemDateString = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(tDate);
       
       if (currentTab === 'custom') { 
           if (sd && itemDateString < sd) return; 
@@ -1558,7 +1547,7 @@
     } else if (totalExpense > 0 && totalIncome === 0) {
        ratioText = `Tracking expenses is great! Don't forget to log your income to see your savings rate. 💡`;
     } else {
-       ratioText = `You broke even! Income matches expenses perfectly. ⚖️`;
+       ratioText = `You broke perfectly even! ⚖️`;
     }
     document.getElementById('insight-ratio-text').innerHTML = ratioText;
 
@@ -1683,6 +1672,10 @@
     const tx = db.transaction("transactions", "readwrite"); 
     const store = tx.objectStore("transactions");
     
+    // Explicitly grab the IST formatted string for database storage to ensure consistency
+    const istDateFormatted = today.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
+    const istDateStringForFiltering = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(today);
+    
     if (isBulkModeActive) {
       const holder = document.getElementById('bulk-rows-holder-div'); 
       const childrenRows = holder.children;
@@ -1705,9 +1698,9 @@
                 text, 
                 amount: nature === 'expense' ? -amount : amount, 
                 category, 
-                date: today.toLocaleDateString('en-IN'), 
+                date: istDateFormatted, 
                 timestamp: today.getTime(), 
-                dateString: today.toISOString().split('T')[0] 
+                dateString: istDateStringForFiltering 
             }); 
             itemsSavedCount++; 
         }
@@ -1740,9 +1733,9 @@
           text, 
           amount: activeTransactionNature === 'expense' ? -amount : amount, 
           category, 
-          date: today.toLocaleDateString('en-IN'), 
+          date: istDateFormatted, 
           timestamp: today.getTime(), 
-          dateString: today.toISOString().split('T')[0] 
+          dateString: istDateStringForFiltering 
       });
       
       tx.oncomplete = () => { 
@@ -1855,13 +1848,13 @@
     else {
       navContainer.style.display = 'flex'; 
       customContainer.style.display = 'none'; 
-      const labelOptions = { month: 'short', day: 'numeric' };
+      const labelOptions = { month: 'short', day: 'numeric', timeZone: 'Asia/Kolkata' };
       
       if (currentTab === 'monthly') { 
-          displayLabel.innerText = `${bounds.startDate.toLocaleDateString('en-IN', {month: 'short', year: '2-digit'})} (${bounds.startDate.getDate()} - ${bounds.endDate.getDate()})`; 
+          displayLabel.innerText = `${bounds.startDate.toLocaleDateString('en-IN', {month: 'short', year: '2-digit', timeZone: 'Asia/Kolkata'})} (${bounds.startDate.getDate()} - ${bounds.endDate.getDate()})`; 
       } 
       else if (currentTab === 'daily') { 
-          displayLabel.innerText = bounds.startDate.toLocaleDateString('en-IN', {month: 'short', day: 'numeric', year: 'numeric'}); 
+          displayLabel.innerText = bounds.startDate.toLocaleDateString('en-IN', {month: 'short', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata'}); 
       } 
       else { 
           displayLabel.innerText = `${bounds.startDate.toLocaleDateString('en-IN', labelOptions)} - ${bounds.endDate.toLocaleDateString('en-IN', labelOptions)}`; 
@@ -1874,7 +1867,9 @@
     let filtered = allTransactions.filter(t => {
       let tDate = t.timestamp ? new Date(t.timestamp) : new Date(); 
       const itemTimestamp = tDate.getTime(); 
-      const itemDateString = tDate.toISOString().split('T')[0];
+      
+      // Enforce IST formatting for custom date boundary checks
+      const itemDateString = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(tDate);
       
       if (currentTab === 'custom') { 
           if (startDateVal && itemDateString < startDateVal) return false; 
@@ -2061,8 +2056,11 @@
     
     transactions.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0)).forEach((t, index) => {
       const isExpense = t.amount < 0; 
-      const baseDateString = t.date || new Date(t.timestamp).toLocaleDateString('en-IN'); 
-      const timeMarkerString = t.timestamp ? formatTo12HourTime(t.timestamp) : '00:00:00 AM'; 
+      
+      // Ensure IST format for UI log display
+      const baseDateString = t.date || new Date(t.timestamp).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }); 
+      const timeMarkerString = t.timestamp ? formatTo12HourTime(t.timestamp) : '12:00:00 AM'; 
+      
       const catLabel = t.category || 'Miscellaneous'; 
       const isChecked = checkedItemIds.includes(t.id);
       const styleObj = getCategoryStyle(catLabel);
