@@ -551,16 +551,17 @@
     if(enableCheckbox) enableCheckbox.checked = !!savedPin;
 
     if (savedPin) {
-      document.getElementById('security-lock-screen').style.display = 'flex';
+      const lockScreen = document.getElementById('security-lock-screen');
+      lockScreen.style.display = 'flex';
       document.getElementById('lock-title').innerText = "Enter PIN";
       document.getElementById('lock-subtitle').innerText = "To access FinWise";
       document.getElementById('pin-cancel-btn').innerText = "";
+      
       isSettingUpPin = false;
       isVerifyingToDisablePin = false;
       currentPinInput = "";
       updatePinDisplay();
 
-      // Ensure Biometric button shows up if device supports it
       if (window.PublicKeyCredential) {
         PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(isAvail => {
           if (isAvail) {
@@ -573,9 +574,16 @@
     }
   }
 
+  // FORCE LOCK ON APP RESUME (BACKGROUND TO FOREGROUND)
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && localStorage.getItem('finwise-pin') && document.getElementById('security-lock-screen').style.display !== 'none') {
-      initSecurityEngine();
+    if (document.visibilityState === "visible") {
+       if (localStorage.getItem('finwise-pin')) {
+           const lockScreen = document.getElementById('security-lock-screen');
+           // Only re-init if they aren't currently typing a PIN to disable security
+           if (lockScreen.style.display === 'none' || !isVerifyingToDisablePin) {
+               initSecurityEngine();
+           }
+       }
     }
   });
 
@@ -680,6 +688,7 @@
       const savedPin = localStorage.getItem('finwise-pin');
       if (currentPinInput === savedPin) {
          localStorage.removeItem('finwise-pin');
+         localStorage.removeItem('finwise-biometric-id'); // Wipe biometric link too
          document.getElementById('pin-enable-checkbox').checked = false;
          document.getElementById('security-lock-screen').style.display = 'none';
          triggerSuccessNotification("PIN Vault disabled.");
@@ -693,15 +702,7 @@
     } else {
       const savedPin = localStorage.getItem('finwise-pin');
       if (currentPinInput === savedPin) {
-        document.getElementById('security-lock-screen').style.opacity = '0';
-        document.getElementById('security-lock-screen').style.transform = 'scale(1.05)';
-        setTimeout(() => {
-          document.getElementById('security-lock-screen').style.display = 'none';
-          document.getElementById('security-lock-screen').style.opacity = '1';
-          document.getElementById('security-lock-screen').style.transform = 'scale(1)';
-        }, 300);
-        currentPinInput = "";
-        updatePinDisplay();
+        unlockAppSuccess("Unlocked via PIN");
       } else {
         triggerPinError("Incorrect PIN.");
       }
@@ -732,47 +733,90 @@
     }, 500);
   }
 
+  // BIOMETRIC ENGINE RE-WRITE (Forces Device Fingerprint/FaceID)
   async function unlockWithBiometrics() {
     try {
       const challenge = new Uint8Array(32);
       window.crypto.getRandomValues(challenge);
-      const publicKey = { challenge: challenge, rpId: window.location.hostname, userVerification: "required" };
       
-      const credential = await navigator.credentials.get({ publicKey });
-      
-      if (credential) {
-        if (isVerifyingToDisablePin) {
-           localStorage.removeItem('finwise-pin');
-           document.getElementById('pin-enable-checkbox').checked = false;
-           document.getElementById('security-lock-screen').style.display = 'none';
-           triggerSuccessNotification("Security Disabled via Biometrics");
-           isVerifyingToDisablePin = false;
-           currentPinInput = "";
-           updatePinDisplay();
-           openPreferencesModal();
-        } else {
-          document.getElementById('security-lock-screen').style.opacity = '0';
-          document.getElementById('security-lock-screen').style.transform = 'scale(1.05)';
-          setTimeout(() => {
-            document.getElementById('security-lock-screen').style.display = 'none';
-            document.getElementById('security-lock-screen').style.opacity = '1';
-            document.getElementById('security-lock-screen').style.transform = 'scale(1)';
-          }, 300);
-          currentPinInput = "";
-          updatePinDisplay();
-          triggerSuccessNotification("Unlocked via Biometrics");
-        }
+      let savedBioId = localStorage.getItem('finwise-biometric-id');
+
+      if (!savedBioId) {
+          // SETUP MODE: First time clicking biometrics, map local device sensor
+          const credential = await navigator.credentials.create({
+              publicKey: {
+                  challenge: challenge,
+                  rp: { name: "FinWise", id: window.location.hostname },
+                  user: {
+                      id: new Uint8Array(16), 
+                      name: "finwise-user",
+                      displayName: "FinWise PWA User"
+                  },
+                  pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+                  authenticatorSelection: {
+                      authenticatorAttachment: "platform", // Forces LOCAL hardware (No Passkey sync)
+                      userVerification: "required"
+                  },
+                  timeout: 60000
+              }
+          });
+
+          if (credential) {
+              const base64Id = btoa(String.fromCharCode.apply(null, new Uint8Array(credential.rawId)));
+              localStorage.setItem('finwise-biometric-id', base64Id);
+              unlockAppSuccess("Biometrics Linked & Unlocked!");
+          }
+      } else {
+          // UNLOCK MODE: Device is already mapped
+          const rawId = new Uint8Array(atob(savedBioId).split('').map(c => c.charCodeAt(0)));
+          const assertion = await navigator.credentials.get({
+              publicKey: {
+                  challenge: challenge,
+                  rpId: window.location.hostname,
+                  allowCredentials: [{ type: "public-key", id: rawId }],
+                  userVerification: "required"
+              }
+          });
+
+          if (assertion) {
+              unlockAppSuccess("Unlocked via Biometrics");
+          }
       }
     } catch (err) { 
+        console.error(err);
         triggerPinError("Biometric auth failed. Please use PIN."); 
     }
+  }
+
+  function unlockAppSuccess(toastMessage) {
+      if (isVerifyingToDisablePin) {
+         localStorage.removeItem('finwise-pin');
+         localStorage.removeItem('finwise-biometric-id');
+         document.getElementById('pin-enable-checkbox').checked = false;
+         document.getElementById('security-lock-screen').style.display = 'none';
+         triggerSuccessNotification("Security Disabled");
+         isVerifyingToDisablePin = false;
+         currentPinInput = "";
+         updatePinDisplay();
+         openPreferencesModal();
+      } else {
+        document.getElementById('security-lock-screen').style.opacity = '0';
+        document.getElementById('security-lock-screen').style.transform = 'scale(1.05)';
+        setTimeout(() => {
+          document.getElementById('security-lock-screen').style.display = 'none';
+          document.getElementById('security-lock-screen').style.opacity = '1';
+          document.getElementById('security-lock-screen').style.transform = 'scale(1)';
+        }, 300);
+        currentPinInput = "";
+        updatePinDisplay();
+        if(toastMessage) triggerSuccessNotification(toastMessage);
+      }
   }
 
   // ==========================================
   // DATA PORTABILITY & AUDIT LOG ENGINE
   // ==========================================
   
-  // Custom, robust CSV Line Parser that handles quotes and commas inside text perfectly
   function parseCSVLine(text) {
       let result = [];
       let current = '';
@@ -782,7 +826,7 @@
           if (char === '"') {
               if (inQuotes && text[i+1] === '"') {
                   current += '"';
-                  i++; // skip next escaped quote
+                  i++; 
               } else {
                   inQuotes = !inQuotes;
               }
@@ -839,7 +883,6 @@
       lines.forEach(line => {
         if (!line.trim()) return;
         
-        // Use the robust parser instead of simple regex
         const parts = parseCSVLine(line.trim());
         
         if (parts && parts.length >= 5) {
@@ -875,7 +918,7 @@
       };
     };
     reader.readAsText(file);
-    event.target.value = ''; // Reset file input so same file can be uploaded again if needed
+    event.target.value = ''; 
   }
 
   function refreshImportHistoryUI() {
@@ -887,13 +930,12 @@
       return;
     }
 
-    // Process history to tag duplicates
     let nameCounts = {};
     let processedHistory = historyRaw.map(b => {
         let fName = b.fileName || "Unknown File";
         nameCounts[fName] = (nameCounts[fName] || 0) + 1;
         return { ...b, isDuplicate: nameCounts[fName] > 1, fName: fName };
-    }).reverse(); // Display newest at top
+    }).reverse(); 
 
     list.innerHTML = processedHistory.map(batch => `
       <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:8px; border-bottom:1px solid var(--border); cursor:pointer;">
@@ -1418,7 +1460,6 @@
   // REACTIVE PROFESSIONAL INSIGHTS & CHART
   // ==========================================
   function renderChart(transactionsToRender) {
-    // Failsafe in case array isn't provided
     if(!transactionsToRender) transactionsToRender = allTransactions;
       
     const ctx = document.getElementById('expenseChart').getContext('2d');
@@ -1426,7 +1467,6 @@
     let totalExpense = 0;
     let totalIncome = 0;
 
-    // Crunch ONLY the currently filtered data
     transactionsToRender.forEach(t => {
       if (t.amount < 0) {
         let cat = t.category || 'Miscellaneous';
@@ -1543,7 +1583,6 @@
     document.getElementById('theme-btn').innerText = targetTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
     
     if(currentActiveMainScreen === 'insights') {
-        // Re-render chart text colors on theme swap using the filtered data
         applyFilters(); 
     }
   }
@@ -1825,7 +1864,6 @@
     DOM.fInc.innerText = `₹${formatToIndianRupee(fIncome)}`; 
     DOM.fExp.innerText = `₹${formatToIndianRupee(fExpense)}`;
 
-    // Pass the filtered array to ensure Insights tab correctly reflects the active view!
     renderUI(filtered); 
     calculateMasterSummaryTotals(allTransactions); 
     renderPercentageBreakdown(filtered); 
