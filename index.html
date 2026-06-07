@@ -18,31 +18,39 @@
   <h2 id="lock-title" style="margin-bottom: 8px; font-size: 1.8rem;">Enter PIN</h2>
   <p id="lock-subtitle" style="color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem; font-weight: 500;">To access FinWise</p>
   
-  <div class="pin-display" id="pin-display">
-    <div class="pin-dot"></div>
-    <div class="pin-dot"></div>
-    <div class="pin-dot"></div>
-    <div class="pin-dot"></div>
-  </div>
-  
-  <div class="numpad">
-    <div class="num-key" onclick="handlePinInput('1')">1</div>
-    <div class="num-key" onclick="handlePinInput('2')">2</div>
-    <div class="num-key" onclick="handlePinInput('3')">3</div>
-    <div class="num-key" onclick="handlePinInput('4')">4</div>
-    <div class="num-key" onclick="handlePinInput('5')">5</div>
-    <div class="num-key" onclick="handlePinInput('6')">6</div>
-    <div class="num-key" onclick="handlePinInput('7')">7</div>
-    <div class="num-key" onclick="handlePinInput('8')">8</div>
-    <div class="num-key" onclick="handlePinInput('9')">9</div>
-    <div class="num-key" id="pin-cancel-btn" style="background: transparent; border: none; box-shadow: none; font-size: 0.9rem; color: var(--text-muted);" onclick="cancelPinSetup()"></div>
-    <div class="num-key" onclick="handlePinInput('0')">0</div>
-    <div class="num-key" style="background: transparent; border: none; box-shadow: none; color: var(--expense); font-size: 1.8rem;" onclick="handlePinBackspace()">⌫</div>
+  <div id="biometric-auto-ui" style="display: none; flex-direction: column; align-items: center; width: 100%;">
+    <div style="font-size: 4rem; margin-bottom: 10px;">👆</div>
+    <p style="color: var(--primary); font-weight: bold; margin-bottom: 30px;">Verify biometric to unlock</p>
+    <button onclick="switchToPinMode()" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); padding: 14px 24px; border-radius: 12px; font-weight: bold; width: auto; box-shadow: none;">🔢 Use PIN Instead</button>
   </div>
 
-  <button id="biometric-unlock-btn" onclick="unlockWithBiometrics()" style="margin-top: 30px; padding: 14px 24px; width: 100%; max-width: 250px; background: transparent; color: var(--primary); border: 2px dashed var(--primary); box-shadow: none; font-weight: 700; border-radius: 12px; display: none;">
-    🔍 Biometric Unlock
-  </button>
+  <div id="pin-entry-ui" style="display: block; width: 100%; max-width: 320px; margin: 0 auto;">
+    <div class="pin-display" id="pin-display">
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+    </div>
+    
+    <div class="numpad">
+      <div class="num-key" onclick="handlePinInput('1')">1</div>
+      <div class="num-key" onclick="handlePinInput('2')">2</div>
+      <div class="num-key" onclick="handlePinInput('3')">3</div>
+      <div class="num-key" onclick="handlePinInput('4')">4</div>
+      <div class="num-key" onclick="handlePinInput('5')">5</div>
+      <div class="num-key" onclick="handlePinInput('6')">6</div>
+      <div class="num-key" onclick="handlePinInput('7')">7</div>
+      <div class="num-key" onclick="handlePinInput('8')">8</div>
+      <div class="num-key" onclick="handlePinInput('9')">9</div>
+      <div class="num-key" id="pin-cancel-btn" style="background: transparent; border: none; box-shadow: none; font-size: 0.9rem; color: var(--text-muted);" onclick="cancelPinSetup()"></div>
+      <div class="num-key" onclick="handlePinInput('0')">0</div>
+      <div class="num-key" style="background: transparent; border: none; box-shadow: none; color: var(--expense); font-size: 1.8rem;" onclick="handlePinBackspace()">⌫</div>
+    </div>
+
+    <button id="biometric-unlock-btn" onclick="unlockWithBiometrics()" style="margin-top: 30px; padding: 14px 24px; width: 100%; background: transparent; color: var(--primary); border: 2px dashed var(--primary); box-shadow: none; font-weight: 700; border-radius: 12px; display: none;">
+      🔍 Retry Biometric Unlock
+    </button>
+  </div>
 </div>
 
 <div class="container">
@@ -553,7 +561,7 @@
     if (savedPin) {
       const lockScreen = document.getElementById('security-lock-screen');
       lockScreen.style.display = 'flex';
-      document.getElementById('lock-title').innerText = "Enter PIN";
+      document.getElementById('lock-title').innerText = "Verify Identity";
       document.getElementById('lock-subtitle').innerText = "To access FinWise";
       document.getElementById('pin-cancel-btn').innerText = "";
       
@@ -562,16 +570,37 @@
       currentPinInput = "";
       updatePinDisplay();
 
-      if (window.PublicKeyCredential) {
-        PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(isAvail => {
-          if (isAvail) {
-             document.getElementById('biometric-unlock-btn').style.display = 'block';
+      if (localStorage.getItem('finwise-biometric-id')) {
+          // BIOMETRIC PRIMARY: Hide PIN Pad, show Touch UI, Auto-trigger sensor
+          document.getElementById('pin-entry-ui').style.display = 'none';
+          document.getElementById('biometric-auto-ui').style.display = 'flex';
+          setTimeout(() => unlockWithBiometrics(), 300);
+      } else {
+          // PIN PRIMARY
+          document.getElementById('pin-entry-ui').style.display = 'block';
+          document.getElementById('biometric-auto-ui').style.display = 'none';
+          
+          if (window.PublicKeyCredential) {
+            PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(isAvail => {
+              if (isAvail) {
+                 document.getElementById('biometric-unlock-btn').style.display = 'block';
+                 document.getElementById('biometric-unlock-btn').innerText = "🔍 Setup Biometric Unlock";
+              }
+            }).catch(err => console.log(err));
           }
-        }).catch(err => console.log(err));
       }
     } else {
       document.getElementById('security-lock-screen').style.display = 'none';
     }
+  }
+
+  // SWAP UI TO MANUAL PIN (e.g. if fingerprint fails or user clicks button)
+  function switchToPinMode() {
+      document.getElementById('biometric-auto-ui').style.display = 'none';
+      document.getElementById('pin-entry-ui').style.display = 'block';
+      document.getElementById('lock-subtitle').innerText = "Enter PIN to continue";
+      document.getElementById('biometric-unlock-btn').style.display = 'block'; // Show retry button
+      document.getElementById('biometric-unlock-btn').innerText = "🔍 Retry Biometric Unlock";
   }
 
   // FORCE LOCK ON APP RESUME (BACKGROUND TO FOREGROUND)
@@ -579,7 +608,6 @@
     if (document.visibilityState === "visible") {
        if (localStorage.getItem('finwise-pin')) {
            const lockScreen = document.getElementById('security-lock-screen');
-           // Only re-init if they aren't currently typing a PIN to disable security
            if (lockScreen.style.display === 'none' || !isVerifyingToDisablePin) {
                initSecurityEngine();
            }
@@ -592,15 +620,25 @@
     
     // Verifying identity before allowing the user to turn off security
     if (!checkbox.checked && savedPin) {
-      checkbox.checked = true; // Visually keep it checked until they prove who they are
+      checkbox.checked = true; 
       isVerifyingToDisablePin = true;
       currentPinInput = "";
       updatePinDisplay();
+      
       document.getElementById('security-lock-screen').style.display = 'flex';
       document.getElementById('lock-title').innerText = "Verify Identity";
       document.getElementById('lock-subtitle').innerText = "Enter PIN to disable security";
       document.getElementById('pin-cancel-btn').innerText = "Cancel";
-      document.getElementById('biometric-unlock-btn').style.display = window.PublicKeyCredential ? 'block' : 'none';
+      
+      if(localStorage.getItem('finwise-biometric-id')) {
+          document.getElementById('pin-entry-ui').style.display = 'none';
+          document.getElementById('biometric-auto-ui').style.display = 'flex';
+          setTimeout(() => unlockWithBiometrics(), 300);
+      } else {
+          document.getElementById('pin-entry-ui').style.display = 'block';
+          document.getElementById('biometric-auto-ui').style.display = 'none';
+      }
+      
       closeModal('preferences-modal');
       return;
     }
@@ -613,10 +651,14 @@
       tempSetupPin = "";
       currentPinInput = "";
       updatePinDisplay();
+      
       document.getElementById('security-lock-screen').style.display = 'flex';
       document.getElementById('lock-title').innerText = "Create PIN";
       document.getElementById('lock-subtitle').innerText = "Enter a 4-digit passcode";
       document.getElementById('pin-cancel-btn').innerText = "Cancel";
+      
+      document.getElementById('pin-entry-ui').style.display = 'block';
+      document.getElementById('biometric-auto-ui').style.display = 'none';
       document.getElementById('biometric-unlock-btn').style.display = 'none';
     }
   }
@@ -702,7 +744,7 @@
     } else {
       const savedPin = localStorage.getItem('finwise-pin');
       if (currentPinInput === savedPin) {
-        unlockAppSuccess("Unlocked via PIN");
+        unlockAppSuccess();
       } else {
         triggerPinError("Incorrect PIN.");
       }
@@ -722,6 +764,7 @@
       currentPinInput = "";
       updatePinDisplay();
       document.getElementById('lock-subtitle').style.color = "var(--text-muted)";
+      
       if(isSettingUpPin) {
          document.getElementById('lock-subtitle').innerText = "Enter a 4-digit passcode";
          document.getElementById('lock-title').innerText = "Create PIN";
@@ -783,8 +826,10 @@
           }
       }
     } catch (err) { 
-        console.error(err);
-        triggerPinError("Biometric auth failed. Please use PIN."); 
+        console.error("Biometric Error: ", err);
+        // If fingerprint gets canceled (e.g. wet hands), drop instantly to PIN pad
+        switchToPinMode();
+        triggerPinError("Fingerprint failed or canceled. Please use PIN."); 
     }
   }
 
