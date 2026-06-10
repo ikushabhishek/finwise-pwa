@@ -8,7 +8,6 @@
   <meta name="theme-color" content="#2e7d32">
   
   <link rel="stylesheet" href="./style.css">
-  
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -20,10 +19,7 @@
   
   <div id="pin-entry-ui" style="display: block; width: 100%; max-width: 320px; margin: 0 auto; text-align: center;">
     <div class="pin-display" id="pin-display" style="display: flex; justify-content: center; align-items: center; gap: 20px; margin: 0 auto 40px auto; width: 100%;">
-      <div class="pin-dot"></div>
-      <div class="pin-dot"></div>
-      <div class="pin-dot"></div>
-      <div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
     </div>
     
     <div class="numpad" style="margin: 0 auto; justify-content: center;">
@@ -51,8 +47,7 @@
   <div class="modal-card" style="border-top: 4px solid var(--primary); max-width: 400px; width: 90%;">
     <h3 style="text-align:center; margin-bottom: 4px;">🔔 Action Required</h3>
     <p style="text-align:center; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Did these recurring payments process successfully?</p>
-    <div id="pending-obligations-list" style="display: flex; flex-direction: column; gap: 16px;">
-       </div>
+    <div id="pending-obligations-list" style="display: flex; flex-direction: column; gap: 16px;"></div>
   </div>
 </div>
 
@@ -92,7 +87,7 @@
 
     <div class="budget-velocity-wrapper" id="budget-velocity-tracker" style="display: none;">
       <div class="velocity-status-container">
-        <span id="velocity-title-label">BUDGET VELOCITY LIMIT</span>
+        <span id="velocity-title-label">BUDGET LIMIT</span>
         <span id="velocity-percentage-label">0% SPENT</span>
       </div>
       <div class="velocity-track-bar">
@@ -112,20 +107,14 @@
 
     <div class="period-navigation-bar" id="period-nav-container" style="display: none;">
       <button class="period-nav-btn" onclick="adjustPeriodOffset(-1)">◀ Prev</button>
-      <span id="period-display-label">Current Period Boundaries</span>
+      <span id="period-display-label">Current Period</span>
       <button class="period-nav-btn" onclick="adjustPeriodOffset(1)">Next ▶</button>
     </div>
 
     <div class="search-box" id="custom-range-container" style="display: none; margin-bottom: 0;">
       <div class="range-inputs">
-        <div>
-          <label>Start Date</label>
-          <input type="date" id="start-date" onchange="applyFilters()">
-        </div>
-        <div>
-          <label>End Date</label>
-          <input type="date" id="end-date" onchange="applyFilters()">
-        </div>
+        <div><label>Start Date</label><input type="date" id="start-date" onchange="applyFilters()"></div>
+        <div><label>End Date</label><input type="date" id="end-date" onchange="applyFilters()"></div>
       </div>
     </div>
   </div>
@@ -133,51 +122,19 @@
   <div id="view-add" class="view-panel active-view">
     
     <div class="reconcile-view-card" id="reconcile-status-widget">
-      <h4>
-        <span id="config-card-header-title">📅 Cycle & Baseline Setup</span> 
-        <button class="inline-edit-action-link" id="dashboard-config-toggle-btn" onclick="toggleDashboardConfigPanel()">✏️ Edit</button>
-      </h4>
-      
+      <h4><span id="config-card-header-title">📅 Baseline Setup</span> <button class="inline-edit-action-link" id="dashboard-config-toggle-btn" onclick="toggleDashboardConfigPanel()">✏️ Edit</button></h4>
       <div id="dashboard-config-display-sheet">
-        <div class="reconcile-row">
-          <span style="color: var(--text-muted);">Cycle Start Day:</span>
-          <span id="rec-cycle-label" style="font-weight:bold;">1st of the Month</span>
-        </div>
-        <div class="reconcile-row">
-          <span style="color: var(--text-muted);">Target Budget Limit:</span>
-          <span id="rec-budget-label" style="font-weight:bold; color: var(--primary);">Not Configured</span>
-        </div>
-        <div class="reconcile-row">
-          <span style="color: var(--text-muted);">Opening Statement Balance:</span>
-          <span id="rec-op-label">₹0.00</span>
-        </div>
-        <div class="reconcile-row">
-          <span style="color: var(--text-muted);">Target Closing Balance:</span>
-          <span id="rec-cl-label">₹0.00</span>
-        </div>
-        <div class="reconcile-row" style="border-top: 1px dotted var(--border); padding-top: 6px; margin-top: 6px; font-weight: bold;">
-          <span id="rec-diff-title">Discrepancy Variance:</span>
-          <span id="rec-diff-label">₹0.00</span>
-        </div>
+        <div class="reconcile-row"><span style="color: var(--text-muted);">Cycle Start Day:</span><span id="rec-cycle-label" style="font-weight:bold;">1st</span></div>
+        <div class="reconcile-row"><span style="color: var(--text-muted);">Target Budget Limit:</span><span id="rec-budget-label" style="font-weight:bold; color: var(--primary);">Not Configured</span></div>
+        <div class="reconcile-row"><span style="color: var(--text-muted);">Opening Statement Balance:</span><span id="rec-op-label">₹0.00</span></div>
+        <div class="reconcile-row"><span style="color: var(--text-muted);">Target Closing Balance:</span><span id="rec-cl-label">₹0.00</span></div>
+        <div class="reconcile-row" style="border-top: 1px dotted var(--border); padding-top: 6px; margin-top: 6px; font-weight: bold;"><span id="rec-diff-title">Discrepancy Variance:</span><span id="rec-diff-label">₹0.00</span></div>
       </div>
-
       <div class="dashboard-config-fields-block" id="dashboard-config-fields-sheet" style="display:none; margin-top:4px;">
-        <div style="margin-bottom:10px;">
-          <label>Monthly Cycle Starting Day (1-31)</label>
-          <input type="number" id="dash-cycle-day-input" min="1" max="31" placeholder="e.g. 1" style="width:100%;">
-        </div>
-        <div style="margin-bottom:10px;">
-          <label>Hard Monthly Budget Limit (Optional)</label>
-          <input type="text" id="dash-budget-limit-input" placeholder="e.g. 20,000" oninput="maskInputToIndianCommas(this)" style="width:100%;">
-        </div>
-        <div style="margin-bottom:10px;">
-          <label>Account Opening Statement Cash</label>
-          <input type="text" id="dash-op-bal-input" placeholder="e.g. 15,000.00" oninput="maskInputToIndianCommas(this)" style="width:100%;">
-        </div>
-        <div style="margin-bottom:12px;">
-          <label>Target Bank Statement Close (Optional)</label>
-          <input type="text" id="dash-cl-bal-input" placeholder="e.g. 20,000.00" oninput="maskInputToIndianCommas(this)" style="width:100%;">
-        </div>
+        <div style="margin-bottom:10px;"><label>Monthly Cycle Starting Day (1-31)</label><input type="number" id="dash-cycle-day-input" min="1" max="31" placeholder="e.g. 1" style="width:100%;"></div>
+        <div style="margin-bottom:10px;"><label>Hard Monthly Budget Limit (Optional)</label><input type="text" id="dash-budget-limit-input" placeholder="e.g. 20,000" oninput="maskInputToIndianCommas(this)" style="width:100%;"></div>
+        <div style="margin-bottom:10px;"><label>Account Opening Statement Cash</label><input type="text" id="dash-op-bal-input" placeholder="e.g. 15,000.00" oninput="maskInputToIndianCommas(this)" style="width:100%;"></div>
+        <div style="margin-bottom:12px;"><label>Target Bank Statement Close (Optional)</label><input type="text" id="dash-cl-bal-input" placeholder="e.g. 20,000.00" oninput="maskInputToIndianCommas(this)" style="width:100%;"></div>
         <button onclick="saveDashboardCycleAndBaselineConfig()" style="background: var(--primary); color: white; padding: 12px; border-radius: 10px; width:100%; font-weight:bold;">Save Configuration</button>
       </div>
     </div>
@@ -185,13 +142,7 @@
     <div class="form-group nature-expense" id="swipe-form-block">
       <div class="form-header-row">
         <h3>Add New Entry</h3>
-        <label class="toggle-container">
-          <span id="entry-mode-label-text" style="font-size:0.75rem; letter-spacing:0.5px;">Bulk Entry</span>
-          <div class="switch">
-            <input type="checkbox" id="bulk-mode-checkbox" onchange="toggleFormEntryMode(this)">
-            <span class="slider"></span>
-          </div>
-        </label>
+        <label class="toggle-container"><span id="entry-mode-label-text" style="font-size:0.75rem;">Bulk Entry</span><div class="switch"><input type="checkbox" id="bulk-mode-checkbox" onchange="toggleFormEntryMode(this)"><span class="slider"></span></div></label>
       </div>
       
       <div class="nature-segmented-control" id="single-nature-slider">
@@ -201,55 +152,28 @@
       </div>
 
       <div id="single-entry-fields">
-        <input type="text" id="text" placeholder="What was this for? (e.g., Coffee, Salary)" onkeydown="handleFormEnter(event, 'amount')" oninput="predictCategoryFromText(this.value)">
+        <input type="text" id="text" placeholder="What was this for? (e.g., Coffee)" onkeydown="handleFormEnter(event, 'amount')" oninput="predictCategoryFromText(this.value)">
         <input type="text" id="amount" inputmode="decimal" placeholder="0.00" onkeydown="handleFormEnter(event, 'save-btn')" oninput="maskInputToIndianCommas(this)">
-        
         <div id="expense-cat-container">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-            <label style="font-size:0.72rem; color:var(--text-muted); font-weight:bold;">CATEGORY</label>
-            <span class="inline-edit-action-link" onclick="openCategoryManagerModal()">⚙️ Manage Tags</span>
-          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;"><label style="font-size:0.72rem; color:var(--text-muted); font-weight:bold;">CATEGORY</label><span class="inline-edit-action-link" onclick="openCategoryManagerModal()">⚙️ Manage Tags</span></div>
           <select id="expense-category"></select>
         </div>
-        <div id="income-cat-container">
-          <input type="text" id="income-category" placeholder="Where did this come from? (e.g., Salary)">
-        </div>
+        <div id="income-cat-container"><input type="text" id="income-category" placeholder="Where did this come from? (e.g., Salary)"></div>
       </div>
 
-      <div id="bulk-entry-fields" style="display: none; width:100%; margin-top: 4px;">
-        <div id="bulk-rows-holder-div"></div>
-        <button class="btn-secondary-action" onclick="generateNewBulkInputRow()">➕ Add Another Entry Line</button>
-      </div>
-
+      <div id="bulk-entry-fields" style="display: none; width:100%; margin-top: 4px;"><div id="bulk-rows-holder-div"></div><button class="btn-secondary-action" onclick="generateNewBulkInputRow()">➕ Add Another Entry Line</button></div>
       <button id="save-btn" onclick="executeTransactionSave()">Save Entry</button>
     </div>
 
-    <div class="insights-card" id="insights-card-element">
-      <h4 id="insights-title">💡 Your Money Insights</h4>
-      <p id="insights-text">Add some income and expenses to see your money tips here.</p>
-    </div>
-
-    <div class="breakdown-box">
-      <h4>📊 Where Your Money Goes</h4>
-      <div id="breakdown-list"></div>
-    </div>
+    <div class="insights-card" id="insights-card-element"><h4 id="insights-title">💡 Your Money Insights</h4><p id="insights-text">Add some income and expenses to see your money tips here.</p></div>
+    <div class="breakdown-box"><h4>📊 Where Your Money Goes</h4><div id="breakdown-list"></div></div>
   </div>
 
   <div id="view-logs" class="view-panel">
-    
     <div class="filtered-summary-strip" id="filtered-totals-strip">
-      <div class="filtered-stat">
-        <small>Filtered Bal</small>
-        <span id="filtered-balance">₹0.00</span>
-      </div>
-      <div class="filtered-stat">
-        <small>Income</small>
-        <span id="filtered-inc" class="amt-inc">₹0.00</span>
-      </div>
-      <div class="filtered-stat">
-        <small>Expenses</small>
-        <span id="filtered-exp" class="amt-exp">₹0.00</span>
-      </div>
+      <div class="filtered-stat"><small>Filtered Bal</small><span id="filtered-balance">₹0.00</span></div>
+      <div class="filtered-stat"><small>Income</small><span id="filtered-inc" class="amt-inc">₹0.00</span></div>
+      <div class="filtered-stat"><small>Expenses</small><span id="filtered-exp" class="amt-exp">₹0.00</span></div>
     </div>
 
     <button class="btn-secondary-action" style="margin-bottom:16px; border-style:solid;" onclick="triggerDynamicPeriodFinancialReport()">📋 Generate Active Period Summary Report</button>
@@ -257,30 +181,13 @@
     <div class="search-box">
       <h4>Search & Filter</h4>
       <input type="text" id="search-input" placeholder="Search entries...">
-      
-      <select id="filter-nature" onchange="applyFilters()" style="margin-bottom: 0;">
-        <option value="all">🔄 Show All</option>
-        <option value="income">💰 Income</option>
-        <option value="expense">💸 Expenses</option>
-      </select>
+      <select id="filter-nature" onchange="applyFilters()" style="margin-bottom: 0;"><option value="all">🔄 Show All</option><option value="income">💰 Income</option><option value="expense">💸 Expenses</option></select>
     </div>
 
-    <div class="action-toolbar" id="toolbar">
-      <span id="toolbar-text">0 items selected</span>
-      <div class="toolbar-buttons">
-        <button class="btn-small btn-edit" onclick="openEditModal()">Edit</button>
-        <button class="btn-small btn-delete" onclick="openDeleteModal()">Delete</button>
-      </div>
-    </div>
+    <div class="action-toolbar" id="toolbar"><span id="toolbar-text">0 items selected</span><div class="toolbar-buttons"><button class="btn-small btn-edit" onclick="openEditModal()">Edit</button><button class="btn-small btn-delete" onclick="openDeleteModal()">Delete</button></div></div>
 
     <div class="history-section">
-      <div class="history-header">
-        <h3>History</h3>
-        <label class="select-all-container" id="master-select-label" style="display:none;">
-          <input type="checkbox" id="master-checkbox" onchange="toggleSelectAll(this)">
-          <span>Select All</span>
-        </label>
-      </div>
+      <div class="history-header"><h3>History</h3><label class="select-all-container" id="master-select-label" style="display:none;"><input type="checkbox" id="master-checkbox" onchange="toggleSelectAll(this)"><span>Select All</span></label></div>
       <ul id="list" class="list"></ul>
       
       <div id="empty-msg" class="empty-state-premium" style="display:none;">
@@ -292,7 +199,6 @@
   </div>
 
   <div id="view-insights" class="view-panel">
-    
     <div id="insights-empty-state" class="empty-state-premium" style="display:none; margin-top: 20px;">
       <div class="empty-icon">📈</div>
       <h4>No Insights Yet</h4>
@@ -301,80 +207,44 @@
 
     <div id="income-expense-comparison" class="breakdown-box" style="display: none; padding: 20px; margin-bottom: 20px;">
       <h4 style="margin: 0 0 16px 0; border-bottom: none; text-align: center; font-size: 0.95rem;">Cash Flow Ratio</h4>
-      
-      <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; font-weight: 700;">
-        <span style="color: var(--income);">Income: <span id="insight-inc-label">₹0</span></span>
-        <span style="color: var(--expense);">Expense: <span id="insight-exp-label">₹0</span></span>
-      </div>
-      
-      <div style="height: 12px; border-radius: 6px; background: rgba(220, 38, 38, 0.15); display: flex; overflow: hidden; position: relative;">
-        <div id="insight-ratio-bar" style="height: 100%; background: var(--income); width: 50%; transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); border-radius: 6px;"></div>
-      </div>
-      
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; font-weight: 700;"><span style="color: var(--income);">Income: <span id="insight-inc-label">₹0</span></span><span style="color: var(--expense);">Expense: <span id="insight-exp-label">₹0</span></span></div>
+      <div style="height: 12px; border-radius: 6px; background: rgba(220, 38, 38, 0.15); display: flex; overflow: hidden; position: relative;"><div id="insight-ratio-bar" style="height: 100%; background: var(--income); width: 50%; transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); border-radius: 6px;"></div></div>
       <p id="insight-ratio-text" style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin: 16px 0 0 0; font-weight: 600; line-height: 1.4;"></p>
     </div>
 
-    <div id="insights-chart-wrapper" class="reconcile-view-card" style="display: none;">
-      <h4 style="text-align: center; border-bottom: none; margin-bottom: 0;">Expense Analytics</h4>
-      <div style="position: relative; height: 300px; width: 100%; margin-top: 10px;">
-        <canvas id="expenseChart"></canvas>
-      </div>
-    </div>
-
+    <div id="insights-chart-wrapper" class="reconcile-view-card" style="display: none;"><h4 style="text-align: center; border-bottom: none; margin-bottom: 0;">Expense Analytics</h4><div style="position: relative; height: 300px; width: 100%; margin-top: 10px;"><canvas id="expenseChart"></canvas></div></div>
     <div class="breakdown-box" id="insights-detailed-list" style="display: none;"></div>
-
   </div>
 
   <nav class="bottom-nav">
-    <button class="nav-item nav-active" id="nav-btn-add" onclick="switchMainScreen('add')">
-      <span class="nav-icon">➕</span>
-      <span>Add Entry</span>
-    </button>
-    <button class="nav-item" id="nav-btn-logs" onclick="switchMainScreen('logs')">
-      <span class="nav-icon">📊</span>
-      <span>History</span>
-    </button>
-    <button class="nav-item" id="nav-btn-insights" onclick="switchMainScreen('insights')">
-      <span class="nav-icon">📈</span>
-      <span>Insights</span>
-    </button>
+    <button class="nav-item nav-active" id="nav-btn-add" onclick="switchMainScreen('add')"><span class="nav-icon">➕</span><span>Add Entry</span></button>
+    <button class="nav-item" id="nav-btn-logs" onclick="switchMainScreen('logs')"><span class="nav-icon">📊</span><span>History</span></button>
+    <button class="nav-item" id="nav-btn-insights" onclick="switchMainScreen('insights')"><span class="nav-icon">📈</span><span>Insights</span></button>
   </nav>
 
 </div>
 
-<div class="modal-overlay" id="category-manager-modal">
+<div class="modal-overlay" id="category-manager-modal" style="display: none;">
   <div class="modal-card" style="text-align: left; max-width:420px;">
-    <h3 style="text-align:center;">📦 Custom Expense Tags Manager</h3>
+    <h3 style="text-align:center;">📦 Custom Expense Tags</h3>
     <p style="text-align:center; margin-bottom:12px;">Add or delete custom expense categories.</p>
-    
-    <div style="display:flex; gap:6px; margin-bottom:14px;">
-      <input type="text" id="new-custom-tag-input" placeholder="e.g. 🧘 Health, 🎓 Fees" style="margin-bottom:0; flex:2;">
-      <button onclick="executeSaveNewCustomCategoryTag()" style="width:auto; padding:0 20px; margin-bottom:0; flex:0.8;">Add Tag</button>
-    </div>
-
+    <div style="display:flex; gap:6px; margin-bottom:14px;"><input type="text" id="new-custom-tag-input" placeholder="e.g. 🧘 Health, 🎓 Fees" style="margin-bottom:0; flex:2;"><button onclick="executeSaveNewCustomCategoryTag()" style="width:auto; padding:0 20px; margin-bottom:0; flex:0.8;">Add Tag</button></div>
     <label style="font-size:0.72rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:6px; letter-spacing:0.5px;">ACTIVE WORKSPACE TAGS</label>
     <div id="category-tags-list-container" style="max-height:180px; overflow-y:auto; border:1px solid var(--border); border-radius:12px; padding:8px; background:var(--bg-main);"></div>
-
-    <div class="modal-footer" style="margin-top:14px;">
-      <button class="btn-cancel" onclick="closeModal('category-manager-modal')">Close</button>
-    </div>
+    <div class="modal-footer" style="margin-top:14px;"><button class="btn-cancel" onclick="closeModal('category-manager-modal')">Close</button></div>
   </div>
 </div>
 
-<div class="modal-overlay" id="financial-report-modal">
+<div class="modal-overlay" id="financial-report-modal" style="display: none;">
   <div class="modal-card" style="text-align: left; max-width:440px; border-top:4px solid var(--primary);">
     <h3 style="text-align:center; margin-bottom:4px;">📊 Active Period Summary Report</h3>
     <p style="text-align:center; font-size:0.78rem; margin-bottom:16px;" id="report-window-date-bounds-label">Timeline Boundaries</p>
-    
     <div id="financial-report-metrics-sheet-body"></div>
-
-    <div class="modal-footer" style="margin-top:16px;">
-      <button style="background:var(--text-main); color:var(--bg-card);" onclick="closeModal('financial-report-modal')">Close Statement</button>
-    </div>
+    <div class="modal-footer" style="margin-top:16px;"><button style="background:var(--text-main); color:var(--bg-card);" onclick="closeModal('financial-report-modal')">Close Statement</button></div>
   </div>
 </div>
 
-<div class="modal-overlay" id="preferences-modal">
+<div class="modal-overlay" id="preferences-modal" style="display: none;">
   <div class="modal-card">
     <h3>⚙️ Settings</h3>
     <p>Manage your app configuration here.</p>
@@ -382,20 +252,14 @@
     <div style="border-top: 1px dashed var(--border); padding-top: 14px; margin-top: 14px; text-align: left;">
       <h4 style="margin: 0 0 10px 0; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: center; color: var(--text-main);">
         🔒 Security PIN Vault
-        <label class="toggle-container" style="margin:0;">
-          <div class="switch">
-            <input type="checkbox" id="pin-enable-checkbox" onchange="togglePinSetupMode(this)">
-            <span class="slider"></span>
-          </div>
-        </label>
+        <label class="toggle-container" style="margin:0;"><div class="switch"><input type="checkbox" id="pin-enable-checkbox" onchange="togglePinSetupMode(this)"><span class="slider"></span></div></label>
       </h4>
       <p style="font-size: 0.8rem; color: var(--text-muted); margin:0;">Require a passcode or biometric to open FinWise.</p>
     </div>
 
     <div style="width: 100%; border-top: 1px dashed var(--border); padding-top: 14px; margin-top: 14px; text-align: left;">
       <h4 style="margin: 0 0 10px 0; font-size: 0.95rem; color: var(--text-main);">📅 Recurring Commitments</h4>
-      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">Automate your EMIs and subscriptions. The app will ask you to confirm them when they are due.</p>
-      
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">Automate your EMIs and subscriptions.</p>
       <div style="background: var(--bg-main); padding: 12px; border-radius: 12px; border: 1px solid var(--border);">
         <input type="text" id="ob-title" placeholder="Title (e.g. Netflix, Car EMI)" style="margin-bottom: 8px; width: 100%; box-sizing: border-box; padding: 10px;">
         <div style="display: flex; gap: 8px; margin-bottom: 8px;">
@@ -415,17 +279,14 @@
         </div>
         <button onclick="executeSaveObligation()" style="background: var(--primary); color: white; width: 100%; box-shadow: none; padding: 12px; border: none; border-radius: 8px;">Save Commitment</button>
       </div>
-
-      <div id="obligations-list" style="margin-top: 12px; max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
-        </div>
+      <div id="obligations-list" style="margin-top: 12px; max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;"></div>
     </div>
 
     <div style="width: 100%; border-top: 1px dashed var(--border); padding-top: 14px; margin-top: 14px; text-align: left;">
       <h4 style="margin: 0 0 10px 0; font-size: 0.95rem; color: var(--text-main);">📁 Data Portability</h4>
-      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">Export your transactions to a CSV file or import an existing one.</p>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">Export your transactions or import an existing CSV file.</p>
       <div style="display: flex; gap: 8px;">
         <button onclick="exportToCSV()" style="flex: 1; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); margin: 0; box-shadow: none;">Export CSV</button>
-        
         <label style="flex: 1; margin: 0; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.95rem; font-weight: 700;">
           Import CSV
           <input type="file" accept=".csv" onchange="importFromCSV(event)" style="display: none;">
@@ -435,97 +296,55 @@
 
     <div class="modal-danger-zone" style="width: 100%; border-top: 1px dashed var(--border); padding-top: 14px; margin-top: 14px; text-align: left;">
       <h4 style="color: #dc2626; margin: 0 0 6px 0; font-size: 0.9rem;">⚠️ Danger Zone</h4>
-      <p>Want to delete all your data and start fresh?</p>
+      <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px;">Want to delete all your data and start fresh?</p>
       <button class="btn-reset-isolated" onclick="openResetModal()">Erase All Data</button>
     </div>
     
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal('preferences-modal')" style="width: 100%; padding: 12px; border-radius: 8px;">Close</button>
-    </div>
+    <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('preferences-modal')" style="width: 100%; padding: 12px; border-radius: 8px;">Close</button></div>
   </div>
 </div>
 
-<div class="modal-overlay" id="delete-modal">
+<div class="modal-overlay" id="delete-modal" style="display: none;">
   <div class="modal-card" style="border-top: 4px solid var(--expense);">
-    <div class="alert-icon-circle">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="3 6 5 6 21 6"></polyline>
-        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-      </svg>
-    </div>
+    <div class="alert-icon-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></div>
     <h3 style="color: var(--expense);">Delete Entries?</h3>
     <p id="delete-modal-msg">You are about to delete the selected entries.</p>
     <input type="text" id="delete-confirm-input" placeholder="Type DELETE here" style="text-align: center; font-weight: bold; letter-spacing: 1px;">
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal('delete-modal')">Cancel</button>
-      <button style="background: var(--expense); color: white;" onclick="confirmBatchDelete()">Delete</button>
-    </div>
+    <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('delete-modal')">Cancel</button><button style="background: var(--expense); color: white;" onclick="confirmBatchDelete()">Delete</button></div>
   </div>
 </div>
 
-<div class="modal-overlay" id="reset-modal">
+<div class="modal-overlay" id="reset-modal" style="display: none;">
   <div class="modal-card" style="border-top: 4px solid var(--expense);">
-    <div class="alert-icon-circle">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-        <line x1="12" y1="9" x2="12" y2="13"></line>
-        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-      </svg>
-    </div>
+    <div class="alert-icon-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
     <h3 style="color: var(--expense);">Erase All Data?</h3>
     <p>This permanently deletes <strong>EVERY ENTRY</strong>. You <strong>CANNOT GET THIS BACK</strong>.</p>
     <input type="text" id="reset-confirm-input" placeholder="Type RESET here" style="text-align: center; font-weight: bold; letter-spacing: 1px;">
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal('reset-modal')">Cancel</button>
-      <button style="background: var(--expense); color: white;" onclick="confirmSystemReset()">Erase Everything</button>
-    </div>
+    <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('reset-modal')">Cancel</button><button style="background: var(--expense); color: white;" onclick="confirmSystemReset()">Erase Everything</button></div>
   </div>
 </div>
 
-<div class="modal-overlay" id="edit-modal">
+<div class="modal-overlay" id="edit-modal" style="display: none;">
   <div class="modal-card" style="text-align: left;">
     <h3 style="text-align: center;">📝 Edit Entry</h3>
     <p id="edit-modal-desc" style="text-align: center;">Update your entry details.</p>
-    
     <div id="single-edit-fields" style="width: 100%;">
       <input type="text" id="edit-text" placeholder="Description">
       <input type="text" id="edit-amount" placeholder="0.00" oninput="maskInputToIndianCommas(this)">
     </div>
-
-    <select id="edit-type" onchange="toggleCategoryInput('edit')" style="width: 100%;">
-      <option value="expense">Expense</option>
-      <option value="income">Income</option>
-    </select>
-
-    <div id="edit-expense-cat-container" style="width: 100%;">
-      <select id="edit-expense-category"></select>
-    </div>
-
-    <div id="edit-income-cat-container" style="width: 100%;">
-      <input type="text" id="edit-income-category" placeholder="Where did this come from? (e.g., Salary)">
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal('edit-modal')">Cancel</button>
-      <button style="background: var(--primary); color: white;" onclick="saveBatchEdit()">Save Changes</button>
-    </div>
+    <select id="edit-type" onchange="toggleCategoryInput('edit')" style="width: 100%;"><option value="expense">Expense</option><option value="income">Income</option></select>
+    <div id="edit-expense-cat-container" style="width: 100%;"><select id="edit-expense-category"></select></div>
+    <div id="edit-income-cat-container" style="width: 100%;"><input type="text" id="edit-income-category" placeholder="Where did this come from? (e.g., Salary)"></div>
+    <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('edit-modal')">Cancel</button><button style="background: var(--primary); color: white;" onclick="saveBatchEdit()">Save Changes</button></div>
   </div>
 </div>
 
-<div class="modal-overlay" id="app-alert-modal">
+<div class="modal-overlay" id="app-alert-modal" style="display: none;">
   <div class="modal-card" style="border-top: 4px solid var(--expense);">
-    <div class="alert-icon-circle">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="8" x2="12" y2="12"></line>
-        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-      </svg>
-    </div>
-    <h3 style="color: var(--expense);">Wait a moment...</h3>
+    <div class="alert-icon-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>
+    <h3 style="color: var(--expense);">Notice</h3>
     <p id="app-alert-message"></p>
-    <div class="modal-footer">
-      <button style="background: var(--text-main); color: var(--bg-card);" onclick="closeModal('app-alert-modal')">Okay</button>
-    </div>
+    <div class="modal-footer"><button style="background: var(--text-main); color: var(--bg-card);" onclick="closeModal('app-alert-modal')">Okay</button></div>
   </div>
 </div>
 

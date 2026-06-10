@@ -1,3 +1,6 @@
+// ==========================================
+// 1. GLOBAL VARIABLES & DOM CACHING
+// ==========================================
 const DOM = {};
 let allTransactions = [];
 let checkedItemIds = []; 
@@ -29,26 +32,9 @@ function initSelectorCachePointers() {
   }
 }
 
-const systemDefaultCategoriesPreset = ["Food", "Utilities", "Entertainment", "Travel", "Shopping", "Miscellaneous"];
-let workspaceActiveExpenseCategories = [];
-
-function getCategoryStyle(catName) {
-  const catMap = {
-    'Food': { icon: '🍔', color: 'var(--expense)', bg: 'rgba(220, 38, 38, 0.1)' },
-    'Utilities': { icon: '💡', color: '#0ea5e9', bg: 'rgba(14, 165, 233, 0.1)' },
-    'Entertainment': { icon: '🍿', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' },
-    'Travel': { icon: '🚗', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' },
-    'Shopping': { icon: '🛍️', color: '#ec4899', bg: 'rgba(236, 72, 153, 0.1)' },
-    'Salary': { icon: '💰', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
-    'Freelance': { icon: '💻', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
-    'Bonus': { icon: '✨', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
-    'Share Market': { icon: '📈', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
-    'Other Income': { icon: '🔄', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
-    'Miscellaneous': { icon: '📦', color: 'var(--text-muted)', bg: 'var(--badge-bg)' }
-  };
-  return catMap[catName] || { icon: '🏷️', color: 'var(--primary)', bg: 'rgba(46, 125, 50, 0.1)' };
-}
-
+// ==========================================
+// 2. UTILITIES & HELPERS
+// ==========================================
 function formatToIndianRupee(number) { 
     return Number(number).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
 }
@@ -96,6 +82,10 @@ function triggerNativeAppAlert(messageText) {
   document.getElementById('app-alert-modal').style.display = 'flex';
 }
 
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
 function debounce(callbackFunc, waitingDelayDuration) {
   let timerAllocationId; 
   return (...executionArguments) => { 
@@ -130,6 +120,29 @@ function scrollToLogsTop() {
 function openPreferencesModal() { 
   if(typeof renderObligationsList === 'function') renderObligationsList();
   document.getElementById('preferences-modal').style.display = 'flex'; 
+}
+
+// ==========================================
+// 3. CATEGORY MANAGER ENGINE
+// ==========================================
+const systemDefaultCategoriesPreset = ["Food", "Utilities", "Entertainment", "Travel", "Shopping", "Miscellaneous"];
+let workspaceActiveExpenseCategories = [];
+
+function getCategoryStyle(catName) {
+  const catMap = {
+    'Food': { icon: '🍔', color: 'var(--expense)', bg: 'rgba(220, 38, 38, 0.1)' },
+    'Utilities': { icon: '💡', color: '#0ea5e9', bg: 'rgba(14, 165, 233, 0.1)' },
+    'Entertainment': { icon: '🍿', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' },
+    'Travel': { icon: '🚗', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' },
+    'Shopping': { icon: '🛍️', color: '#ec4899', bg: 'rgba(236, 72, 153, 0.1)' },
+    'Salary': { icon: '💰', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
+    'Freelance': { icon: '💻', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
+    'Bonus': { icon: '✨', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
+    'Share Market': { icon: '📈', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
+    'Other Income': { icon: '🔄', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
+    'Miscellaneous': { icon: '📦', color: 'var(--text-muted)', bg: 'var(--badge-bg)' }
+  };
+  return catMap[catName] || { icon: '🏷️', color: 'var(--primary)', bg: 'rgba(46, 125, 50, 0.1)' };
 }
 
 function initializeCategoriesStorageSystem() {
@@ -211,6 +224,9 @@ function executeDeleteCustomCategoryTag(indexPointer) {
   applyFilters();
 }
 
+// ==========================================
+// 4. BASELINE CONFIGURATION & BUDGETS
+// ==========================================
 function toggleDashboardConfigPanel() {
   const displaySheet = document.getElementById('dashboard-config-display-sheet'); 
   const fieldsSheet = document.getElementById('dashboard-config-fields-sheet'); 
@@ -257,6 +273,9 @@ function saveDashboardCycleAndBaselineConfig() {
   applyFilters();
 }
 
+// ==========================================
+// 5. DATA ENTRY LOGIC (ADD VIEW)
+// ==========================================
 function toggleFormEntryMode(checkbox) {
   const singleFields = document.getElementById('single-entry-fields'); 
   const singleSlider = document.getElementById('single-nature-slider'); 
@@ -336,85 +355,6 @@ function updateBulkRowCategoryDropdown(indexPointer) {
   }
 }
 
-function triggerDynamicPeriodFinancialReport() {
-  const bounds = getCalculatedPeriodBounds(); 
-  const labelLabel = document.getElementById('report-window-date-bounds-label'); 
-  const sheetBody = document.getElementById('financial-report-metrics-sheet-body');
-  
-  if(currentTab === 'all') { 
-      labelLabel.innerText = "Full Ledger Archive (All-Time Workspace Statement)"; 
-  } else if (currentTab === 'custom') { 
-      let st = document.getElementById('start-date').value || 'Inception'; 
-      let en = document.getElementById('end-date').value || 'Present'; 
-      labelLabel.innerText = `Timeline Window: ${st} to ${en}`; 
-  } else { 
-      labelLabel.innerText = `Timeline Window: ${bounds.startDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })} - ${bounds.endDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}`; 
-  }
-
-  if(allTransactions.length === 0 || DOM.emptyMsg.style.display === 'flex') { 
-      triggerNativeAppAlert("No ledger data matches this filter timeline. Please log entries to run reports."); 
-      return; 
-  }
-
-  let reportInflow = 0, reportOutflow = 0, reportCategoricalMap = {}; 
-  let sd = document.getElementById('start-date').value; 
-  let ed = document.getElementById('end-date').value; 
-  let startBoundaryTime = bounds.startDate.getTime(); 
-  let endBoundaryTime = bounds.endDate.getTime();
-  
-  allTransactions.forEach(t => {
-    let tDate = t.timestamp ? new Date(t.timestamp) : new Date(); 
-    const itemTimestamp = tDate.getTime(); 
-    const itemDateString = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(tDate);
-    
-    if (currentTab === 'custom') { 
-        if (sd && itemDateString < sd) return; 
-        if (ed && itemDateString > ed) return; 
-    } else if (currentTab !== 'all') { 
-        if (itemTimestamp < startBoundaryTime || itemTimestamp > endBoundaryTime) return; 
-    }
-    
-    if(t.amount > 0) { 
-        reportInflow += t.amount; 
-    } else { 
-        let absVal = Math.abs(t.amount); 
-        reportOutflow += absVal; 
-        let tag = t.category || 'Miscellaneous'; 
-        reportCategoricalMap[tag] = (reportCategoricalMap[tag] || 0) + absVal; 
-    }
-  });
-
-  let netSavingsValue = reportInflow - reportOutflow; 
-  let calculatedSavingsPercent = reportInflow > 0 ? (netSavingsValue / reportInflow) * 100 : 0; 
-  let categoryRowsHTMLStr = "";
-  
-  Object.keys(reportCategoricalMap).sort((a,b) => reportCategoricalMap[b] - reportCategoricalMap[a]).forEach(key => {
-    categoryRowsHTMLStr += `<tr style="border-bottom:1px solid var(--border); font-size:0.8rem;"><td style="padding:6px 0; font-weight:500;">${key}</td><td style="padding:6px 0; text-align:right; font-weight:700; color:var(--expense);">₹${formatToIndianRupee(reportCategoricalMap[key]).split('.')[0]}</td></tr>`;
-  });
-
-  sheetBody.innerHTML = `
-    <div style="background:var(--bg-main); border:1px solid var(--border); padding:12px; border-radius:14px; margin-bottom:14px;">
-      <div class="reconcile-row"><span>Total Inflow Earnings:</span><span class="amt-inc" style="font-weight:bold;">₹${formatToIndianRupee(reportInflow)}</span></div>
-      <div class="reconcile-row"><span>Total Outflow Spending:</span><span class="amt-exp" style="font-weight:bold;">₹${formatToIndianRupee(reportOutflow)}</span></div>
-      <div class="reconcile-row" style="border-top:1px dashed var(--border); padding-top:6px; margin-top:6px; font-weight:bold;"><span>Net Timeline Savings:</span><span class="${netSavingsValue >= 0 ? 'amt-inc' : 'amt-exp'}">₹${formatToIndianRupee(netSavingsValue)}</span></div>
-      <div class="reconcile-row" style="font-size:0.75rem; margin-bottom:0; color:var(--text-muted);"><span>Calculated Savings Rate:</span><span style="font-weight:bold; color:var(--text-main);">${reportInflow > 0 && netSavingsValue > 0 ? calculatedSavingsPercent.toFixed(1) + '%' : '0.0%'}</span></div>
-    </div>
-    <label style="font-size:0.72rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px; letter-spacing:0.5px;">TIMELINE EXPENSE PROFILE COSTS</label>
-    <table style="width:100%; border-collapse:collapse;">
-      <thead>
-         <tr style="border-bottom:2px solid var(--border); font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">
-            <th style="text-align:left; padding-bottom:4px;">Category Tag</th>
-            <th style="text-align:right; padding-bottom:4px;">Net Volume</th>
-         </tr>
-      </thead>
-      <tbody>
-         ${categoryRowsHTMLStr || '<tr><td colspan="2" style="font-size:0.8rem; color:var(--text-muted); padding:10px 0;">No outflow costs cataloged for this duration.</td></tr>'}
-      </tbody>
-    </table>`;
-    
-  document.getElementById('financial-report-modal').style.display = 'flex';
-}
-
 function setTransactionNature(nature) { 
     activeTransactionNature = nature; 
     const block = document.getElementById('swipe-form-block'); 
@@ -422,20 +362,47 @@ function setTransactionNature(nature) {
     toggleCategoryInput('add'); 
 }
 
+function toggleCategoryInput(context) {
+  const typeId = context === 'add' ? 'type' : 'edit-type'; 
+  const expId = context === 'add' ? 'expense-cat-container' : 'edit-expense-cat-container'; 
+  const incId = context === 'add' ? 'income-cat-container' : 'edit-income-cat-container';
+  
+  const type = context === 'add' ? activeTransactionNature : document.getElementById(typeId).value;
+  
+  document.getElementById(expId).style.display = type === 'income' ? 'none' : 'block'; 
+  document.getElementById(incId).style.display = type === 'income' ? 'block' : 'none';
+  
+  if(context === 'add') syncSegmentedSliderUI();
+}
+
+function syncSegmentedSliderUI() { 
+    const container = document.querySelector('.nature-segmented-control'); 
+    if (!container) return; 
+    
+    if (activeTransactionNature === 'income') { 
+        container.classList.add('nature-income'); 
+        container.classList.remove('nature-expense'); 
+    } else { 
+        container.classList.add('nature-expense'); 
+        container.classList.remove('nature-income'); 
+    } 
+}
+
 let touchStartX = 0; 
 let touchEndX = 0; 
 const swipeFormElement = document.getElementById('swipe-form-block');
+if(swipeFormElement) {
+    swipeFormElement.addEventListener('touchstart', (e) => { 
+        touchStartX = e.changedTouches[0].screenX; 
+    }, { passive: true });
 
-swipeFormElement.addEventListener('touchstart', (e) => { 
-    touchStartX = e.changedTouches[0].screenX; 
-}, { passive: true });
-
-swipeFormElement.addEventListener('touchend', (e) => { 
-    touchEndX = e.changedTouches[0].screenX; 
-    if(!document.getElementById('bulk-mode-checkbox').checked) { 
-        handleSwipeGestureDetection(); 
-    } 
-}, { passive: true });
+    swipeFormElement.addEventListener('touchend', (e) => { 
+        touchEndX = e.changedTouches[0].screenX; 
+        if(!document.getElementById('bulk-mode-checkbox').checked) { 
+            handleSwipeGestureDetection(); 
+        } 
+    }, { passive: true });
+}
 
 function handleSwipeGestureDetection() { 
     const thresholdBoundary = 60; 
@@ -466,201 +433,6 @@ function predictCategoryFromText(textVal) {
       setTransactionNature('income'); 
       document.getElementById('income-category').value = textVal; 
   }
-}
-
-function switchMainScreen(targetView) {
-  currentActiveMainScreen = targetView;
-  document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active-view'));
-  document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('nav-active'));
-  document.getElementById('scroll-top-trigger').classList.remove('scroll-visible');
-
-  document.getElementById(`view-${targetView}`).classList.add('active-view');
-  document.getElementById(`nav-btn-${targetView}`).classList.add('nav-active');
-
-  const sharedFilters = document.getElementById('shared-time-filters');
-  if(targetView === 'logs' || targetView === 'insights') {
-     sharedFilters.style.display = 'block';
-  } else {
-     sharedFilters.style.display = 'none';
-  }
-
-  if(targetView === 'add') {
-    if (DOM.searchInput) DOM.searchInput.value = '';
-    document.getElementById('filter-nature').value = 'all';
-    document.getElementById('start-date').value = '';
-    document.getElementById('end-date').value = '';
-    
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    const allTimeTab = document.querySelector('.tab');
-    if (allTimeTab) allTimeTab.classList.add('active');
-    
-    currentTab = 'all'; 
-    dateOffset = 0; 
-    checkedItemIds = [];
-  }
-  
-  applyFilters();
-}
-
-function renderChart(transactionsToRender) {
-  if(!transactionsToRender) transactionsToRender = allTransactions;
-    
-  const ctx = document.getElementById('expenseChart').getContext('2d');
-  let expensesMap = {};
-  let totalExpense = 0;
-  let totalIncome = 0;
-
-  transactionsToRender.forEach(t => {
-    if (t.amount < 0) {
-      let cat = t.category || 'Miscellaneous';
-      expensesMap[cat] = (expensesMap[cat] || 0) + Math.abs(t.amount);
-      totalExpense += Math.abs(t.amount);
-    } else if (t.amount > 0) {
-      totalIncome += t.amount;
-    }
-  });
-
-  const emptyState = document.getElementById('insights-empty-state');
-  const ratioCard = document.getElementById('income-expense-comparison');
-  const chartCard = document.getElementById('insights-chart-wrapper');
-  const breakdownList = document.getElementById('insights-detailed-list');
-
-  if (totalExpense === 0 && totalIncome === 0) {
-     emptyState.style.display = 'flex';
-     ratioCard.style.display = 'none';
-     chartCard.style.display = 'none';
-     breakdownList.style.display = 'none';
-     return;
-  }
-
-  emptyState.style.display = 'none';
-  ratioCard.style.display = 'block';
-
-  document.getElementById('insight-inc-label').innerText = '₹' + totalIncome.toLocaleString('en-IN', {minimumFractionDigits: 0});
-  document.getElementById('insight-exp-label').innerText = '₹' + totalExpense.toLocaleString('en-IN', {minimumFractionDigits: 0});
-  
-  let totalFlow = totalIncome + totalExpense;
-  let incPct = totalFlow > 0 ? (totalIncome / totalFlow) * 100 : 0;
-  if (totalIncome > 0 && incPct < 2) incPct = 2; 
-  document.getElementById('insight-ratio-bar').style.width = incPct + '%';
-
-  let ratioText = "";
-  if (totalIncome > totalExpense && totalExpense > 0) {
-     let savingsRate = ((totalIncome - totalExpense) / totalIncome) * 100;
-     ratioText = `Great job! You are saving <span style="color:var(--income)">${savingsRate.toFixed(1)}%</span> of your logged income. 🎯`;
-  } else if (totalExpense > totalIncome && totalIncome > 0) {
-     let deficit = totalExpense - totalIncome;
-     ratioText = `You are spending <span style="color:var(--expense)">₹${deficit.toLocaleString('en-IN')}</span> more than you earned. ⚠️`;
-  } else if (totalIncome > 0 && totalExpense === 0) {
-     ratioText = `You have 100% savings right now. Time to invest? 🚀`;
-  } else if (totalExpense > 0 && totalIncome === 0) {
-     ratioText = `Tracking expenses is great! Don't forget to log your income to see your savings rate. 💡`;
-  } else {
-     ratioText = `You broke perfectly even! ⚖️`;
-  }
-  document.getElementById('insight-ratio-text').innerHTML = ratioText;
-
-  if (totalExpense === 0) {
-     chartCard.style.display = 'none';
-     breakdownList.style.display = 'none';
-     return;
-  }
-
-  chartCard.style.display = 'block';
-  breakdownList.style.display = 'block';
-
-  const sortedCategories = Object.keys(expensesMap).sort((a,b) => expensesMap[b] - expensesMap[a]);
-  const labels = sortedCategories;
-  const data = sortedCategories.map(cat => expensesMap[cat]);
-
-  if (expenseChartInstance) { expenseChartInstance.destroy(); }
-
-  expenseChartInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Amount Spent',
-        data: data,
-        backgroundColor: '#3b82f6',
-        borderRadius: 6,
-        barThickness: 'flex',
-        maxBarThickness: 40
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: function(context) { return ' ₹' + context.raw.toLocaleString('en-IN'); } } }
-      },
-      scales: {
-        y: { beginAtZero: true, grid: { color: 'rgba(200,200,200,0.1)' }, ticks: { color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' } },
-        x: { grid: { display: false }, ticks: { color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' } }
-      }
-    }
-  });
-
-  let detailedHTML = `<h4 style="margin-bottom:12px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">Detailed Breakdown</h4>`;
-  sortedCategories.forEach(cat => {
-    let amt = expensesMap[cat];
-    let pct = ((amt / totalExpense) * 100).toFixed(1);
-    detailedHTML += `
-      <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); font-size:0.85rem;">
-         <span style="font-weight:600;">${cat}</span>
-         <span>
-           <span style="color:var(--text-muted); font-size:0.75rem; margin-right:8px;">${pct}%</span> 
-           <span style="font-weight:700; color:var(--expense);">₹${amt.toLocaleString('en-IN', {minimumFractionDigits:2})}</span>
-         </span>
-      </div>`;
-  });
-  breakdownList.innerHTML = detailedHTML;
-}
-
-function toggleTheme() {
-  const currentTheme = document.documentElement.getAttribute('data-theme'); 
-  const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  
-  document.documentElement.setAttribute('data-theme', targetTheme); 
-  localStorage.setItem('rupee-tracker-theme', targetTheme); 
-  document.getElementById('theme-btn').innerText = targetTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
-  
-  if(currentActiveMainScreen === 'insights') {
-      applyFilters(); 
-  }
-}
-
-const savedTheme = localStorage.getItem('rupee-tracker-theme') || 'light'; 
-document.documentElement.setAttribute('data-theme', savedTheme); 
-window.addEventListener('DOMContentLoaded', () => {
-    const tb = document.getElementById('theme-btn');
-    if(tb) tb.innerText = savedTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
-});
-
-function syncSegmentedSliderUI() { 
-    const container = document.querySelector('.nature-segmented-control'); 
-    if (!container) return; 
-    
-    if (activeTransactionNature === 'income') { 
-        container.classList.add('nature-income'); 
-        container.classList.remove('nature-expense'); 
-    } else { 
-        container.classList.add('nature-expense'); 
-        container.classList.remove('nature-income'); 
-    } 
-}
-
-function toggleCategoryInput(context) {
-  const typeId = context === 'add' ? 'type' : 'edit-type'; 
-  const expId = context === 'add' ? 'expense-cat-container' : 'edit-expense-cat-container'; 
-  const incId = context === 'add' ? 'income-cat-container' : 'edit-income-cat-container';
-  
-  const type = context === 'add' ? activeTransactionNature : document.getElementById(typeId).value;
-  
-  document.getElementById(expId).style.display = type === 'income' ? 'none' : 'block'; 
-  document.getElementById(incId).style.display = type === 'income' ? 'block' : 'none';
-  
-  if(context === 'add') syncSegmentedSliderUI();
 }
 
 function executeTransactionSave() {
@@ -745,6 +517,9 @@ function executeTransactionSave() {
   }
 }
 
+// ==========================================
+// 6. FILTERING, BOUNDARIES & DATA FETCHING
+// ==========================================
 function fetchAndDisplay() { 
     const tx = db.transaction("transactions", "readonly"); 
     tx.objectStore("transactions").getAll().onsuccess = (e) => { 
@@ -909,6 +684,9 @@ function applyFilters() {
   }
 }
 
+// ==========================================
+// 7. SUMMARY & UI RENDERING
+// ==========================================
 function calculateMasterSummaryTotals(masterArray) {
   let openingBalanceBaseline = parseIndianCommaStringToFloat(localStorage.getItem('finwise-op-bal') || '0'); 
   let closingBalanceTarget = localStorage.getItem('finwise-cl-bal') ? parseIndianCommaStringToFloat(localStorage.getItem('finwise-cl-bal')) : null; 
@@ -962,6 +740,8 @@ function calculateMasterSummaryTotals(masterArray) {
   const actionLinkBtn = document.getElementById('dashboard-config-toggle-btn'); 
   const titleHeaderSpan = document.getElementById('config-card-header-title');
   
+  if(!widgetCard) return;
+
   let suffixMarker = "th"; 
   if(cycleDayValueSetting == '1') suffixMarker = "st"; 
   else if(cycleDayValueSetting == '2') suffixMarker = "nd"; 
@@ -1012,41 +792,16 @@ function calculateMasterSummaryTotals(masterArray) {
   }
 }
 
-function toggleSelectAll(masterBox) { 
-    if (masterBox.checked) { 
-        currentVisibleIds.forEach(id => { 
-            if (!checkedItemIds.includes(id)) checkedItemIds.push(id); 
-        }); 
-    } else { 
-        checkedItemIds = checkedItemIds.filter(id => !currentVisibleIds.includes(id)); 
-    } 
-    applyFilters(); 
-}
-
-function handleItemCheckbox(checkbox, id) { 
-    if (checkbox.checked) { 
-        if (!checkedItemIds.includes(id)) checkedItemIds.push(id); 
-    } else { 
-        checkedItemIds = checkedItemIds.filter(item => item !== id); 
-    } 
-    applyFilters(); 
-}
-
-function syncToolbarState() { 
-    const toolbar = document.getElementById('toolbar'); 
-    const text = document.getElementById('toolbar-text'); 
-    if (checkedItemIds.length > 0) { 
-        toolbar.style.display = 'flex'; 
-        text.innerText = `${checkedItemIds.length} item${checkedItemIds.length > 1 ? 's' : ''} selected`; 
-    } else { 
-        toolbar.style.display = 'none'; 
-    } 
-}
-
 function renderUI(transactions) {
   const fragmentBuffer = document.createDocumentFragment(); 
   DOM.list.innerHTML = ""; 
-  DOM.emptyMsg.style.display = transactions.length === 0 ? "flex" : "none";
+  
+  // Empty states fix: Checking transaction length correctly.
+  if (transactions.length === 0) {
+      DOM.emptyMsg.style.display = "flex";
+  } else {
+      DOM.emptyMsg.style.display = "none";
+  }
   
   transactions.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0)).forEach((t, index) => {
     const isExpense = t.amount < 0; 
@@ -1076,6 +831,40 @@ function renderUI(transactions) {
     fragmentBuffer.appendChild(li);
   });
   DOM.list.appendChild(fragmentBuffer);
+}
+
+// ==========================================
+// 8. LIST ACTIONS (SELECT, EDIT, DELETE)
+// ==========================================
+function toggleSelectAll(masterBox) { 
+    if (masterBox.checked) { 
+        currentVisibleIds.forEach(id => { 
+            if (!checkedItemIds.includes(id)) checkedItemIds.push(id); 
+        }); 
+    } else { 
+        checkedItemIds = checkedItemIds.filter(id => !currentVisibleIds.includes(id)); 
+    } 
+    applyFilters(); 
+}
+
+function handleItemCheckbox(checkbox, id) { 
+    if (checkbox.checked) { 
+        if (!checkedItemIds.includes(id)) checkedItemIds.push(id); 
+    } else { 
+        checkedItemIds = checkedItemIds.filter(item => item !== id); 
+    } 
+    applyFilters(); 
+}
+
+function syncToolbarState() { 
+    const toolbar = document.getElementById('toolbar'); 
+    const text = document.getElementById('toolbar-text'); 
+    if (checkedItemIds.length > 0) { 
+        toolbar.style.display = 'flex'; 
+        text.innerText = `${checkedItemIds.length} item${checkedItemIds.length > 1 ? 's' : ''} selected`; 
+    } else { 
+        toolbar.style.display = 'none'; 
+    } 
 }
 
 function openDeleteModal() { 
@@ -1201,6 +990,9 @@ function saveBatchEdit() {
   };
 }
 
+// ==========================================
+// 9. CHARTS, ANALYTICS & REPORTS
+// ==========================================
 function renderPercentageBreakdown(transactions) {
   const fragmentBuffer = document.createDocumentFragment(); 
   DOM.breakdown.innerHTML = ""; 
@@ -1298,3 +1090,255 @@ function generateSmartInsights(transactions) {
   DOM.insightsTitle.innerHTML = "✨ Great Job: Healthy Saving!"; 
   DOM.insightsText.innerHTML = `Awesome work! You saved <strong>${(100 - burnRate).toFixed(0)}%</strong> of your active baseline limits. Keep it up!`;
 }
+
+function renderChart(transactionsToRender) {
+  if(!transactionsToRender) transactionsToRender = allTransactions;
+    
+  const ctx = document.getElementById('expenseChart').getContext('2d');
+  let expensesMap = {};
+  let totalExpense = 0;
+  let totalIncome = 0;
+
+  transactionsToRender.forEach(t => {
+    if (t.amount < 0) {
+      let cat = t.category || 'Miscellaneous';
+      expensesMap[cat] = (expensesMap[cat] || 0) + Math.abs(t.amount);
+      totalExpense += Math.abs(t.amount);
+    } else if (t.amount > 0) {
+      totalIncome += t.amount;
+    }
+  });
+
+  const emptyState = document.getElementById('insights-empty-state');
+  const ratioCard = document.getElementById('income-expense-comparison');
+  const chartCard = document.getElementById('insights-chart-wrapper');
+  const breakdownList = document.getElementById('insights-detailed-list');
+
+  // Fix: Show empty state on Insights view if no data exists
+  if (totalExpense === 0 && totalIncome === 0) {
+     emptyState.style.display = 'flex';
+     ratioCard.style.display = 'none';
+     chartCard.style.display = 'none';
+     breakdownList.style.display = 'none';
+     return;
+  }
+
+  emptyState.style.display = 'none';
+  ratioCard.style.display = 'block';
+
+  document.getElementById('insight-inc-label').innerText = '₹' + totalIncome.toLocaleString('en-IN', {minimumFractionDigits: 0});
+  document.getElementById('insight-exp-label').innerText = '₹' + totalExpense.toLocaleString('en-IN', {minimumFractionDigits: 0});
+  
+  let totalFlow = totalIncome + totalExpense;
+  let incPct = totalFlow > 0 ? (totalIncome / totalFlow) * 100 : 0;
+  if (totalIncome > 0 && incPct < 2) incPct = 2; 
+  document.getElementById('insight-ratio-bar').style.width = incPct + '%';
+
+  let ratioText = "";
+  if (totalIncome > totalExpense && totalExpense > 0) {
+     let savingsRate = ((totalIncome - totalExpense) / totalIncome) * 100;
+     ratioText = `Great job! You are saving <span style="color:var(--income)">${savingsRate.toFixed(1)}%</span> of your logged income. 🎯`;
+  } else if (totalExpense > totalIncome && totalIncome > 0) {
+     let deficit = totalExpense - totalIncome;
+     ratioText = `You are spending <span style="color:var(--expense)">₹${deficit.toLocaleString('en-IN')}</span> more than you earned. ⚠️`;
+  } else if (totalIncome > 0 && totalExpense === 0) {
+     ratioText = `You have 100% savings right now. Time to invest? 🚀`;
+  } else if (totalExpense > 0 && totalIncome === 0) {
+     ratioText = `Tracking expenses is great! Don't forget to log your income to see your savings rate. 💡`;
+  } else {
+     ratioText = `You broke perfectly even! ⚖️`;
+  }
+  document.getElementById('insight-ratio-text').innerHTML = ratioText;
+
+  if (totalExpense === 0) {
+     chartCard.style.display = 'none';
+     breakdownList.style.display = 'none';
+     return;
+  }
+
+  chartCard.style.display = 'block';
+  breakdownList.style.display = 'block';
+
+  const sortedCategories = Object.keys(expensesMap).sort((a,b) => expensesMap[b] - expensesMap[a]);
+  const labels = sortedCategories;
+  const data = sortedCategories.map(cat => expensesMap[cat]);
+
+  if (expenseChartInstance) { expenseChartInstance.destroy(); }
+
+  expenseChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Amount Spent',
+        data: data,
+        backgroundColor: '#3b82f6',
+        borderRadius: 6,
+        barThickness: 'flex',
+        maxBarThickness: 40
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(context) { return ' ₹' + context.raw.toLocaleString('en-IN'); } } }
+      },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(200,200,200,0.1)' }, ticks: { color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' } },
+        x: { grid: { display: false }, ticks: { color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' } }
+      }
+    }
+  });
+
+  let detailedHTML = `<h4 style="margin-bottom:12px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">Detailed Breakdown</h4>`;
+  sortedCategories.forEach(cat => {
+    let amt = expensesMap[cat];
+    let pct = ((amt / totalExpense) * 100).toFixed(1);
+    detailedHTML += `
+      <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); font-size:0.85rem;">
+         <span style="font-weight:600;">${cat}</span>
+         <span>
+           <span style="color:var(--text-muted); font-size:0.75rem; margin-right:8px;">${pct}%</span> 
+           <span style="font-weight:700; color:var(--expense);">₹${amt.toLocaleString('en-IN', {minimumFractionDigits:2})}</span>
+         </span>
+      </div>`;
+  });
+  breakdownList.innerHTML = detailedHTML;
+}
+
+function triggerDynamicPeriodFinancialReport() {
+  const bounds = getCalculatedPeriodBounds(); 
+  const labelLabel = document.getElementById('report-window-date-bounds-label'); 
+  const sheetBody = document.getElementById('financial-report-metrics-sheet-body');
+  
+  if(currentTab === 'all') { 
+      labelLabel.innerText = "Full Ledger Archive (All-Time Workspace Statement)"; 
+  } else if (currentTab === 'custom') { 
+      let st = document.getElementById('start-date').value || 'Inception'; 
+      let en = document.getElementById('end-date').value || 'Present'; 
+      labelLabel.innerText = `Timeline Window: ${st} to ${en}`; 
+  } else { 
+      labelLabel.innerText = `Timeline Window: ${bounds.startDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })} - ${bounds.endDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}`; 
+  }
+
+  if(allTransactions.length === 0 || DOM.emptyMsg.style.display === 'flex') { 
+      triggerNativeAppAlert("No ledger data matches this filter timeline. Please log entries to run reports."); 
+      return; 
+  }
+
+  let reportInflow = 0, reportOutflow = 0, reportCategoricalMap = {}; 
+  let sd = document.getElementById('start-date').value; 
+  let ed = document.getElementById('end-date').value; 
+  let startBoundaryTime = bounds.startDate.getTime(); 
+  let endBoundaryTime = bounds.endDate.getTime();
+  
+  allTransactions.forEach(t => {
+    let tDate = t.timestamp ? new Date(t.timestamp) : new Date(); 
+    const itemTimestamp = tDate.getTime(); 
+    const itemDateString = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(tDate);
+    
+    if (currentTab === 'custom') { 
+        if (sd && itemDateString < sd) return; 
+        if (ed && itemDateString > ed) return; 
+    } else if (currentTab !== 'all') { 
+        if (itemTimestamp < startBoundaryTime || itemTimestamp > endBoundaryTime) return; 
+    }
+    
+    if(t.amount > 0) { 
+        reportInflow += t.amount; 
+    } else { 
+        let absVal = Math.abs(t.amount); 
+        reportOutflow += absVal; 
+        let tag = t.category || 'Miscellaneous'; 
+        reportCategoricalMap[tag] = (reportCategoricalMap[tag] || 0) + absVal; 
+    }
+  });
+
+  let netSavingsValue = reportInflow - reportOutflow; 
+  let calculatedSavingsPercent = reportInflow > 0 ? (netSavingsValue / reportInflow) * 100 : 0; 
+  let categoryRowsHTMLStr = "";
+  
+  Object.keys(reportCategoricalMap).sort((a,b) => reportCategoricalMap[b] - reportCategoricalMap[a]).forEach(key => {
+    categoryRowsHTMLStr += `<tr style="border-bottom:1px solid var(--border); font-size:0.8rem;"><td style="padding:6px 0; font-weight:500;">${key}</td><td style="padding:6px 0; text-align:right; font-weight:700; color:var(--expense);">₹${formatToIndianRupee(reportCategoricalMap[key]).split('.')[0]}</td></tr>`;
+  });
+
+  sheetBody.innerHTML = `
+    <div style="background:var(--bg-main); border:1px solid var(--border); padding:12px; border-radius:14px; margin-bottom:14px;">
+      <div class="reconcile-row"><span>Total Inflow Earnings:</span><span class="amt-inc" style="font-weight:bold;">₹${formatToIndianRupee(reportInflow)}</span></div>
+      <div class="reconcile-row"><span>Total Outflow Spending:</span><span class="amt-exp" style="font-weight:bold;">₹${formatToIndianRupee(reportOutflow)}</span></div>
+      <div class="reconcile-row" style="border-top:1px dashed var(--border); padding-top:6px; margin-top:6px; font-weight:bold;"><span>Net Timeline Savings:</span><span class="${netSavingsValue >= 0 ? 'amt-inc' : 'amt-exp'}">₹${formatToIndianRupee(netSavingsValue)}</span></div>
+      <div class="reconcile-row" style="font-size:0.75rem; margin-bottom:0; color:var(--text-muted);"><span>Calculated Savings Rate:</span><span style="font-weight:bold; color:var(--text-main);">${reportInflow > 0 && netSavingsValue > 0 ? calculatedSavingsPercent.toFixed(1) + '%' : '0.0%'}</span></div>
+    </div>
+    <label style="font-size:0.72rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px; letter-spacing:0.5px;">TIMELINE EXPENSE PROFILE COSTS</label>
+    <table style="width:100%; border-collapse:collapse;">
+      <thead>
+         <tr style="border-bottom:2px solid var(--border); font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">
+            <th style="text-align:left; padding-bottom:4px;">Category Tag</th>
+            <th style="text-align:right; padding-bottom:4px;">Net Volume</th>
+         </tr>
+      </thead>
+      <tbody>
+         ${categoryRowsHTMLStr || '<tr><td colspan="2" style="font-size:0.8rem; color:var(--text-muted); padding:10px 0;">No outflow costs cataloged for this duration.</td></tr>'}
+      </tbody>
+    </table>`;
+    
+  document.getElementById('financial-report-modal').style.display = 'flex';
+}
+
+// ==========================================
+// 10. APP NAVIGATION & THEME
+// ==========================================
+function switchMainScreen(targetView) {
+  currentActiveMainScreen = targetView;
+  document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active-view'));
+  document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('nav-active'));
+  document.getElementById('scroll-top-trigger').classList.remove('scroll-visible');
+
+  document.getElementById(`view-${targetView}`).classList.add('active-view');
+  document.getElementById(`nav-btn-${targetView}`).classList.add('nav-active');
+
+  const sharedFilters = document.getElementById('shared-time-filters');
+  if(targetView === 'logs' || targetView === 'insights') {
+     sharedFilters.style.display = 'block';
+  } else {
+     sharedFilters.style.display = 'none';
+  }
+
+  if(targetView === 'add') {
+    if (DOM.searchInput) DOM.searchInput.value = '';
+    document.getElementById('filter-nature').value = 'all';
+    document.getElementById('start-date').value = '';
+    document.getElementById('end-date').value = '';
+    
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    const allTimeTab = document.querySelector('.tab');
+    if (allTimeTab) allTimeTab.classList.add('active');
+    
+    currentTab = 'all'; 
+    dateOffset = 0; 
+    checkedItemIds = [];
+  }
+  
+  applyFilters();
+}
+
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme'); 
+  const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  
+  document.documentElement.setAttribute('data-theme', targetTheme); 
+  localStorage.setItem('rupee-tracker-theme', targetTheme); 
+  document.getElementById('theme-btn').innerText = targetTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
+  
+  if(currentActiveMainScreen === 'insights') {
+      applyFilters(); 
+  }
+}
+
+const savedTheme = localStorage.getItem('rupee-tracker-theme') || 'light'; 
+document.documentElement.setAttribute('data-theme', savedTheme); 
+window.addEventListener('DOMContentLoaded', () => {
+    const tb = document.getElementById('theme-btn');
+    if(tb) tb.innerText = savedTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
+});

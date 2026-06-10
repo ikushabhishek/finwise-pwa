@@ -18,7 +18,11 @@ function executeSaveObligation() {
   const endDate = document.getElementById('ob-end-date').value || null;
 
   if (!title || isNaN(amount) || isNaN(billingDate)) {
-      triggerNativeAppAlert("Please fill in all valid details for the commitment.");
+      if (typeof triggerNativeAppAlert === 'function') {
+          triggerNativeAppAlert("Please fill in all valid details for the commitment.");
+      } else {
+          alert("Please fill in all valid details for the commitment.");
+      }
       return;
   }
 
@@ -37,7 +41,10 @@ function executeSaveObligation() {
       document.getElementById('ob-title').value = ''; 
       document.getElementById('ob-amount').value = '';
       document.getElementById('ob-end-date').value = '';
-      triggerSuccessNotification("Commitment saved!");
+      
+      if (typeof triggerSuccessNotification === 'function') {
+          triggerSuccessNotification("Commitment saved!");
+      }
       renderObligationsList();
   };
 }
@@ -84,7 +91,9 @@ function executeDeleteObligation(id) {
   const tx = db.transaction(['obligations'], 'readwrite');
   tx.objectStore('obligations').delete(id);
   tx.oncomplete = () => {
-      triggerSuccessNotification("Commitment removed");
+      if (typeof triggerSuccessNotification === 'function') {
+          triggerSuccessNotification("Commitment removed");
+      }
       renderObligationsList();
   };
 }
@@ -101,6 +110,7 @@ function runGatekeeperCheck() {
       const daysInCurrentMonth = new Date(istDate.getFullYear(), istDate.getMonth() + 1, 0).getDate();
 
       let pending = obligations.filter(ob => {
+          // Handle cases where billing date is 31, but month only has 30 days
           let effectiveBillingDay = ob.billingDate > daysInCurrentMonth ? daysInCurrentMonth : ob.billingDate;
           
           if (currentDay < effectiveBillingDay) return false;
@@ -132,13 +142,18 @@ function renderPendingObligations(pendingItems) {
       div.style.borderRadius = '14px';
       div.style.border = '1px solid var(--border)';
       
+      let displayAmount = item.amount;
+      if (typeof formatToIndianRupee === 'function') {
+          displayAmount = formatToIndianRupee(item.amount).split('.')[0];
+      }
+
       div.innerHTML = `
           <div style="display:flex; justify-content:space-between; margin-bottom: 14px; align-items:center;">
             <div>
                 <strong style="font-size: 1rem; color: var(--text-main); display:block; margin-bottom: 2px;">${item.title}</strong>
                 <small style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">${item.type} • Day ${item.billingDate}</small>
             </div>
-            <strong style="color:var(--expense); font-size: 1.15rem;">₹${formatToIndianRupee(item.amount).split('.')[0]}</strong>
+            <strong style="color:var(--expense); font-size: 1.15rem;">₹${displayAmount}</strong>
           </div>
           <div style="display:flex; gap: 10px;">
             <button onclick="processObligation(${item.id}, 'skip')" style="flex:1; background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.02); font-size: 0.85rem; padding: 10px;">⏭️ Skip</button>
@@ -156,6 +171,8 @@ function processObligation(id, action) {
   obStore.get(id).onsuccess = (e) => {
       const obligation = e.target.result;
       const istDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+      
+      // Update the obligation so it doesn't trigger again this month
       obligation.lastProcessedMonth = `${istDate.getFullYear()}-${String(istDate.getMonth() + 1).padStart(2, '0')}`;
       obStore.put(obligation);
       
@@ -171,10 +188,15 @@ function processObligation(id, action) {
       }
       
       tx.oncomplete = () => { 
-          if(action === 'log') triggerSuccessNotification(`${obligation.title} logged!`);
-          else triggerSuccessNotification(`${obligation.title} skipped for this month.`);
+          if (typeof triggerSuccessNotification === 'function') {
+              if(action === 'log') {
+                  triggerSuccessNotification(`${obligation.title} logged!`);
+              } else {
+                  triggerSuccessNotification(`${obligation.title} skipped for this month.`);
+              }
+          }
           
-          fetchAndDisplay(); 
+          if (typeof fetchAndDisplay === 'function') fetchAndDisplay(); 
           runGatekeeperCheck(); 
       };
   };
