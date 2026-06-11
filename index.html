@@ -16,7 +16,7 @@
 <div id="security-lock-screen" style="display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; padding: 20px; box-sizing: border-box;">
   <div class="lock-icon-shield" style="font-size: 3.5rem; margin-bottom: 12px; display: flex; justify-content: center; width: 100%;">🔐</div>
   <h2 id="lock-title" style="margin-bottom: 8px; font-size: 1.8rem; text-align: center; width: 100%;">Enter PIN</h2>
-  <p id="lock-subtitle" style="color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem; font-weight: 500; text-align: center; width: 100%;">To access FinWise</p>
+  <p id="lock-subtitle" style="color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem; font-weight: 500; text-align: center; width: 100%;">To unlock FinWise</p>
   
   <div id="pin-entry-ui" style="display: block; width: 100%; max-width: 320px; margin: 0 auto; text-align: center;">
     
@@ -43,7 +43,7 @@
     </div>
 
     <button id="biometric-unlock-btn" onclick="unlockWithBiometrics(false)" style="margin: 30px auto 0 auto; padding: 14px 24px; width: 100%; background: transparent; color: var(--primary); border: 2px dashed var(--primary); box-shadow: none; font-weight: 700; border-radius: 12px; display: none;">
-      🔍 Retry Biometric Unlock
+      🔍 Retry Fingerprint Unlock
     </button>
   </div>
 </div>
@@ -87,7 +87,7 @@
 
     <div class="budget-velocity-wrapper" id="budget-velocity-tracker" style="display: none;">
       <div class="velocity-status-container">
-        <span id="velocity-title-label">BUDGET VELOCITY LIMIT</span>
+        <span id="velocity-title-label">MONTHLY SPENDING LIMIT</span>
         <span id="velocity-percentage-label">0% SPENT</span>
       </div>
       <div class="velocity-track-bar">
@@ -107,7 +107,7 @@
 
     <div class="period-navigation-bar" id="period-nav-container" style="display: none;">
       <button class="period-nav-btn" onclick="adjustPeriodOffset(-1)">◀ Prev</button>
-      <span id="period-display-label">Current Period Boundaries</span>
+      <span id="period-display-label">Current Dates</span>
       <button class="period-nav-btn" onclick="adjustPeriodOffset(1)">Next ▶</button>
     </div>
 
@@ -129,59 +129,59 @@
     
     <div class="reconcile-view-card" id="reconcile-status-widget">
       <h4>
-        <span id="config-card-header-title">📅 Cycle & Baseline Setup</span> 
+        <span id="config-card-header-title">📅 Monthly Budget Setup</span> 
         <button class="inline-edit-action-link" id="dashboard-config-toggle-btn" onclick="toggleDashboardConfigPanel()">✏️ Edit</button>
       </h4>
       
       <div id="dashboard-config-display-sheet">
         <div class="reconcile-row">
-          <span style="color: var(--text-muted);">Cycle Start Day:</span>
+          <span style="color: var(--text-muted);">Month Starts On:</span>
           <span id="rec-cycle-label" style="font-weight:bold;">1st of the Month</span>
         </div>
         <div class="reconcile-row">
-          <span style="color: var(--text-muted);">Target Budget Limit:</span>
-          <span id="rec-budget-label" style="font-weight:bold; color: var(--primary);">Not Configured</span>
+          <span style="color: var(--text-muted);">Spending Limit:</span>
+          <span id="rec-budget-label" style="font-weight:bold; color: var(--primary);">Not Set</span>
         </div>
         <div class="reconcile-row">
-          <span style="color: var(--text-muted);">Opening Statement Balance:</span>
+          <span style="color: var(--text-muted);">Starting Balance:</span>
           <span id="rec-op-label">₹0.00</span>
         </div>
         <div class="reconcile-row">
-          <span style="color: var(--text-muted);">Target Closing Balance:</span>
+          <span style="color: var(--text-muted);">Target Savings Goal:</span>
           <span id="rec-cl-label">₹0.00</span>
         </div>
         <div class="reconcile-row" style="border-top: 1px dotted var(--border); padding-top: 6px; margin-top: 6px; font-weight: bold;">
-          <span id="rec-diff-title">Discrepancy Variance:</span>
+          <span id="rec-diff-title">Difference:</span>
           <span id="rec-diff-label">₹0.00</span>
         </div>
       </div>
 
       <div class="dashboard-config-fields-block" id="dashboard-config-fields-sheet" style="display:none; margin-top:4px;">
         <div style="margin-bottom:10px;">
-          <label>Monthly Cycle Starting Day (1-31)</label>
+          <label>Month Starts On (Day 1-31)</label>
           <input type="number" id="dash-cycle-day-input" min="1" max="31" placeholder="e.g. 1" style="width:100%;">
         </div>
         <div style="margin-bottom:10px;">
-          <label>Hard Monthly Budget Limit (Optional)</label>
+          <label>Monthly Spending Limit (Optional)</label>
           <input type="text" id="dash-budget-limit-input" placeholder="e.g. 20,000" oninput="maskInputToIndianCommas(this)" style="width:100%;">
         </div>
         <div style="margin-bottom:10px;">
-          <label>Account Opening Statement Cash</label>
-          <input type="text" id="dash-op-bal-input" placeholder="e.g. 15,000.00" oninput="maskInputToIndianCommas(this)" style="width:100%;">
+          <label>Starting Bank Balance</label>
+          <input type="text" id="dash-op-bal-input" placeholder="e.g. 15,000" oninput="maskInputToIndianCommas(this)" style="width:100%;">
         </div>
         <div style="margin-bottom:12px;">
-          <label>Target Bank Statement Close (Optional)</label>
-          <input type="text" id="dash-cl-bal-input" placeholder="e.g. 20,000.00" oninput="maskInputToIndianCommas(this)" style="width:100%;">
+          <label>Goal Balance for Month End (Optional)</label>
+          <input type="text" id="dash-cl-bal-input" placeholder="e.g. 20,000" oninput="maskInputToIndianCommas(this)" style="width:100%;">
         </div>
-        <button onclick="saveDashboardCycleAndBaselineConfig()" style="background: var(--primary); color: white; padding: 12px; border-radius: 10px; width:100%; font-weight:bold;">Save Configuration</button>
+        <button onclick="saveDashboardCycleAndBaselineConfig()" style="background: var(--primary); color: white; padding: 12px; border-radius: 10px; width:100%; font-weight:bold;">Save Setup</button>
       </div>
     </div>
 
     <div class="form-group nature-expense" id="swipe-form-block">
       <div class="form-header-row">
-        <h3>Add New Entry</h3>
+        <h3>Add Transaction</h3>
         <label class="toggle-container">
-          <span id="entry-mode-label-text" style="font-size:0.75rem; letter-spacing:0.5px;">Bulk Entry</span>
+          <span id="entry-mode-label-text" style="font-size:0.75rem; letter-spacing:0.5px;">Add Multiple</span>
           <div class="switch">
             <input type="checkbox" id="bulk-mode-checkbox" onchange="toggleFormEntryMode(this)">
             <span class="slider"></span>
@@ -202,7 +202,7 @@
         <div id="expense-cat-container">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
             <label style="font-size:0.72rem; color:var(--text-muted); font-weight:bold;">CATEGORY</label>
-            <span class="inline-edit-action-link" onclick="openCategoryManagerModal()">⚙️ Manage Tags</span>
+            <span class="inline-edit-action-link" onclick="openCategoryManagerModal()">⚙️ Manage</span>
           </div>
           <select id="expense-category"></select>
         </div>
@@ -213,15 +213,15 @@
 
       <div id="bulk-entry-fields" style="display: none; width:100%; margin-top: 4px;">
         <div id="bulk-rows-holder-div"></div>
-        <button class="btn-secondary-action" onclick="generateNewBulkInputRow()">➕ Add Another Entry Line</button>
+        <button class="btn-secondary-action" onclick="generateNewBulkInputRow()">➕ Add Another Item</button>
       </div>
 
-      <button id="save-btn" onclick="executeTransactionSave()">Save Entry</button>
+      <button id="save-btn" onclick="executeTransactionSave()">Save</button>
     </div>
 
     <div class="insights-card" id="insights-card-element">
-      <h4 id="insights-title">💡 Your Money Insights</h4>
-      <p id="insights-text">Add some income and expenses to see your money tips here.</p>
+      <h4 id="insights-title">💡 Your Money Tips</h4>
+      <p id="insights-text">Add some income and expenses to see your financial tips here.</p>
     </div>
 
     <div class="breakdown-box">
@@ -234,7 +234,7 @@
     
     <div class="filtered-summary-strip" id="filtered-totals-strip">
       <div class="filtered-stat">
-        <small>Filtered Bal</small>
+        <small>Remaining</small>
         <span id="filtered-balance">₹0.00</span>
       </div>
       <div class="filtered-stat">
@@ -242,21 +242,21 @@
         <span id="filtered-inc" class="amt-inc">₹0.00</span>
       </div>
       <div class="filtered-stat">
-        <small>Expenses</small>
+        <small>Spent</small>
         <span id="filtered-exp" class="amt-exp">₹0.00</span>
       </div>
     </div>
 
-    <button class="btn-secondary-action" style="margin-bottom:16px; border-style:solid;" onclick="triggerDynamicPeriodFinancialReport()">📋 Generate Active Period Summary Report</button>
+    <button class="btn-secondary-action" style="margin-bottom:16px; border-style:solid;" onclick="triggerDynamicPeriodFinancialReport()">📋 View Summary Report</button>
 
     <div class="search-box">
       <h4>Search & Filter</h4>
-      <input type="text" id="search-input" placeholder="Search entries...">
+      <input type="text" id="search-input" placeholder="Search transactions...">
       
       <select id="filter-nature" onchange="applyFilters()" style="margin-bottom: 0;">
         <option value="all">🔄 Show All</option>
-        <option value="income">💰 Income</option>
-        <option value="expense">💸 Expenses</option>
+        <option value="income">💰 Income Only</option>
+        <option value="expense">💸 Expenses Only</option>
       </select>
     </div>
 
@@ -281,7 +281,7 @@
       <div id="empty-msg" class="empty-state-premium" style="display:none;">
         <div class="empty-icon">📭</div>
         <h4>No entries found</h4>
-        <p>You haven't logged any transactions for this period. Clear your filters or add a new entry.</p>
+        <p>You haven't logged any transactions for this period. Try changing your dates or add a new entry.</p>
       </div>
     </div>
   </div>
@@ -290,16 +290,16 @@
     
     <div id="insights-empty-state" class="empty-state-premium" style="display:none; margin-top: 20px;">
       <div class="empty-icon">📈</div>
-      <h4>No Insights Yet</h4>
-      <p>Add some income and expenses to unlock your financial analytics.</p>
+      <h4>No Data Yet</h4>
+      <p>Add some income and expenses to unlock your charts.</p>
     </div>
 
     <div id="income-expense-comparison" class="breakdown-box" style="display: none; padding: 20px; margin-bottom: 20px;">
-      <h4 style="margin: 0 0 16px 0; border-bottom: none; text-align: center; font-size: 0.95rem;">Cash Flow Ratio</h4>
+      <h4 style="margin: 0 0 16px 0; border-bottom: none; text-align: center; font-size: 0.95rem;">Income vs. Expenses</h4>
       
       <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; font-weight: 700;">
-        <span style="color: var(--income);">Income: <span id="insight-inc-label">₹0</span></span>
-        <span style="color: var(--expense);">Expense: <span id="insight-exp-label">₹0</span></span>
+        <span style="color: var(--income);">Earned: <span id="insight-inc-label">₹0</span></span>
+        <span style="color: var(--expense);">Spent: <span id="insight-exp-label">₹0</span></span>
       </div>
       
       <div style="height: 12px; border-radius: 6px; background: rgba(220, 38, 38, 0.15); display: flex; overflow: hidden; position: relative;">
@@ -310,7 +310,7 @@
     </div>
 
     <div id="insights-chart-wrapper" class="reconcile-view-card" style="display: none;">
-      <h4 style="text-align: center; border-bottom: none; margin-bottom: 0;">Expense Analytics</h4>
+      <h4 style="text-align: center; border-bottom: none; margin-bottom: 0;">Spending Habits</h4>
       <div style="position: relative; height: 300px; width: 100%; margin-top: 10px;">
         <canvas id="expenseChart"></canvas>
       </div>
@@ -323,7 +323,7 @@
   <nav class="bottom-nav">
     <button class="nav-item nav-active" id="nav-btn-add" onclick="switchMainScreen('add')">
       <span class="nav-icon">➕</span>
-      <span>Add Entry</span>
+      <span>Add Item</span>
     </button>
     <button class="nav-item" id="nav-btn-logs" onclick="switchMainScreen('logs')">
       <span class="nav-icon">📊</span>
@@ -339,15 +339,15 @@
 
 <div class="modal-overlay" id="category-manager-modal">
   <div class="modal-card" style="text-align: left; max-width:420px;">
-    <h3 style="text-align:center;">📦 Custom Expense Tags Manager</h3>
-    <p style="text-align:center; margin-bottom:12px;">Add or delete custom expense categories.</p>
+    <h3 style="text-align:center;">📦 Manage Categories</h3>
+    <p style="text-align:center; margin-bottom:12px;">Add or delete custom spending categories.</p>
     
     <div style="display:flex; gap:6px; margin-bottom:14px;">
       <input type="text" id="new-custom-tag-input" placeholder="e.g. 🧘 Health, 🎓 Fees" style="margin-bottom:0; flex:2;">
-      <button onclick="executeSaveNewCustomCategoryTag()" style="width:auto; padding:0 20px; margin-bottom:0; flex:0.8;">Add Tag</button>
+      <button onclick="executeSaveNewCustomCategoryTag()" style="width:auto; padding:0 20px; margin-bottom:0; flex:0.8;">Add</button>
     </div>
 
-    <label style="font-size:0.72rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:6px; letter-spacing:0.5px;">ACTIVE WORKSPACE TAGS</label>
+    <label style="font-size:0.72rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:6px; letter-spacing:0.5px;">YOUR CATEGORIES</label>
     <div id="category-tags-list-container" style="max-height:180px; overflow-y:auto; border:1px solid var(--border); border-radius:12px; padding:8px; background:var(--bg-main);"></div>
 
     <div class="modal-footer" style="margin-top:14px;">
@@ -358,30 +358,24 @@
 
 <div class="modal-overlay" id="financial-report-modal">
   <div class="modal-card" style="text-align: left; max-width:440px; border-top:4px solid var(--primary);">
-    <h3 style="text-align:center; margin-bottom:4px;">📊 Active Period Summary Report</h3>
-    <p style="text-align:center; font-size:0.78rem; margin-bottom:16px;" id="report-window-date-bounds-label">Timeline Boundaries</p>
+    <h3 style="text-align:center; margin-bottom:4px;">📊 Summary Report</h3>
+    <p style="text-align:center; font-size:0.78rem; margin-bottom:16px;" id="report-window-date-bounds-label">Selected Dates</p>
     
     <div id="financial-report-metrics-sheet-body"></div>
 
     <div class="modal-footer" style="margin-top:16px;">
-      <button style="background:var(--text-main); color:var(--bg-card);" onclick="closeModal('financial-report-modal')">Close Statement</button>
+      <button style="background:var(--text-main); color:var(--bg-card);" onclick="closeModal('financial-report-modal')">Close</button>
     </div>
   </div>
 </div>
 
-<div class="dedicated-page-overlay" id="preferences-modal">
-  <div class="settings-page-content">
-      
-    <div class="settings-page-header">
-      <h2>⚙️ Settings</h2>
-      <button class="btn-close-page" onclick="closeModal('preferences-modal')">✕</button>
-    </div>
+<div class="modal-overlay" id="preferences-modal">
+  <div class="modal-card" style="text-align: left; max-height: 85vh; overflow-y: auto;">
+    <h3 style="text-align: center; margin-bottom: 20px;">⚙️ App Settings</h3>
 
-    <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px; font-weight: 500;">Manage your app configuration here.</p>
-
-    <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
-      <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; display: flex; justify-content: space-between; align-items: center; color: var(--text-main); border-bottom: none;">
-        🔒 Security PIN Vault
+    <div class="reconcile-view-card" style="text-align: left; padding: 16px; margin-bottom: 16px;">
+      <h4 style="margin: 0 0 10px 0; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; color: var(--text-main); border-bottom: none;">
+        🔒 App Lock (PIN)
         <label class="toggle-container" style="margin:0;">
           <div class="switch">
             <input type="checkbox" id="pin-enable-checkbox" onchange="togglePinSetupMode(this)">
@@ -389,65 +383,68 @@
           </div>
         </label>
       </h4>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin:0;">Require a 4-digit passcode to open FinWise.</p>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin:0;">Ask for a 4-digit PIN when opening the app.</p>
     </div>
 
-    <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
-      <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: var(--text-main); border-bottom: none;">📅 Recurring Commitments</h4>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Automate your EMIs and subscriptions.</p>
+    <div class="reconcile-view-card" style="text-align: left; padding: 16px; margin-bottom: 16px;">
+      <h4 style="margin: 0 0 10px 0; font-size: 1rem; color: var(--text-main); border-bottom: none;">📅 Upcoming Bills & EMIs</h4>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">Keep track of your monthly subscriptions and EMIs.</p>
 
-      <div style="background: var(--bg-main); padding: 14px; border-radius: 12px; border: 1px solid var(--border);">
-        <input type="text" id="ob-title" placeholder="Title (e.g. Netflix, Car EMI)" style="margin-bottom: 10px; width: 100%; box-sizing: border-box; padding: 12px;">
-        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-          <input type="number" id="ob-amount" placeholder="Amount (₹)" style="margin-bottom: 0; flex: 1; padding: 12px;">
-          <input type="number" id="ob-date" placeholder="Day (1-31)" min="1" max="31" style="margin-bottom: 0; flex: 1; padding: 12px;">
+      <div style="background: var(--bg-main); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+        <input type="text" id="ob-title" placeholder="Name (e.g. Netflix, Car Loan)" style="margin-bottom: 8px; width: 100%; box-sizing: border-box; padding: 10px;">
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+          <input type="number" id="ob-amount" placeholder="Amount (₹)" style="margin-bottom: 0; flex: 1; padding: 10px;">
+          <input type="number" id="ob-date" placeholder="Day (1-31)" min="1" max="31" style="margin-bottom: 0; flex: 1; padding: 10px;">
         </div>
-        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-          <select id="ob-type" onchange="toggleEndDateField()" style="margin-bottom: 0; flex: 1; padding: 12px;">
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+          <select id="ob-type" onchange="toggleEndDateField()" style="margin-bottom: 0; flex: 1; padding: 10px;">
             <option value="Subscription">Subscription</option>
-            <option value="EMI">EMI (Fixed Term)</option>
+            <option value="EMI">EMI (Has End Date)</option>
           </select>
-          <select id="ob-category" style="margin-bottom: 0; flex: 1; padding: 12px;"></select>
+          <select id="ob-category" style="margin-bottom: 0; flex: 1; padding: 10px;"></select>
         </div>
-        <div id="end-date-container" style="display: none; margin-bottom: 10px;">
-          <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">Loan End Date</label>
-          <input type="date" id="ob-end-date" style="width: 100%; padding: 12px; margin-bottom: 0;">
+        <div id="end-date-container" style="display: none; margin-bottom: 8px;">
+          <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">When does this loan end?</label>
+          <input type="date" id="ob-end-date" style="width: 100%; padding: 10px; margin-bottom: 0;">
         </div>
-        <button onclick="executeSaveObligation()" style="background: var(--primary); color: white; width: 100%; box-shadow: none; padding: 14px; border: none; border-radius: 8px;">Save Commitment</button>
+        <button onclick="executeSaveObligation()" style="background: var(--primary); color: white; width: 100%; box-shadow: none; padding: 12px; border: none; border-radius: 8px;">Save Bill</button>
       </div>
 
       <div id="obligations-list" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
       </div>
     </div>
 
-    <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
-      <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: var(--text-main); border-bottom: none;">📁 Data Portability</h4>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Export your transactions to a CSV file or import an existing one.</p>
+    <div class="reconcile-view-card" style="text-align: left; padding: 16px; margin-bottom: 16px;">
+      <h4 style="margin: 0 0 10px 0; font-size: 1rem; color: var(--text-main); border-bottom: none;">📁 Backup & Restore Data</h4>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">Save your data to a file, or load it from an old phone.</p>
       <div style="display: flex; gap: 8px;">
-        <button onclick="exportToCSV()" style="flex: 1; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); margin: 0; box-shadow: none;">Export CSV</button>
+        <button onclick="exportToCSV()" style="flex: 1; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); margin: 0; box-shadow: none; font-size: 0.85rem;">Export Backup</button>
 
-        <label style="flex: 1; margin: 0; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.95rem; font-weight: 700;">
-          Import CSV
+        <label style="flex: 1; margin: 0; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.85rem; font-weight: 700;">
+          Load Backup
           <input type="file" accept=".csv" onchange="importFromCSV(event)" style="display: none;">
         </label>
       </div>
     </div>
 
-    <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
+    <div class="reconcile-view-card" style="text-align: left; padding: 16px; margin-bottom: 16px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-        <h4 style="margin: 0; font-size: 1.05rem; color: var(--text-main); border-bottom: none;">🕒 Import History</h4>
-        <button onclick="deleteSelectedImports()" style="width: auto; padding: 6px 12px; font-size: 0.75rem; background: var(--expense); color: white; margin: 0; border-radius: 8px; box-shadow: none;">Delete Selected</button>
+        <h4 style="margin: 0; font-size: 1rem; color: var(--text-main); border-bottom: none;">🕒 Past Imports</h4>
+        <button onclick="deleteSelectedImports()" style="width: auto; padding: 6px 12px; font-size: 0.75rem; background: var(--expense); color: white; margin: 0; border-radius: 8px; box-shadow: none;">Remove Selected</button>
       </div>
       <div id="import-history-list" style="background: var(--bg-main); border-radius: 12px; padding: 10px; border: 1px solid var(--border);">
       </div>
     </div>
 
-    <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 40px; border-left: 4px solid var(--expense);">
-      <h4 style="color: #dc2626; margin: 0 0 6px 0; font-size: 1.05rem; border-bottom: none;">⚠️ Danger Zone</h4>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Want to delete all your data and start fresh?</p>
-      <button class="btn-reset-isolated" onclick="openResetModal()">Erase All Data</button>
+    <div class="reconcile-view-card" style="text-align: left; padding: 16px; margin-bottom: 10px; border-left: 4px solid var(--expense);">
+      <h4 style="color: #dc2626; margin: 0 0 6px 0; font-size: 1rem; border-bottom: none;">⚠️ Reset App</h4>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">Want to clear everything and start over?</p>
+      <button class="btn-reset-isolated" onclick="openResetModal()">Clear All Data</button>
     </div>
 
+    <div class="modal-footer" style="margin-top: 10px;">
+      <button class="btn-cancel" onclick="closeModal('preferences-modal')">Close Menu</button>
+    </div>
   </div>
 </div>
 
@@ -459,8 +456,8 @@
         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
       </svg>
     </div>
-    <h3 style="color: var(--expense);">Delete Entries?</h3>
-    <p id="delete-modal-msg">You are about to delete the selected entries.</p>
+    <h3 style="color: var(--expense);">Delete Item?</h3>
+    <p id="delete-modal-msg">Are you sure you want to delete these?</p>
     <input type="text" id="delete-confirm-input" placeholder="Type DELETE here" style="text-align: center; font-weight: bold; letter-spacing: 1px;">
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal('delete-modal')">Cancel</button>
@@ -478,20 +475,20 @@
         <line x1="12" y1="17" x2="12.01" y2="17"></line>
       </svg>
     </div>
-    <h3 style="color: var(--expense);">Erase All Data?</h3>
-    <p>This permanently deletes <strong>EVERY ENTRY</strong>. You <strong>CANNOT GET THIS BACK</strong>.</p>
+    <h3 style="color: var(--expense);">Clear All Data?</h3>
+    <p>This permanently deletes <strong>EVERYTHING</strong>. You <strong>CANNOT GET THIS BACK</strong>.</p>
     <input type="text" id="reset-confirm-input" placeholder="Type RESET here" style="text-align: center; font-weight: bold; letter-spacing: 1px;">
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal('reset-modal')">Cancel</button>
-      <button style="background: var(--expense); color: white;" onclick="confirmSystemReset()">Erase Everything</button>
+      <button style="background: var(--expense); color: white;" onclick="confirmSystemReset()">Clear Everything</button>
     </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="edit-modal">
   <div class="modal-card" style="text-align: left;">
-    <h3 style="text-align: center;">📝 Edit Entry</h3>
-    <p id="edit-modal-desc" style="text-align: center;">Update your entry details.</p>
+    <h3 style="text-align: center;">📝 Edit Transaction</h3>
+    <p id="edit-modal-desc" style="text-align: center;">Update your details.</p>
     
     <div id="single-edit-fields" style="width: 100%;">
       <input type="text" id="edit-text" placeholder="Description">
@@ -541,7 +538,7 @@
       <span style="font-size: 1.8rem;">🔔</span>
       <h3 style="margin: 0; color: var(--text-main);">Payments Due</h3>
     </div>
-    <p style="margin-bottom: 16px; font-size: 0.85rem;">You have recurring commitments due. Have you processed these yet?</p>
+    <p style="margin-bottom: 16px; font-size: 0.85rem;">You have upcoming bills or EMIs. Have you paid them yet?</p>
     
     <div id="pending-obligations-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
     </div>
