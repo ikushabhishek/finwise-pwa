@@ -1,6 +1,11 @@
+// ==========================================
+// 1. RECURRING COMMITMENTS UI & SAVING
+// ==========================================
+
 function toggleEndDateField() {
   const type = document.getElementById('ob-type').value;
   const container = document.getElementById('end-date-container');
+  
   if (type === 'EMI') {
       container.style.display = 'block';
   } else { 
@@ -26,15 +31,23 @@ function executeSaveObligation() {
       return;
   }
 
+  // Safety constraint: Billing date must be a valid calendar day
+  if (billingDate < 1 || billingDate > 31) {
+      if (typeof triggerNativeAppAlert === 'function') {
+          triggerNativeAppAlert("Billing day must be between 1 and 31.");
+      }
+      return;
+  }
+
   const tx = db.transaction(['obligations'], 'readwrite');
   tx.objectStore('obligations').add({ 
-      title, 
-      amount, 
-      type, 
-      category, 
-      billingDate, 
-      endDate, 
-      lastProcessedMonth: null 
+      title: title, 
+      amount: amount, 
+      type: type, 
+      category: category, 
+      billingDate: billingDate, 
+      endDate: endDate, 
+      lastProcessedMonth: null // Tracks when we last prompted the user
   });
 
   tx.oncomplete = () => {
@@ -55,6 +68,7 @@ function renderObligationsList() {
   
   listContainer.innerHTML = '';
   const tx = db.transaction(['obligations'], 'readonly');
+  
   tx.objectStore('obligations').openCursor().onsuccess = (e) => {
       const cursor = e.target.result;
       if (cursor) {
@@ -98,42 +112,58 @@ function executeDeleteObligation(id) {
   };
 }
 
+// ==========================================
+// 2. GATEKEEPER ENGINE (AUTO-PROMPT LOGIC)
+// ==========================================
+
 function runGatekeeperCheck() {
   const tx = db.transaction("obligations", "readonly");
   tx.objectStore("obligations").getAll().onsuccess = (e) => {
       const obligations = e.target.result || [];
+      
+      // Use exact IST mapping to prevent timezone leakage
       const istDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
       const currentDay = istDate.getDate();
       const currentYearMonth = `${istDate.getFullYear()}-${String(istDate.getMonth() + 1).padStart(2, '0')}`;
       const currentDateStringForEnd = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(istDate);
       
+      // Calculate max days in current month (to handle 31st billing dates in 30-day months)
       const daysInCurrentMonth = new Date(istDate.getFullYear(), istDate.getMonth() + 1, 0).getDate();
 
       let pending = obligations.filter(ob => {
-          // Handle cases where billing date is 31, but month only has 30 days
+          // If billing date is 31, but month has 30 days, trigger on the 30th.
           let effectiveBillingDay = ob.billingDate > daysInCurrentMonth ? daysInCurrentMonth : ob.billingDate;
           
+          // 1. Is it too early in the month?
           if (currentDay < effectiveBillingDay) return false;
+          
+          // 2. Have we already prompted them this month?
           if (ob.lastProcessedMonth === currentYearMonth) return false;
+          
+          // 3. Has the EMI expired?
           if (ob.type === 'EMI' && ob.endDate && currentDateStringForEnd > ob.endDate) return false;
           
-          return true;
+          return true; // If we made it here, prompt them!
       });
+      
       renderPendingObligations(pending);
   };
 }
 
 function renderPendingObligations(pendingItems) {
   const container = document.getElementById('pending-obligations-list');
-  if(!container) return;
+  const modal = document.getElementById('gatekeeper-modal');
+  
+  if(!container || !modal) return;
   
   container.innerHTML = '';
+  
   if(pendingItems.length === 0) { 
-      document.getElementById('gatekeeper-modal').style.display = 'none'; 
+      modal.style.display = 'none'; 
       return; 
   }
   
-  document.getElementById('gatekeeper-modal').style.display = 'flex';
+  modal.style.display = 'flex';
   
   pendingItems.forEach(item => {
       const div = document.createElement('div');
@@ -172,10 +202,11 @@ function processObligation(id, action) {
       const obligation = e.target.result;
       const istDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
       
-      // Update the obligation so it doesn't trigger again this month
+      // Always stamp it as processed so it doesn't prompt again this month
       obligation.lastProcessedMonth = `${istDate.getFullYear()}-${String(istDate.getMonth() + 1).padStart(2, '0')}`;
       obStore.put(obligation);
       
+      // If the user clicked "Log", push it to the main transactions ledger
       if(action === 'log') {
           tx.objectStore("transactions").add({ 
               text: obligation.title, 
@@ -190,13 +221,15 @@ function processObligation(id, action) {
       tx.oncomplete = () => { 
           if (typeof triggerSuccessNotification === 'function') {
               if(action === 'log') {
-                  triggerSuccessNotification(`${obligation.title} logged!`);
+                  triggerSuccessNotification(`${obligation.title} logged to expenses!`);
               } else {
                   triggerSuccessNotification(`${obligation.title} skipped for this month.`);
               }
           }
           
           if (typeof fetchAndDisplay === 'function') fetchAndDisplay(); 
+          
+          // Re-run the check to see if any other obligations are pending or if we can close the modal
           runGatekeeperCheck(); 
       };
   };

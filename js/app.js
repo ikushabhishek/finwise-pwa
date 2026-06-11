@@ -1,7 +1,8 @@
 // ==========================================
-// 1. GLOBAL VARIABLES & DOM CACHING
+// 1. GLOBAL VARIABLES & STATE
 // ==========================================
 const DOM = {};
+let db;
 let allTransactions = [];
 let checkedItemIds = []; 
 let currentVisibleIds = []; 
@@ -12,6 +13,9 @@ let currentActiveMainScreen = 'add';
 let bulkRowIncrementalPointer = 0;
 let expenseChartInstance = null;
 
+// ==========================================
+// 2. DOM SELECTOR CACHING
+// ==========================================
 function initSelectorCachePointers() {
   DOM.balance = document.getElementById('balance');
   DOM.income = document.getElementById('total-income');
@@ -33,7 +37,7 @@ function initSelectorCachePointers() {
 }
 
 // ==========================================
-// 2. UTILITIES & HELPERS
+// 3. UTILITIES & HELPERS
 // ==========================================
 function formatToIndianRupee(number) { 
     return Number(number).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
@@ -82,8 +86,8 @@ function triggerNativeAppAlert(messageText) {
   document.getElementById('app-alert-modal').style.display = 'flex';
 }
 
-function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
+function closeModal(id) { 
+    document.getElementById(id).style.display = 'none'; 
 }
 
 function debounce(callbackFunc, waitingDelayDuration) {
@@ -118,12 +122,12 @@ function scrollToLogsTop() {
 }
 
 function openPreferencesModal() { 
-  if(typeof renderObligationsList === 'function') renderObligationsList();
+  if (typeof refreshImportHistoryUI === 'function') refreshImportHistoryUI();
   document.getElementById('preferences-modal').style.display = 'flex'; 
 }
 
 // ==========================================
-// 3. CATEGORY MANAGER ENGINE
+// 4. CATEGORY MANAGER
 // ==========================================
 const systemDefaultCategoriesPreset = ["Food", "Utilities", "Entertainment", "Travel", "Shopping", "Miscellaneous"];
 let workspaceActiveExpenseCategories = [];
@@ -159,9 +163,11 @@ function initializeCategoriesStorageSystem() {
 function syncCategoriesDropdownSelectorsUI() {
   const addSelect = document.getElementById('expense-category'); 
   const editSelect = document.getElementById('edit-expense-category');
+  
+  // Also sync obligations select if it exists
   const obSelect = document.getElementById('ob-category');
   
-  if (!addSelect) return;
+  if (!addSelect || !editSelect) return;
   
   let fragMarkupOptions = "";
   for (let i = 0, len = workspaceActiveExpenseCategories.length; i < len; i++) { 
@@ -169,7 +175,7 @@ function syncCategoriesDropdownSelectorsUI() {
       fragMarkupOptions += `<option value="${cat}">${cat}</option>`; 
   }
   addSelect.innerHTML = fragMarkupOptions; 
-  if(editSelect) editSelect.innerHTML = fragMarkupOptions;
+  editSelect.innerHTML = fragMarkupOptions;
   if(obSelect) obSelect.innerHTML = fragMarkupOptions;
 }
 
@@ -225,7 +231,7 @@ function executeDeleteCustomCategoryTag(indexPointer) {
 }
 
 // ==========================================
-// 4. BASELINE CONFIGURATION & BUDGETS
+// 5. DASHBOARD CYCLE & BASELINE
 // ==========================================
 function toggleDashboardConfigPanel() {
   const displaySheet = document.getElementById('dashboard-config-display-sheet'); 
@@ -274,7 +280,7 @@ function saveDashboardCycleAndBaselineConfig() {
 }
 
 // ==========================================
-// 5. DATA ENTRY LOGIC (ADD VIEW)
+// 6. FORM ENTRY LOGIC
 // ==========================================
 function toggleFormEntryMode(checkbox) {
   const singleFields = document.getElementById('single-entry-fields'); 
@@ -518,7 +524,7 @@ function executeTransactionSave() {
 }
 
 // ==========================================
-// 6. FILTERING, BOUNDARIES & DATA FETCHING
+// 7. FILTERS & DISPLAY LOGIC
 // ==========================================
 function fetchAndDisplay() { 
     const tx = db.transaction("transactions", "readonly"); 
@@ -638,6 +644,7 @@ function applyFilters() {
   let filtered = allTransactions.filter(t => {
     let tDate = t.timestamp ? new Date(t.timestamp) : new Date(); 
     const itemTimestamp = tDate.getTime(); 
+    
     const itemDateString = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(tDate);
     
     if (currentTab === 'custom') { 
@@ -685,7 +692,7 @@ function applyFilters() {
 }
 
 // ==========================================
-// 7. SUMMARY & UI RENDERING
+// 8. LIST ACTIONS & SUMMARY RENDERING
 // ==========================================
 function calculateMasterSummaryTotals(masterArray) {
   let openingBalanceBaseline = parseIndianCommaStringToFloat(localStorage.getItem('finwise-op-bal') || '0'); 
@@ -740,13 +747,13 @@ function calculateMasterSummaryTotals(masterArray) {
   const actionLinkBtn = document.getElementById('dashboard-config-toggle-btn'); 
   const titleHeaderSpan = document.getElementById('config-card-header-title');
   
-  if(!widgetCard) return;
-
   let suffixMarker = "th"; 
   if(cycleDayValueSetting == '1') suffixMarker = "st"; 
   else if(cycleDayValueSetting == '2') suffixMarker = "nd"; 
   else if(cycleDayValueSetting == '3') suffixMarker = "rd";
   
+  if(!widgetCard) return;
+
   document.getElementById('rec-cycle-label').innerText = `${cycleDayValueSetting}${suffixMarker} of the Month`; 
   document.getElementById('rec-budget-label').innerText = manualBudgetLimitSetting > 0 ? `₹${formatToIndianRupee(manualBudgetLimitSetting).split('.')[0]} (Fixed boundary)` : "Not Configured (Using Income)"; 
   document.getElementById('rec-op-label').innerText = `₹${formatToIndianRupee(openingBalanceBaseline)}`;
@@ -795,13 +802,7 @@ function calculateMasterSummaryTotals(masterArray) {
 function renderUI(transactions) {
   const fragmentBuffer = document.createDocumentFragment(); 
   DOM.list.innerHTML = ""; 
-  
-  // Empty states fix: Checking transaction length correctly.
-  if (transactions.length === 0) {
-      DOM.emptyMsg.style.display = "flex";
-  } else {
-      DOM.emptyMsg.style.display = "none";
-  }
+  DOM.emptyMsg.style.display = transactions.length === 0 ? "flex" : "none";
   
   transactions.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0)).forEach((t, index) => {
     const isExpense = t.amount < 0; 
@@ -833,9 +834,6 @@ function renderUI(transactions) {
   DOM.list.appendChild(fragmentBuffer);
 }
 
-// ==========================================
-// 8. LIST ACTIONS (SELECT, EDIT, DELETE)
-// ==========================================
 function toggleSelectAll(masterBox) { 
     if (masterBox.checked) { 
         currentVisibleIds.forEach(id => { 
@@ -991,7 +989,7 @@ function saveBatchEdit() {
 }
 
 // ==========================================
-// 9. CHARTS, ANALYTICS & REPORTS
+// 9. CHARTS, REPORTS & INSIGHTS
 // ==========================================
 function renderPercentageBreakdown(transactions) {
   const fragmentBuffer = document.createDocumentFragment(); 
@@ -1114,25 +1112,24 @@ function renderChart(transactionsToRender) {
   const chartCard = document.getElementById('insights-chart-wrapper');
   const breakdownList = document.getElementById('insights-detailed-list');
 
-  // Fix: Show empty state on Insights view if no data exists
   if (totalExpense === 0 && totalIncome === 0) {
-     emptyState.style.display = 'flex';
-     ratioCard.style.display = 'none';
-     chartCard.style.display = 'none';
-     breakdownList.style.display = 'none';
+     if(emptyState) emptyState.style.display = 'flex';
+     if(ratioCard) ratioCard.style.display = 'none';
+     if(chartCard) chartCard.style.display = 'none';
+     if(breakdownList) breakdownList.style.display = 'none';
      return;
   }
 
-  emptyState.style.display = 'none';
-  ratioCard.style.display = 'block';
+  if(emptyState) emptyState.style.display = 'none';
+  if(ratioCard) ratioCard.style.display = 'block';
 
-  document.getElementById('insight-inc-label').innerText = '₹' + totalIncome.toLocaleString('en-IN', {minimumFractionDigits: 0});
-  document.getElementById('insight-exp-label').innerText = '₹' + totalExpense.toLocaleString('en-IN', {minimumFractionDigits: 0});
+  if(document.getElementById('insight-inc-label')) document.getElementById('insight-inc-label').innerText = '₹' + totalIncome.toLocaleString('en-IN', {minimumFractionDigits: 0});
+  if(document.getElementById('insight-exp-label')) document.getElementById('insight-exp-label').innerText = '₹' + totalExpense.toLocaleString('en-IN', {minimumFractionDigits: 0});
   
   let totalFlow = totalIncome + totalExpense;
   let incPct = totalFlow > 0 ? (totalIncome / totalFlow) * 100 : 0;
   if (totalIncome > 0 && incPct < 2) incPct = 2; 
-  document.getElementById('insight-ratio-bar').style.width = incPct + '%';
+  if(document.getElementById('insight-ratio-bar')) document.getElementById('insight-ratio-bar').style.width = incPct + '%';
 
   let ratioText = "";
   if (totalIncome > totalExpense && totalExpense > 0) {
@@ -1148,16 +1145,16 @@ function renderChart(transactionsToRender) {
   } else {
      ratioText = `You broke perfectly even! ⚖️`;
   }
-  document.getElementById('insight-ratio-text').innerHTML = ratioText;
+  if(document.getElementById('insight-ratio-text')) document.getElementById('insight-ratio-text').innerHTML = ratioText;
 
   if (totalExpense === 0) {
-     chartCard.style.display = 'none';
-     breakdownList.style.display = 'none';
+     if(chartCard) chartCard.style.display = 'none';
+     if(breakdownList) breakdownList.style.display = 'none';
      return;
   }
 
-  chartCard.style.display = 'block';
-  breakdownList.style.display = 'block';
+  if(chartCard) chartCard.style.display = 'block';
+  if(breakdownList) breakdownList.style.display = 'block';
 
   const sortedCategories = Object.keys(expensesMap).sort((a,b) => expensesMap[b] - expensesMap[a]);
   const labels = sortedCategories;
@@ -1204,7 +1201,7 @@ function renderChart(transactionsToRender) {
          </span>
       </div>`;
   });
-  breakdownList.innerHTML = detailedHTML;
+  if(breakdownList) breakdownList.innerHTML = detailedHTML;
 }
 
 function triggerDynamicPeriodFinancialReport() {
@@ -1236,6 +1233,8 @@ function triggerDynamicPeriodFinancialReport() {
   allTransactions.forEach(t => {
     let tDate = t.timestamp ? new Date(t.timestamp) : new Date(); 
     const itemTimestamp = tDate.getTime(); 
+    
+    // Enforce IST formatting for custom date boundary checks
     const itemDateString = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(tDate);
     
     if (currentTab === 'custom') { 
@@ -1342,3 +1341,43 @@ window.addEventListener('DOMContentLoaded', () => {
     const tb = document.getElementById('theme-btn');
     if(tb) tb.innerText = savedTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
 });
+
+// ==========================================
+// 11. PWA REGISTRATION (SERVICE WORKER)
+// ==========================================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      if (reg.waiting) { 
+          showUpdateAvailableBanner(reg.waiting); 
+      }
+      reg.onupdatefound = () => { 
+          const installingWorker = reg.installing; 
+          installingWorker.onstatechange = () => { 
+              if (installingWorker.state === 'installed') { 
+                  if (navigator.serviceWorker.controller) { 
+                      showUpdateAvailableBanner(installingWorker); 
+                  } 
+              } 
+          }; 
+      };
+    }).catch(err => console.error(err));
+    
+    let refreshing = false; 
+    navigator.serviceWorker.addEventListener('controllerchange', () => { 
+        if (!refreshing) { 
+            window.location.reload(); 
+            refreshing = true; 
+        } 
+    });
+  });
+}
+
+function showUpdateAvailableBanner(worker) { 
+    const updateToast = document.getElementById('update-toast'); 
+    const updateBtn = document.getElementById('update-refresh-btn'); 
+    updateToast.classList.add('toast-visible'); 
+    updateBtn.onclick = () => { 
+        worker.postMessage({ action: 'skipWaiting' }); 
+    }; 
+}
