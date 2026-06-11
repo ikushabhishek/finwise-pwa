@@ -529,6 +529,22 @@
     </div>
   </div>
 </div>
+<div class="modal-overlay" id="gatekeeper-modal">
+  <div class="modal-card" style="text-align: left; border-top: 4px solid var(--primary); width: 100%; max-width: 400px;">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+      <span style="font-size: 1.8rem;">🔔</span>
+      <h3 style="margin: 0; color: var(--text-main);">Payments Due</h3>
+    </div>
+    <p style="margin-bottom: 16px; font-size: 0.85rem;">You have recurring commitments due. Have you processed these yet?</p>
+    
+    <div id="pending-obligations-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+    </div>
+
+    <div class="modal-footer">
+      <button style="background: var(--text-main); color: var(--bg-card); width: 100%;" onclick="document.getElementById('gatekeeper-modal').style.display='none'">Close for now</button>
+    </div>
+  </div>
+</div>
 
 <script src="./js/app.js"></script>
 <script src="./js/database.js"></script>
@@ -536,4 +552,4 @@
 <script src="./js/obligations.js"></script>
 
 </body>
-</html>
+</html> 
