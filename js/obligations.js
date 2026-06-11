@@ -98,11 +98,14 @@ function renderObligationsList() {
           div.style.alignItems = 'center';
           div.style.boxShadow = '0 2px 6px rgba(0,0,0,0.02)';
           
+          // ---> PRIVACY MASKING: Obligations List in Settings
+          const displayAmt = (typeof isPrivacyMode !== 'undefined' && isPrivacyMode) ? '••••••' : item.amount;
+          
           let detailsHTML = `
             <div>
                 <strong style="font-size: 0.9rem; color: var(--text-main);">${item.title}</strong> 
                 <br>
-                <small style="color:var(--text-muted); font-size: 0.75rem; font-weight: 600;">₹${item.amount} • Due: Day ${item.billingDate}</small>
+                <small style="color:var(--text-muted); font-size: 0.75rem; font-weight: 600;">₹${displayAmt} • Due: Day ${item.billingDate}</small>
                 ${item.endDate ? `<br><small style="color:var(--expense); font-size: 0.65rem; font-weight: 700;">Ends: ${item.endDate}</small>` : ''}
             </div>
             <button style="background:var(--alert-bg); color:var(--expense); border:1px solid var(--alert-border); box-shadow:none; width:36px; height:36px; padding:0; display:flex; justify-content:center; align-items:center; border-radius:10px; font-size:1.1rem; cursor:pointer;" onclick="executeDeleteObligation(${item.id})">🗑️</button>
@@ -180,8 +183,11 @@ function renderPendingObligations(pendingItems) {
       div.style.borderRadius = '14px';
       div.style.border = '1px solid var(--border)';
       
+      // ---> PRIVACY MASKING: Gatekeeper Popup EMIs
       let displayAmount = item.amount;
-      if (typeof formatToIndianRupee === 'function') {
+      if (typeof isPrivacyMode !== 'undefined' && isPrivacyMode) {
+          displayAmount = '••••••';
+      } else if (typeof formatToIndianRupee === 'function') {
           displayAmount = formatToIndianRupee(item.amount).split('.')[0];
       }
 

@@ -13,6 +13,9 @@ let currentActiveMainScreen = 'add';
 let bulkRowIncrementalPointer = 0;
 let expenseChartInstance = null;
 
+// ---> NEW: Privacy Mode Global State
+let isPrivacyMode = localStorage.getItem('finwise-privacy') === 'true';
+
 // ==========================================
 // 2. DOM SELECTOR CACHING
 // ==========================================
@@ -124,12 +127,21 @@ function scrollToLogsTop() {
 function openPreferencesModal() { 
   if (typeof refreshImportHistoryUI === 'function') refreshImportHistoryUI();
   if (typeof renderObligationsList === 'function') renderObligationsList();
-  
-  // ---> BUG FIX: Force the categories dropdown to resync every time the settings modal opens!
   if (typeof syncCategoriesDropdownSelectorsUI === 'function') syncCategoriesDropdownSelectorsUI(); 
   
-  // ---> NEW FIX: Changed to 'block' to support the full-screen layout correctly
   document.getElementById('preferences-modal').style.display = 'block'; 
+}
+
+// ---> NEW: Privacy Toggle Logic
+function togglePrivacyMode() {
+    isPrivacyMode = !isPrivacyMode;
+    localStorage.setItem('finwise-privacy', isPrivacyMode);
+    
+    const btn = document.getElementById('privacy-toggle-btn');
+    if (btn) btn.innerText = isPrivacyMode ? '🙈' : '👁️';
+    
+    // Applying filters re-renders all lists, charts, and dashboards instantly
+    applyFilters(); 
 }
 
 // ==========================================
@@ -679,10 +691,11 @@ function applyFilters() {
       else fExpense += Math.abs(t.amount); 
   });
 
-  DOM.fBalance.innerText = `${fBalance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(fBalance))}`; 
+  // ---> PRIVACY MASKING: Filtered Totals Strip
+  DOM.fBalance.innerText = isPrivacyMode ? '₹ ••••••' : `${fBalance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(fBalance))}`; 
   DOM.fBalance.className = fBalance >= 0 ? 'amt-inc' : 'amt-exp'; 
-  DOM.fInc.innerText = `₹${formatToIndianRupee(fIncome)}`; 
-  DOM.fExp.innerText = `₹${formatToIndianRupee(fExpense)}`;
+  DOM.fInc.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(fIncome)}`; 
+  DOM.fExp.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(fExpense)}`;
 
   renderUI(filtered); 
   calculateMasterSummaryTotals(allTransactions); 
@@ -711,9 +724,10 @@ function calculateMasterSummaryTotals(masterArray) {
       if (t.amount < 0) expense += Math.abs(t.amount); 
   });
   
-  DOM.balance.innerText = `${balance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(balance))}`; 
-  DOM.income.innerText = `₹${formatToIndianRupee(income)}`; 
-  DOM.expense.innerText = `₹${formatToIndianRupee(expense)}`;
+  // ---> PRIVACY MASKING: Main Balance Dashboard
+  DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${balance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(balance))}`; 
+  DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(income)}`; 
+  DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(expense)}`;
 
   const velocityWrapper = document.getElementById('budget-velocity-tracker'); 
   const velocityTitle = document.getElementById('velocity-title-label'); 
@@ -726,7 +740,9 @@ function calculateMasterSummaryTotals(masterArray) {
     velocityWrapper.style.display = 'block'; 
     velocityTitle.innerText = manualBudgetLimitSetting > 0 ? "MANUAL MONTHLY BUDGET LIMIT" : "INCOME BURN VELOCITY LIMIT";
     let velocityPercentageValue = (expense / computationalLimitAnchor) * 100; 
-    velocityLabel.innerText = `${Math.round(velocityPercentageValue)}% SPENT`; 
+    
+    // Privacy Masking for Progress Percentage
+    velocityLabel.innerText = isPrivacyMode ? `••% SPENT` : `${Math.round(velocityPercentageValue)}% SPENT`; 
     velocityFill.style.width = `${Math.min(velocityPercentageValue, 100)}%`;
     
     if (velocityPercentageValue >= 85) { 
@@ -758,9 +774,14 @@ function calculateMasterSummaryTotals(masterArray) {
   
   if(!widgetCard) return;
 
+  // ---> PRIVACY MASKING: Baseline Panel
   document.getElementById('rec-cycle-label').innerText = `${cycleDayValueSetting}${suffixMarker} of the Month`; 
-  document.getElementById('rec-budget-label').innerText = manualBudgetLimitSetting > 0 ? `₹${formatToIndianRupee(manualBudgetLimitSetting).split('.')[0]} (Fixed boundary)` : "Not Configured (Using Income)"; 
-  document.getElementById('rec-op-label').innerText = `₹${formatToIndianRupee(openingBalanceBaseline)}`;
+  
+  document.getElementById('rec-budget-label').innerText = manualBudgetLimitSetting > 0 ? 
+      (isPrivacyMode ? '₹ •••••• (Fixed)' : `₹${formatToIndianRupee(manualBudgetLimitSetting).split('.')[0]} (Fixed boundary)`) 
+      : "Not Configured (Using Income)"; 
+      
+  document.getElementById('rec-op-label').innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(openingBalanceBaseline)}`;
 
   if(!localStorage.getItem('finwise-op-bal') && fieldsSheet.style.display === 'none') {
     widgetCard.style.display = 'block'; 
@@ -779,25 +800,25 @@ function calculateMasterSummaryTotals(masterArray) {
     }
     
     if(closingBalanceTarget !== null) {
-      document.getElementById('rec-cl-label').innerText = `₹${formatToIndianRupee(closingBalanceTarget)}`; 
+      document.getElementById('rec-cl-label').innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(closingBalanceTarget)}`; 
       let variance = balance - closingBalanceTarget; 
       const diffTitle = document.getElementById('rec-diff-title'); 
       const diffLabel = document.getElementById('rec-diff-label');
       
       if(Math.abs(variance) < 0.01) { 
           diffTitle.innerHTML = `Reconciliation State: <span class="reconcile-status-badge" style="background-color: rgba(22, 163, 74, 0.2); color: var(--income);">Balanced ✨</span>`; 
-          diffLabel.innerText = "Perfect Statement Match"; 
+          diffLabel.innerText = "Perfect Match"; 
           diffLabel.className = "amt-inc"; 
       } 
       else { 
           diffTitle.innerHTML = `Reconciliation State: <span class="reconcile-status-badge" style="background-color: rgba(220, 38, 38, 0.1); color: var(--expense);">Unbalanced ⚠️</span>`; 
-          diffLabel.innerText = `${variance >= 0 ? '+' : '-'}₹${formatToIndianRupee(Math.abs(variance))}`; 
+          diffLabel.innerText = isPrivacyMode ? '₹ ••••••' : `${variance >= 0 ? '+' : '-'}₹${formatToIndianRupee(Math.abs(variance))}`; 
           diffLabel.className = variance >= 0 ? "amt-inc" : "amt-exp"; 
       }
     } else {
       document.getElementById('rec-cl-label').innerText = "Not Configured"; 
       document.getElementById('rec-diff-title').innerHTML = `Running Target Status: <span class="reconcile-status-badge" style="background-color: var(--badge-bg); color: var(--badge-text);">Active Baseline</span>`; 
-      document.getElementById('rec-diff-label').innerText = `₹${formatToIndianRupee(balance)}`; 
+      document.getElementById('rec-diff-label').innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(balance)}`; 
       document.getElementById('rec-diff-label').className = balance >= 0 ? "amt-inc" : "amt-exp";
     }
   }
@@ -821,6 +842,9 @@ function renderUI(transactions) {
     const isChecked = checkedItemIds.includes(t.id);
     const styleObj = getCategoryStyle(catLabel);
     
+    // ---> PRIVACY MASKING: Single History Logs
+    const displayAmount = isPrivacyMode ? '••••••' : `${isExpense ? '-' : '+'} ₹${formatToIndianRupee(Math.abs(t.amount))}`;
+    
     const li = document.createElement('li'); 
     li.style.animationDelay = `${Math.min(index * 0.02, 0.24)}s`; 
     
@@ -833,7 +857,7 @@ function renderUI(transactions) {
           <small>${baseDateString} • ${timeMarkerString}</small>
         </div>
         <div style="text-align: right;">
-          <span class="${isExpense ? 'amt-exp' : 'amt-inc'}">${isExpense ? '-' : '+'} ₹${formatToIndianRupee(Math.abs(t.amount))}</span>
+          <span class="${isExpense ? 'amt-exp' : 'amt-inc'}">${displayAmount}</span>
           <div style="font-size: 0.65rem; font-weight: 700; color: ${styleObj.color}; margin-top: 4px; text-transform: uppercase;">${catLabel}</div>
         </div>
       </div>
@@ -1023,13 +1047,16 @@ function renderPercentageBreakdown(transactions) {
     const amt = expensesMap[cat]; 
     let percentage = totalIncome > 0 ? (amt / totalIncome) * 100 : 0;
     
+    // ---> PRIVACY MASKING: Breakdown List
+    const displayAmt = isPrivacyMode ? '••••' : formatToIndianRupee(amt).split('.')[0];
+    
     const itemRow = document.createElement('div'); 
     itemRow.className = "breakdown-item";
     
     itemRow.innerHTML = `
       <div class="breakdown-label">
-        <span>${cat} (₹${formatToIndianRupee(amt).split('.')[0]})</span>
-        <span style="color: var(--text-muted);">${totalIncome > 0 ? percentage.toFixed(1) + '%' : 'Logged'}</span>
+        <span>${cat} (₹${displayAmt})</span>
+        <span style="color: var(--text-muted);">${totalIncome > 0 ? (isPrivacyMode ? '••%' : percentage.toFixed(1) + '%') : 'Logged'}</span>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" style="width: ${Math.min(percentage, 100)}%; background-color: ${percentage > 30 ? 'var(--expense)' : '#fb923c'};"></div>
@@ -1069,10 +1096,14 @@ function generateSmartInsights(transactions) {
   let dynamicInsightDenominator = manualBudgetLimitSetting > 0 ? manualBudgetLimitSetting : income; 
   const burnRate = (expense / dynamicInsightDenominator) * 100;
   
+  // Privacy masking for percentages
+  const displayBurnRate = isPrivacyMode ? '••' : burnRate.toFixed(0);
+  const displaySaveRate = isPrivacyMode ? '••' : (100 - burnRate).toFixed(0);
+  
   if (burnRate > 85) { 
       DOM.insightsCard.classList.add('danger-state'); 
       DOM.insightsTitle.innerHTML = "🚨 Alert: High Spending Velocity"; 
-      DOM.insightsText.innerHTML = `You have burned through <strong>${burnRate.toFixed(0)}%</strong> of your active budget line. Limit non-essential spending immediately.`; 
+      DOM.insightsText.innerHTML = `You have burned through <strong>${displayBurnRate}%</strong> of your active budget line. Limit non-essential spending immediately.`; 
       return; 
   }
   
@@ -1082,20 +1113,24 @@ function generateSmartInsights(transactions) {
   if (variableWants > essentialNeeds && variableWants > 0) { 
       DOM.insightsCard.classList.add('warning-state'); 
       DOM.insightsTitle.innerHTML = "🔍 Wants vs. Needs Check"; 
-      DOM.insightsText.innerHTML = `Lifestyle spending (Shopping & Fun: ₹${formatToIndianRupee(variableWants).split('.')[0]}) outpaces basic needs (Food & Bills: ₹${formatToIndianRupee(essentialNeeds).split('.')[0]}). Consider scaling back lifestyle costs.`; 
+      
+      const displayWants = isPrivacyMode ? '••••' : formatToIndianRupee(variableWants).split('.')[0];
+      const displayNeeds = isPrivacyMode ? '••••' : formatToIndianRupee(essentialNeeds).split('.')[0];
+      
+      DOM.insightsText.innerHTML = `Lifestyle spending (Shopping & Fun: ₹${displayWants}) outpaces basic needs (Food & Bills: ₹${displayNeeds}). Consider scaling back lifestyle costs.`; 
       return; 
   }
   
   if (burnRate > 50) { 
       DOM.insightsCard.classList.add('warning-state'); 
       DOM.insightsTitle.innerHTML = "⚡ Review: Spending Limit"; 
-      DOM.insightsText.innerHTML = `You have spent <strong>${burnRate.toFixed(0)}%</strong> of your income pool. You are doing okay, but cutting out small extra costs can help you save more.`; 
+      DOM.insightsText.innerHTML = `You have spent <strong>${displayBurnRate}%</strong> of your income pool. You are doing okay, but cutting out small extra costs can help you save more.`; 
       return; 
   }
   
   DOM.insightsCard.className = "insights-card"; 
   DOM.insightsTitle.innerHTML = "✨ Great Job: Healthy Saving!"; 
-  DOM.insightsText.innerHTML = `Awesome work! You saved <strong>${(100 - burnRate).toFixed(0)}%</strong> of your active baseline limits. Keep it up!`;
+  DOM.insightsText.innerHTML = `Awesome work! You saved <strong>${displaySaveRate}%</strong> of your active baseline limits. Keep it up!`;
 }
 
 function renderChart(transactionsToRender) {
@@ -1132,8 +1167,13 @@ function renderChart(transactionsToRender) {
   if(emptyState) emptyState.style.display = 'none';
   if(ratioCard) ratioCard.style.display = 'block';
 
-  if(document.getElementById('insight-inc-label')) document.getElementById('insight-inc-label').innerText = '₹' + totalIncome.toLocaleString('en-IN', {minimumFractionDigits: 0});
-  if(document.getElementById('insight-exp-label')) document.getElementById('insight-exp-label').innerText = '₹' + totalExpense.toLocaleString('en-IN', {minimumFractionDigits: 0});
+  // ---> PRIVACY MASKING: Chart Panel Totals
+  if(document.getElementById('insight-inc-label')) {
+      document.getElementById('insight-inc-label').innerText = isPrivacyMode ? '₹ ••••••' : '₹' + totalIncome.toLocaleString('en-IN', {minimumFractionDigits: 0});
+  }
+  if(document.getElementById('insight-exp-label')) {
+      document.getElementById('insight-exp-label').innerText = isPrivacyMode ? '₹ ••••••' : '₹' + totalExpense.toLocaleString('en-IN', {minimumFractionDigits: 0});
+  }
   
   let totalFlow = totalIncome + totalExpense;
   let incPct = totalFlow > 0 ? (totalIncome / totalFlow) * 100 : 0;
@@ -1143,10 +1183,12 @@ function renderChart(transactionsToRender) {
   let ratioText = "";
   if (totalIncome > totalExpense && totalExpense > 0) {
      let savingsRate = ((totalIncome - totalExpense) / totalIncome) * 100;
-     ratioText = `Great job! You are saving <span style="color:var(--income)">${savingsRate.toFixed(1)}%</span> of your logged income. 🎯`;
+     const displaySaveRate = isPrivacyMode ? '••%' : `${savingsRate.toFixed(1)}%`;
+     ratioText = `Great job! You are saving <span style="color:var(--income)">${displaySaveRate}</span> of your logged income. 🎯`;
   } else if (totalExpense > totalIncome && totalIncome > 0) {
      let deficit = totalExpense - totalIncome;
-     ratioText = `You are spending <span style="color:var(--expense)">₹${deficit.toLocaleString('en-IN')}</span> more than you earned. ⚠️`;
+     const displayDeficit = isPrivacyMode ? '••••••' : deficit.toLocaleString('en-IN');
+     ratioText = `You are spending <span style="color:var(--expense)">₹${displayDeficit}</span> more than you earned. ⚠️`;
   } else if (totalIncome > 0 && totalExpense === 0) {
      ratioText = `You have 100% savings right now. Time to invest? 🚀`;
   } else if (totalExpense > 0 && totalIncome === 0) {
@@ -1188,7 +1230,8 @@ function renderChart(transactionsToRender) {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: function(context) { return ' ₹' + context.raw.toLocaleString('en-IN'); } } }
+        // ---> PRIVACY MASKING: Chart Tooltips
+        tooltip: { callbacks: { label: function(context) { return isPrivacyMode ? ' ₹ ••••••' : ' ₹' + context.raw.toLocaleString('en-IN'); } } }
       },
       scales: {
         y: { beginAtZero: true, grid: { color: 'rgba(200,200,200,0.1)' }, ticks: { color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' } },
@@ -1201,12 +1244,17 @@ function renderChart(transactionsToRender) {
   sortedCategories.forEach(cat => {
     let amt = expensesMap[cat];
     let pct = ((amt / totalExpense) * 100).toFixed(1);
+    
+    // ---> PRIVACY MASKING: Detailed Breakdown Sub-list
+    const displayAmt = isPrivacyMode ? '••••' : amt.toLocaleString('en-IN', {minimumFractionDigits:2});
+    const displayPct = isPrivacyMode ? '••' : pct;
+    
     detailedHTML += `
       <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); font-size:0.85rem;">
          <span style="font-weight:600;">${cat}</span>
          <span>
-           <span style="color:var(--text-muted); font-size:0.75rem; margin-right:8px;">${pct}%</span> 
-           <span style="font-weight:700; color:var(--expense);">₹${amt.toLocaleString('en-IN', {minimumFractionDigits:2})}</span>
+           <span style="color:var(--text-muted); font-size:0.75rem; margin-right:8px;">${displayPct}%</span> 
+           <span style="font-weight:700; color:var(--expense);">₹${displayAmt}</span>
          </span>
       </div>`;
   });
@@ -1268,15 +1316,23 @@ function triggerDynamicPeriodFinancialReport() {
   let categoryRowsHTMLStr = "";
   
   Object.keys(reportCategoricalMap).sort((a,b) => reportCategoricalMap[b] - reportCategoricalMap[a]).forEach(key => {
-    categoryRowsHTMLStr += `<tr style="border-bottom:1px solid var(--border); font-size:0.8rem;"><td style="padding:6px 0; font-weight:500;">${key}</td><td style="padding:6px 0; text-align:right; font-weight:700; color:var(--expense);">₹${formatToIndianRupee(reportCategoricalMap[key]).split('.')[0]}</td></tr>`;
+    // ---> PRIVACY MASKING: Report Category Tags
+    const rowAmt = isPrivacyMode ? '••••' : formatToIndianRupee(reportCategoricalMap[key]).split('.')[0];
+    categoryRowsHTMLStr += `<tr style="border-bottom:1px solid var(--border); font-size:0.8rem;"><td style="padding:6px 0; font-weight:500;">${key}</td><td style="padding:6px 0; text-align:right; font-weight:700; color:var(--expense);">₹${rowAmt}</td></tr>`;
   });
+
+  // ---> PRIVACY MASKING: Report Core Metrics
+  const displayInflow = isPrivacyMode ? '••••••' : formatToIndianRupee(reportInflow);
+  const displayOutflow = isPrivacyMode ? '••••••' : formatToIndianRupee(reportOutflow);
+  const displayNet = isPrivacyMode ? '••••••' : formatToIndianRupee(netSavingsValue);
+  const displayRate = isPrivacyMode ? '••%' : (reportInflow > 0 && netSavingsValue > 0 ? calculatedSavingsPercent.toFixed(1) + '%' : '0.0%');
 
   sheetBody.innerHTML = `
     <div style="background:var(--bg-main); border:1px solid var(--border); padding:12px; border-radius:14px; margin-bottom:14px;">
-      <div class="reconcile-row"><span>Total Inflow Earnings:</span><span class="amt-inc" style="font-weight:bold;">₹${formatToIndianRupee(reportInflow)}</span></div>
-      <div class="reconcile-row"><span>Total Outflow Spending:</span><span class="amt-exp" style="font-weight:bold;">₹${formatToIndianRupee(reportOutflow)}</span></div>
-      <div class="reconcile-row" style="border-top:1px dashed var(--border); padding-top:6px; margin-top:6px; font-weight:bold;"><span>Net Timeline Savings:</span><span class="${netSavingsValue >= 0 ? 'amt-inc' : 'amt-exp'}">₹${formatToIndianRupee(netSavingsValue)}</span></div>
-      <div class="reconcile-row" style="font-size:0.75rem; margin-bottom:0; color:var(--text-muted);"><span>Calculated Savings Rate:</span><span style="font-weight:bold; color:var(--text-main);">${reportInflow > 0 && netSavingsValue > 0 ? calculatedSavingsPercent.toFixed(1) + '%' : '0.0%'}</span></div>
+      <div class="reconcile-row"><span>Total Inflow Earnings:</span><span class="amt-inc" style="font-weight:bold;">₹${displayInflow}</span></div>
+      <div class="reconcile-row"><span>Total Outflow Spending:</span><span class="amt-exp" style="font-weight:bold;">₹${displayOutflow}</span></div>
+      <div class="reconcile-row" style="border-top:1px dashed var(--border); padding-top:6px; margin-top:6px; font-weight:bold;"><span>Net Timeline Savings:</span><span class="${netSavingsValue >= 0 ? 'amt-inc' : 'amt-exp'}">₹${displayNet}</span></div>
+      <div class="reconcile-row" style="font-size:0.75rem; margin-bottom:0; color:var(--text-muted);"><span>Calculated Savings Rate:</span><span style="font-weight:bold; color:var(--text-main);">${displayRate}</span></div>
     </div>
     <label style="font-size:0.72rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px; letter-spacing:0.5px;">TIMELINE EXPENSE PROFILE COSTS</label>
     <table style="width:100%; border-collapse:collapse;">
@@ -1349,6 +1405,10 @@ document.documentElement.setAttribute('data-theme', savedTheme);
 window.addEventListener('DOMContentLoaded', () => {
     const tb = document.getElementById('theme-btn');
     if(tb) tb.innerText = savedTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
+    
+    // ---> NEW: Sync privacy toggle icon on load
+    const privacyBtn = document.getElementById('privacy-toggle-btn');
+    if(privacyBtn && isPrivacyMode) privacyBtn.innerText = '🙈';
 });
 
 // ==========================================
