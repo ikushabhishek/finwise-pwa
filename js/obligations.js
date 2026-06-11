@@ -39,6 +39,16 @@ function executeSaveObligation() {
       return;
   }
 
+  // ---> BUG FIX: Force user to provide an End Date if EMI is selected
+  if (type === 'EMI' && !endDate) {
+      if (typeof triggerNativeAppAlert === 'function') {
+          triggerNativeAppAlert("Please select a Loan End Date for your EMI.");
+      } else {
+          alert("Please select a Loan End Date for your EMI.");
+      }
+      return;
+  }
+
   const tx = db.transaction(['obligations'], 'readwrite');
   tx.objectStore('obligations').add({ 
       title: title, 
@@ -47,7 +57,7 @@ function executeSaveObligation() {
       category: category, 
       billingDate: billingDate, 
       endDate: endDate, 
-      lastProcessedMonth: null // Tracks when we last prompted the user
+      lastProcessedMonth: null
   });
 
   tx.oncomplete = () => {
@@ -59,7 +69,6 @@ function executeSaveObligation() {
           triggerSuccessNotification("Commitment saved!");
       }
       
-      // Refresh the UI list immediately
       renderObligationsList();
   };
 }
@@ -70,7 +79,6 @@ function renderObligationsList() {
   
   listContainer.innerHTML = '';
   
-  // Safety check: ensure db is initialized before querying
   if (!db || !db.objectStoreNames.contains('obligations')) return;
   
   const tx = db.transaction(['obligations'], 'readonly');
@@ -129,29 +137,21 @@ function runGatekeeperCheck() {
   tx.objectStore("obligations").getAll().onsuccess = (e) => {
       const obligations = e.target.result || [];
       
-      // Use exact IST mapping to prevent timezone leakage
       const istDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
       const currentDay = istDate.getDate();
       const currentYearMonth = `${istDate.getFullYear()}-${String(istDate.getMonth() + 1).padStart(2, '0')}`;
       const currentDateStringForEnd = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(istDate);
       
-      // Calculate max days in current month (to handle 31st billing dates in 30-day months)
       const daysInCurrentMonth = new Date(istDate.getFullYear(), istDate.getMonth() + 1, 0).getDate();
 
       let pending = obligations.filter(ob => {
-          // If billing date is 31, but month has 30 days, trigger on the 30th.
           let effectiveBillingDay = ob.billingDate > daysInCurrentMonth ? daysInCurrentMonth : ob.billingDate;
           
-          // 1. Is it too early in the month?
           if (currentDay < effectiveBillingDay) return false;
-          
-          // 2. Have we already prompted them this month?
           if (ob.lastProcessedMonth === currentYearMonth) return false;
-          
-          // 3. Has the EMI expired?
           if (ob.type === 'EMI' && ob.endDate && currentDateStringForEnd > ob.endDate) return false;
           
-          return true; // If we made it here, prompt them!
+          return true; 
       });
       
       renderPendingObligations(pending);
@@ -210,11 +210,9 @@ function processObligation(id, action) {
       const obligation = e.target.result;
       const istDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
       
-      // Always stamp it as processed so it doesn't prompt again this month
       obligation.lastProcessedMonth = `${istDate.getFullYear()}-${String(istDate.getMonth() + 1).padStart(2, '0')}`;
       obStore.put(obligation);
       
-      // If the user clicked "Log", push it to the main transactions ledger
       if(action === 'log') {
           tx.objectStore("transactions").add({ 
               text: obligation.title, 
@@ -236,8 +234,6 @@ function processObligation(id, action) {
           }
           
           if (typeof fetchAndDisplay === 'function') fetchAndDisplay(); 
-          
-          // Re-run the check to see if any other obligations are pending or if we can close the modal
           runGatekeeperCheck(); 
       };
   };

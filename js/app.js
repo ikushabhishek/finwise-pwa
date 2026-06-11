@@ -121,10 +121,13 @@ function scrollToLogsTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ---> BUG 1 FIX: Added renderObligationsList() call so it loads when you open settings
 function openPreferencesModal() { 
   if (typeof refreshImportHistoryUI === 'function') refreshImportHistoryUI();
   if (typeof renderObligationsList === 'function') renderObligationsList();
+  
+  // ---> BUG FIX: Force the categories dropdown to resync every time the settings modal opens!
+  if (typeof syncCategoriesDropdownSelectorsUI === 'function') syncCategoriesDropdownSelectorsUI(); 
+  
   document.getElementById('preferences-modal').style.display = 'flex'; 
 }
 
@@ -165,7 +168,6 @@ function initializeCategoriesStorageSystem() {
 function syncCategoriesDropdownSelectorsUI() {
   const addSelect = document.getElementById('expense-category'); 
   const editSelect = document.getElementById('edit-expense-category');
-  
   const obSelect = document.getElementById('ob-category');
   
   if (!addSelect || !editSelect) return;

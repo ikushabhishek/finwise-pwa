@@ -308,10 +308,31 @@ button:active { transform: scale(0.96); }
 .nav-item:active { transform: scale(0.92); }
 .nav-item.nav-active { color: var(--primary); }
 .nav-icon { font-size: 1.3rem; margin-bottom: 2px; }
-
 /* GLOBAL UNIFIED MODERN APP BOTTOM SHEETS */
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: flex-end; padding: 16px; }
-.modal-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 24px 20px; width: 100%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); text-align: center; animation: slideUpAlert 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.15); margin-bottom: env(safe-area-inset-bottom, 10px); }
+
+/* ---> BUG FIX: Added max-height and overflow-y to make the modal safely scrollable on mobile! */
+.modal-card { 
+  background: var(--bg-card); 
+  border: 1px solid var(--border); 
+  border-radius: 28px; 
+  padding: 24px 20px; 
+  width: 100%; 
+  max-width: 400px; 
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15); 
+  text-align: center; 
+  animation: slideUpAlert 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.15); 
+  margin-bottom: env(safe-area-inset-bottom, 10px);
+  
+  max-height: 85vh; 
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+
+/* Optional: Custom scrollbar styling for the modal so it looks premium */
+.modal-card::-webkit-scrollbar { width: 6px; }
+.modal-card::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
 @keyframes slideUpAlert { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
 
 .modal-card h3 { margin-top: 0; margin-bottom: 8px; font-size: 1.15rem; font-weight: 700; color: var(--text-main); }
