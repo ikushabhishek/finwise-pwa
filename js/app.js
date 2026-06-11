@@ -129,8 +129,8 @@ function openPreferencesModal() {
   if (typeof renderObligationsList === 'function') renderObligationsList();
   if (typeof syncCategoriesDropdownSelectorsUI === 'function') syncCategoriesDropdownSelectorsUI(); 
   
-  // Opens the stable popup modal
-  document.getElementById('preferences-modal').style.display = 'flex'; 
+  // FIX: Switched back to 'block' so the full-screen layout works perfectly!
+  document.getElementById('preferences-modal').style.display = 'block'; 
 }
 
 function togglePrivacyMode() {

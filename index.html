@@ -369,85 +369,6 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="preferences-modal">
-  <div class="modal-card" style="text-align: left; max-height: 85vh; overflow-y: auto;">
-    <h3 style="text-align: center; margin-bottom: 20px;">⚙️ App Settings</h3>
-
-    <div class="reconcile-view-card" style="text-align: left; padding: 16px; margin-bottom: 16px;">
-      <h4 style="margin: 0 0 10px 0; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; color: var(--text-main); border-bottom: none;">
-        🔒 App Lock (PIN)
-        <label class="toggle-container" style="margin:0;">
-          <div class="switch">
-            <input type="checkbox" id="pin-enable-checkbox" onchange="togglePinSetupMode(this)">
-            <span class="slider"></span>
-          </div>
-        </label>
-      </h4>
-      <p style="font-size: 0.8rem; color: var(--text-muted); margin:0;">Ask for a 4-digit PIN when opening the app.</p>
-    </div>
-
-    <div class="reconcile-view-card" style="text-align: left; padding: 16px; margin-bottom: 16px;">
-      <h4 style="margin: 0 0 10px 0; font-size: 1rem; color: var(--text-main); border-bottom: none;">📅 Upcoming Bills & EMIs</h4>
-      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">Keep track of your monthly subscriptions and EMIs.</p>
-
-      <div style="background: var(--bg-main); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
-        <input type="text" id="ob-title" placeholder="Name (e.g. Netflix, Car Loan)" style="margin-bottom: 8px; width: 100%; box-sizing: border-box; padding: 10px;">
-        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-          <input type="number" id="ob-amount" placeholder="Amount (₹)" style="margin-bottom: 0; flex: 1; padding: 10px;">
-          <input type="number" id="ob-date" placeholder="Day (1-31)" min="1" max="31" style="margin-bottom: 0; flex: 1; padding: 10px;">
-        </div>
-        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-          <select id="ob-type" onchange="toggleEndDateField()" style="margin-bottom: 0; flex: 1; padding: 10px;">
-            <option value="Subscription">Subscription</option>
-            <option value="EMI">EMI (Has End Date)</option>
-          </select>
-          <select id="ob-category" style="margin-bottom: 0; flex: 1; padding: 10px;"></select>
-        </div>
-        <div id="end-date-container" style="display: none; margin-bottom: 8px;">
-          <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">When does this loan end?</label>
-          <input type="date" id="ob-end-date" style="width: 100%; padding: 10px; margin-bottom: 0;">
-        </div>
-        <button onclick="executeSaveObligation()" style="background: var(--primary); color: white; width: 100%; box-shadow: none; padding: 12px; border: none; border-radius: 8px;">Save Bill</button>
-      </div>
-
-      <div id="obligations-list" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
-      </div>
-    </div>
-
-    <div class="reconcile-view-card" style="text-align: left; padding: 16px; margin-bottom: 16px;">
-      <h4 style="margin: 0 0 10px 0; font-size: 1rem; color: var(--text-main); border-bottom: none;">📁 Backup & Restore Data</h4>
-      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">Save your data to a file, or load it from an old phone.</p>
-      <div style="display: flex; gap: 8px;">
-        <button onclick="exportToCSV()" style="flex: 1; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); margin: 0; box-shadow: none; font-size: 0.85rem;">Export Backup</button>
-
-        <label style="flex: 1; margin: 0; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.85rem; font-weight: 700;">
-          Load Backup
-          <input type="file" accept=".csv" onchange="importFromCSV(event)" style="display: none;">
-        </label>
-      </div>
-    </div>
-
-    <div class="reconcile-view-card" style="text-align: left; padding: 16px; margin-bottom: 16px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-        <h4 style="margin: 0; font-size: 1rem; color: var(--text-main); border-bottom: none;">🕒 Past Imports</h4>
-        <button onclick="deleteSelectedImports()" style="width: auto; padding: 6px 12px; font-size: 0.75rem; background: var(--expense); color: white; margin: 0; border-radius: 8px; box-shadow: none;">Remove Selected</button>
-      </div>
-      <div id="import-history-list" style="background: var(--bg-main); border-radius: 12px; padding: 10px; border: 1px solid var(--border);">
-      </div>
-    </div>
-
-    <div class="reconcile-view-card" style="text-align: left; padding: 16px; margin-bottom: 10px; border-left: 4px solid var(--expense);">
-      <h4 style="color: #dc2626; margin: 0 0 6px 0; font-size: 1rem; border-bottom: none;">⚠️ Reset App</h4>
-      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">Want to clear everything and start over?</p>
-      <button class="btn-reset-isolated" onclick="openResetModal()">Clear All Data</button>
-    </div>
-
-    <div class="modal-footer" style="margin-top: 10px;">
-      <button class="btn-cancel" onclick="closeModal('preferences-modal')">Close Menu</button>
-    </div>
-  </div>
-</div>
-
 <div class="modal-overlay" id="delete-modal">
   <div class="modal-card" style="border-top: 4px solid var(--expense);">
     <div class="alert-icon-circle">
@@ -544,8 +465,90 @@
     </div>
 
     <div class="modal-footer">
-      <button style="background: var(--text-main); color: var(--bg-card); width: 100%;" onclick="document.getElementById('gatekeeper-modal').style.display='none'">Close for now</button>
+      <button style=\"background: var(--text-main); color: var(--bg-card); width: 100%;\" onclick=\"document.getElementById('gatekeeper-modal').style.display='none'\">Close for now</button>
     </div>
+  </div>
+</div>
+
+<div class="dedicated-page-overlay" id="preferences-modal">
+  <div class="settings-page-content">
+      
+    <div class="settings-page-header">
+      <h2>⚙️ App Settings</h2>
+      <button class="btn-close-page" onclick="closeModal('preferences-modal')">✕</button>
+    </div>
+
+    <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px; font-weight: 500;">Manage your app configuration here.</p>
+
+    <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
+      <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; display: flex; justify-content: space-between; align-items: center; color: var(--text-main); border-bottom: none;">
+        🔒 App Lock (PIN)
+        <label class="toggle-container" style="margin:0;">
+          <div class="switch">
+            <input type="checkbox" id="pin-enable-checkbox" onchange="togglePinSetupMode(this)">
+            <span class="slider"></span>
+          </div>
+        </label>
+      </h4>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin:0;">Ask for a 4-digit PIN when opening the app.</p>
+    </div>
+
+    <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
+      <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: var(--text-main); border-bottom: none;">📅 Upcoming Bills & EMIs</h4>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Keep track of your monthly subscriptions and EMIs.</p>
+
+      <div style="background: var(--bg-main); padding: 14px; border-radius: 12px; border: 1px solid var(--border);">
+        <input type="text" id="ob-title" placeholder="Name (e.g. Netflix, Car Loan)" style="margin-bottom: 10px; width: 100%; box-sizing: border-box; padding: 12px;">
+        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+          <input type="number" id="ob-amount" placeholder="Amount (₹)" style="margin-bottom: 0; flex: 1; padding: 12px;">
+          <input type="number" id="ob-date" placeholder="Day (1-31)" min="1" max="31" style="margin-bottom: 0; flex: 1; padding: 12px;">
+        </div>
+        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+          <select id="ob-type" onchange="toggleEndDateField()" style="margin-bottom: 0; flex: 1; padding: 12px;">
+            <option value="Subscription">Subscription</option>
+            <option value="EMI">EMI (Has End Date)</option>
+          </select>
+          <select id="ob-category" style="margin-bottom: 0; flex: 1; padding: 12px;"></select>
+        </div>
+        <div id="end-date-container" style="display: none; margin-bottom: 10px;">
+          <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">When does this loan end?</label>
+          <input type="date" id="ob-end-date" style="width: 100%; padding: 12px; margin-bottom: 0;">
+        </div>
+        <button onclick="executeSaveObligation()" style="background: var(--primary); color: white; width: 100%; box-shadow: none; padding: 14px; border: none; border-radius: 8px;">Save Bill</button>
+      </div>
+
+      <div id="obligations-list" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+      </div>
+    </div>
+
+    <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
+      <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: var(--text-main); border-bottom: none;">📁 Backup & Restore Data</h4>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Save your data to a file, or load it from an old phone.</p>
+      <div style="display: flex; gap: 8px;">
+        <button onclick="exportToCSV()" style="flex: 1; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); margin: 0; box-shadow: none;">Export Backup</button>
+
+        <label style="flex: 1; margin: 0; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.95rem; font-weight: 700;">
+          Load Backup
+          <input type="file" accept=".csv" onchange="importFromCSV(event)" style="display: none;">
+        </label>
+      </div>
+    </div>
+
+    <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h4 style="margin: 0; font-size: 1.05rem; color: var(--text-main); border-bottom: none;">🕒 Past Imports</h4>
+        <button onclick="deleteSelectedImports()" style="width: auto; padding: 6px 12px; font-size: 0.75rem; background: var(--expense); color: white; margin: 0; border-radius: 8px; box-shadow: none;">Remove Selected</button>
+      </div>
+      <div id="import-history-list" style="background: var(--bg-main); border-radius: 12px; padding: 10px; border: 1px solid var(--border);">
+      </div>
+    </div>
+
+    <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 40px; border-left: 4px solid var(--expense);">
+      <h4 style="color: #dc2626; margin: 0 0 6px 0; font-size: 1.05rem; border-bottom: none;">⚠️ Reset App</h4>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Want to clear everything and start over?</p>
+      <button class="btn-reset-isolated" onclick="openResetModal()">Clear All Data</button>
+    </div>
+
   </div>
 </div>
 
