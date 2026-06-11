@@ -308,10 +308,11 @@ button:active { transform: scale(0.96); }
 .nav-item:active { transform: scale(0.92); }
 .nav-item.nav-active { color: var(--primary); }
 .nav-icon { font-size: 1.3rem; margin-bottom: 2px; }
+
 /* GLOBAL UNIFIED MODERN APP BOTTOM SHEETS */
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: flex-end; padding: 16px; }
 
-/* ---> BUG FIX: Added max-height and overflow-y to make the modal safely scrollable on mobile! */
+/* Modal Cards (Gatekeeper, Edit, Delete, Report) with max-height to prevent cutoff */
 .modal-card { 
   background: var(--bg-card); 
   border: 1px solid var(--border); 
@@ -329,7 +330,6 @@ button:active { transform: scale(0.96); }
   overscroll-behavior-y: contain;
 }
 
-/* Optional: Custom scrollbar styling for the modal so it looks premium */
 .modal-card::-webkit-scrollbar { width: 6px; }
 .modal-card::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
@@ -344,3 +344,69 @@ button:active { transform: scale(0.96); }
 
 .alert-icon-circle { width: 54px; height: 54px; background: rgba(220, 38, 38, 0.1); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 16px auto; color: var(--expense); }
 .alert-icon-circle svg { width: 26px; height: 26px; stroke-width: 2.5; }
+
+/* ==============================================================
+   DEDICATED FULL-SCREEN SETTINGS PAGE - FIXED LAYOUT
+   ============================================================== */
+.dedicated-page-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--bg-main);
+    z-index: 10000; /* Extremely high to sit above everything */
+    overflow-y: auto;
+    padding: 20px;
+    padding-bottom: 100px; /* Extra padding for scrolling past mobile navigation */
+    animation: slideInRight 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.05) forwards;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+/* Safe container so the settings don't stretch too wide on tablets/desktops */
+.settings-page-content {
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.settings-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed var(--border);
+    margin-top: 10px;
+}
+
+.settings-page-header h2 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.btn-close-page {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    padding: 0;
+    margin: 0;
+    transition: transform 0.1s, background-color 0.2s;
+}
+.btn-close-page:active { transform: scale(0.9); background: var(--tab-bg); }

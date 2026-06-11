@@ -128,7 +128,8 @@ function openPreferencesModal() {
   // ---> BUG FIX: Force the categories dropdown to resync every time the settings modal opens!
   if (typeof syncCategoriesDropdownSelectorsUI === 'function') syncCategoriesDropdownSelectorsUI(); 
   
-  document.getElementById('preferences-modal').style.display = 'flex'; 
+  // ---> NEW FIX: Changed to 'block' to support the full-screen layout correctly
+  document.getElementById('preferences-modal').style.display = 'block'; 
 }
 
 // ==========================================
