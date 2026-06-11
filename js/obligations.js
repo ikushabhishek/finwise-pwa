@@ -58,6 +58,8 @@ function executeSaveObligation() {
       if (typeof triggerSuccessNotification === 'function') {
           triggerSuccessNotification("Commitment saved!");
       }
+      
+      // Refresh the UI list immediately
       renderObligationsList();
   };
 }
@@ -67,6 +69,10 @@ function renderObligationsList() {
   if(!listContainer) return;
   
   listContainer.innerHTML = '';
+  
+  // Safety check: ensure db is initialized before querying
+  if (!db || !db.objectStoreNames.contains('obligations')) return;
+  
   const tx = db.transaction(['obligations'], 'readonly');
   
   tx.objectStore('obligations').openCursor().onsuccess = (e) => {
@@ -117,6 +123,8 @@ function executeDeleteObligation(id) {
 // ==========================================
 
 function runGatekeeperCheck() {
+  if (!db || !db.objectStoreNames.contains('obligations')) return;
+
   const tx = db.transaction("obligations", "readonly");
   tx.objectStore("obligations").getAll().onsuccess = (e) => {
       const obligations = e.target.result || [];
