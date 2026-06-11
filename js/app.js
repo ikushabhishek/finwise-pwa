@@ -121,8 +121,10 @@ function scrollToLogsTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// ---> BUG 1 FIX: Added renderObligationsList() call so it loads when you open settings
 function openPreferencesModal() { 
   if (typeof refreshImportHistoryUI === 'function') refreshImportHistoryUI();
+  if (typeof renderObligationsList === 'function') renderObligationsList();
   document.getElementById('preferences-modal').style.display = 'flex'; 
 }
 
@@ -164,7 +166,6 @@ function syncCategoriesDropdownSelectorsUI() {
   const addSelect = document.getElementById('expense-category'); 
   const editSelect = document.getElementById('edit-expense-category');
   
-  // Also sync obligations select if it exists
   const obSelect = document.getElementById('ob-category');
   
   if (!addSelect || !editSelect) return;
@@ -802,7 +803,12 @@ function calculateMasterSummaryTotals(masterArray) {
 function renderUI(transactions) {
   const fragmentBuffer = document.createDocumentFragment(); 
   DOM.list.innerHTML = ""; 
-  DOM.emptyMsg.style.display = transactions.length === 0 ? "flex" : "none";
+  
+  if (transactions.length === 0) {
+      DOM.emptyMsg.style.display = "flex";
+  } else {
+      DOM.emptyMsg.style.display = "none";
+  }
   
   transactions.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0)).forEach((t, index) => {
     const isExpense = t.amount < 0; 

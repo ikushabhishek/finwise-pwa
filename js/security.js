@@ -3,13 +3,14 @@
 // ==========================================
 let currentPinInput = "";
 let isSettingUpPin = false;
-let isVerifyingToDisablePin = false; 
-let setupPinStep = 1; 
+let isVerifyingToDisablePin = false;
+let setupPinStep = 1;
 let tempSetupPin = "";
 
 function initSecurityEngine() {
   const savedPin = localStorage.getItem('finwise-pin');
   const enableCheckbox = document.getElementById('pin-enable-checkbox');
+  
   if(enableCheckbox) enableCheckbox.checked = !!savedPin;
 
   if (savedPin) {
@@ -18,7 +19,7 @@ function initSecurityEngine() {
     document.getElementById('lock-title').innerText = "Verify Identity";
     document.getElementById('lock-subtitle').innerText = "To access FinWise";
     document.getElementById('pin-cancel-btn').innerText = "";
-    
+
     isSettingUpPin = false;
     isVerifyingToDisablePin = false;
     currentPinInput = "";
@@ -43,6 +44,9 @@ function initSecurityEngine() {
     }
   } else {
     document.getElementById('security-lock-screen').style.display = 'none';
+    
+    // Trigger Gatekeeper immediately on load if no PIN is required
+    if (typeof runGatekeeperCheck === 'function') runGatekeeperCheck();
   }
 }
 
@@ -60,42 +64,43 @@ document.addEventListener("visibilitychange", () => {
 
 function togglePinSetupMode(checkbox) {
   const savedPin = localStorage.getItem('finwise-pin');
-  
+
   // Verifying identity before allowing the user to turn off security
   if (!checkbox.checked && savedPin) {
-    checkbox.checked = true; 
+    checkbox.checked = true;
     isVerifyingToDisablePin = true;
     currentPinInput = "";
     updatePinDisplay();
-    
+
     document.getElementById('security-lock-screen').style.display = 'flex';
     document.getElementById('lock-title').innerText = "Verify Identity";
     document.getElementById('lock-subtitle').innerText = "Enter PIN to disable security";
     document.getElementById('pin-cancel-btn').innerText = "Cancel";
     document.getElementById('pin-entry-ui').style.display = 'block';
-    
+
     if(localStorage.getItem('finwise-biometric-id')) {
         setTimeout(() => unlockWithBiometrics(true), 300);
     }
-    
-    closeModal('preferences-modal');
+
+    if (typeof closeModal === 'function') closeModal('preferences-modal');
     return;
   }
 
   // Normal PIN Setup Flow
   if (checkbox.checked) {
-    closeModal('preferences-modal');
+    if (typeof closeModal === 'function') closeModal('preferences-modal');
+    
     isSettingUpPin = true;
     setupPinStep = 1;
     tempSetupPin = "";
     currentPinInput = "";
     updatePinDisplay();
-    
+
     document.getElementById('security-lock-screen').style.display = 'flex';
     document.getElementById('lock-title').innerText = "Create PIN";
     document.getElementById('lock-subtitle').innerText = "Enter a 4-digit passcode";
     document.getElementById('pin-cancel-btn').innerText = "Cancel";
-    
+
     document.getElementById('pin-entry-ui').style.display = 'block';
     document.getElementById('biometric-unlock-btn').style.display = 'none';
   }
@@ -109,7 +114,7 @@ function cancelPinSetup() {
   } else if (isVerifyingToDisablePin) {
     isVerifyingToDisablePin = false;
     document.getElementById('security-lock-screen').style.display = 'none';
-    openPreferencesModal();
+    if (typeof openPreferencesModal === 'function') openPreferencesModal();
   }
 }
 
@@ -154,7 +159,9 @@ function processPinComplete() {
       if (currentPinInput === tempSetupPin) {
         localStorage.setItem('finwise-pin', currentPinInput);
         document.getElementById('security-lock-screen').style.display = 'none';
-        triggerSuccessNotification("Vault secured successfully!");
+        
+        if (typeof triggerSuccessNotification === 'function') triggerSuccessNotification("Vault secured successfully!");
+        
         isSettingUpPin = false;
         currentPinInput = "";
         updatePinDisplay();
@@ -166,16 +173,20 @@ function processPinComplete() {
     }
   } else if (isVerifyingToDisablePin) {
     const savedPin = localStorage.getItem('finwise-pin');
+    
     if (currentPinInput === savedPin) {
        localStorage.removeItem('finwise-pin');
        localStorage.removeItem('finwise-biometric-id'); // Wipe biometric link too
        document.getElementById('pin-enable-checkbox').checked = false;
        document.getElementById('security-lock-screen').style.display = 'none';
-       triggerSuccessNotification("PIN Vault disabled.");
+       
+       if (typeof triggerSuccessNotification === 'function') triggerSuccessNotification("PIN Vault disabled.");
+       
        isVerifyingToDisablePin = false;
        currentPinInput = "";
        updatePinDisplay();
-       openPreferencesModal(); 
+       
+       if (typeof openPreferencesModal === 'function') openPreferencesModal();
     } else {
        triggerPinError("Incorrect PIN.");
     }
@@ -194,15 +205,15 @@ function triggerPinError(msg) {
   display.classList.add('pin-shake');
   document.getElementById('lock-subtitle').innerText = msg;
   document.getElementById('lock-subtitle').style.color = "var(--expense)";
-  
+
   if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
-  
+
   setTimeout(() => {
     display.classList.remove('pin-shake');
     currentPinInput = "";
     updatePinDisplay();
     document.getElementById('lock-subtitle').style.color = "var(--text-muted)";
-    
+
     if(isSettingUpPin) {
        document.getElementById('lock-subtitle').innerText = "Enter a 4-digit passcode";
        document.getElementById('lock-title').innerText = "Create PIN";
@@ -219,7 +230,7 @@ async function unlockWithBiometrics(isAuto = false) {
   try {
     const challenge = new Uint8Array(32);
     window.crypto.getRandomValues(challenge);
-    
+
     let savedBioId = localStorage.getItem('finwise-biometric-id');
 
     if (!savedBioId) {
@@ -229,7 +240,7 @@ async function unlockWithBiometrics(isAuto = false) {
                 challenge: challenge,
                 rp: { name: "FinWise", id: window.location.hostname },
                 user: {
-                    id: new Uint8Array(16), 
+                    id: new Uint8Array(16),
                     name: "finwise-user",
                     displayName: "FinWise PWA User"
                 },
@@ -264,12 +275,10 @@ async function unlockWithBiometrics(isAuto = false) {
             unlockAppSuccess("Unlocked via Biometrics");
         }
     }
-  } catch (err) { 
+  } catch (err) {
       console.error("Biometric Error: ", err);
-      // If it was auto-triggered and failed/canceled, do nothing because the PIN pad is already on screen!
-      // Only show error text if they manually clicked the "Retry" button and it failed again.
       if (!isAuto) {
-          triggerPinError("Fingerprint failed or canceled. Please use PIN."); 
+          triggerPinError("Fingerprint failed or canceled. Please use PIN.");
       }
   }
 }
@@ -280,21 +289,31 @@ function unlockAppSuccess(toastMessage) {
        localStorage.removeItem('finwise-biometric-id');
        document.getElementById('pin-enable-checkbox').checked = false;
        document.getElementById('security-lock-screen').style.display = 'none';
-       triggerSuccessNotification("Security Disabled");
+       
+       if (typeof triggerSuccessNotification === 'function') triggerSuccessNotification("Security Disabled");
+       
        isVerifyingToDisablePin = false;
        currentPinInput = "";
        updatePinDisplay();
-       openPreferencesModal();
+       
+       if (typeof openPreferencesModal === 'function') openPreferencesModal();
     } else {
       document.getElementById('security-lock-screen').style.opacity = '0';
       document.getElementById('security-lock-screen').style.transform = 'scale(1.05)';
+      
       setTimeout(() => {
         document.getElementById('security-lock-screen').style.display = 'none';
         document.getElementById('security-lock-screen').style.opacity = '1';
         document.getElementById('security-lock-screen').style.transform = 'scale(1)';
+
+        // ---> CRITICAL BUG FIX: Trigger Gatekeeper AFTER successful unlock!
+        if (typeof runGatekeeperCheck === 'function') runGatekeeperCheck();
+
       }, 300);
+      
       currentPinInput = "";
       updatePinDisplay();
-      if(toastMessage) triggerSuccessNotification(toastMessage);
+      
+      if(toastMessage && typeof triggerSuccessNotification === 'function') triggerSuccessNotification(toastMessage);
     }
 }
