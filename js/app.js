@@ -13,7 +13,7 @@ let currentActiveMainScreen = 'add';
 let bulkRowIncrementalPointer = 0;
 let expenseChartInstance = null;
 
-// ---> Privacy Mode Global State
+// ---> NEW: Privacy Mode Global State
 let isPrivacyMode = localStorage.getItem('finwise-privacy') === 'true';
 
 // ==========================================
@@ -129,10 +129,10 @@ function openPreferencesModal() {
   if (typeof renderObligationsList === 'function') renderObligationsList();
   if (typeof syncCategoriesDropdownSelectorsUI === 'function') syncCategoriesDropdownSelectorsUI(); 
   
-  // FIX: Switched back to 'block' so the full-screen layout works perfectly!
   document.getElementById('preferences-modal').style.display = 'block'; 
 }
 
+// ---> NEW: Privacy Toggle Logic
 function togglePrivacyMode() {
     isPrivacyMode = !isPrivacyMode;
     localStorage.setItem('finwise-privacy', isPrivacyMode);
@@ -140,6 +140,7 @@ function togglePrivacyMode() {
     const btn = document.getElementById('privacy-toggle-btn');
     if (btn) btn.innerText = isPrivacyMode ? '🙈' : '👁️';
     
+    // Applying filters re-renders all lists, charts, and dashboards instantly
     applyFilters(); 
 }
 
@@ -209,7 +210,7 @@ function openCategoryManagerModal() {
     row.style.fontSize = "0.85rem";
     
     const isSystemPreset = systemDefaultCategoriesPreset.includes(cat);
-    row.innerHTML = `<span>${cat}</span> ${isSystemPreset ? '<small style="color:var(--text-muted); font-size:0.65rem; font-weight:bold;">DEFAULT</small>' : `<span style="color:var(--expense); font-weight:bold; cursor:pointer;" onclick="executeDeleteCustomCategoryTag(${idx})">Remove</span>`}`;
+    row.innerHTML = `<span>${cat}</span> ${isSystemPreset ? '<small style="color:var(--text-muted); font-size:0.65rem; font-weight:bold;">SYSTEM PRESET</small>' : `<span style="color:var(--expense); font-weight:bold; cursor:pointer;" onclick="executeDeleteCustomCategoryTag(${idx})">Remove</span>`}`;
     frag.appendChild(row);
   });
   
@@ -222,11 +223,11 @@ function openCategoryManagerModal() {
 function executeSaveNewCustomCategoryTag() {
   const tagVal = document.getElementById('new-custom-tag-input').value.trim();
   if(!tagVal) { 
-      triggerNativeAppAlert("Please enter a valid category name."); 
+      triggerNativeAppAlert("Please enter a valid tag name."); 
       return; 
   }
   if(workspaceActiveExpenseCategories.includes(tagVal)) { 
-      triggerNativeAppAlert("This category already exists."); 
+      triggerNativeAppAlert("This category tag already exists."); 
       return; 
   }
   
@@ -234,7 +235,7 @@ function executeSaveNewCustomCategoryTag() {
   localStorage.setItem('finwise-custom-expense-tags', JSON.stringify(workspaceActiveExpenseCategories));
   syncCategoriesDropdownSelectorsUI(); 
   openCategoryManagerModal(); 
-  triggerSuccessNotification("📦 Category added!");
+  triggerSuccessNotification("📦 Custom category tag appended!");
 }
 
 function executeDeleteCustomCategoryTag(indexPointer) {
@@ -277,7 +278,7 @@ function saveDashboardCycleAndBaselineConfig() {
   let day = parseInt(cycleInput.value);
   
   if (isNaN(day) || day < 1 || day > maxDays) { 
-      triggerNativeAppAlert(`Please enter a valid starting day between 1 and ${maxDays}.`); 
+      triggerNativeAppAlert(`Please enter a valid billing cycle date between 1 and ${maxDays}.`); 
       return; 
   }
   
@@ -290,7 +291,7 @@ function saveDashboardCycleAndBaselineConfig() {
   document.getElementById('dashboard-config-fields-sheet').style.display = 'none'; 
   document.getElementById('dashboard-config-toggle-btn').innerText = "✏️ Edit";
   
-  triggerSuccessNotification("📅 Budget settings saved!"); 
+  triggerSuccessNotification("📅 Account setup profiles updated successfully!"); 
   applyFilters();
 }
 
@@ -307,7 +308,7 @@ function toggleFormEntryMode(checkbox) {
     singleFields.style.display = 'none'; 
     singleSlider.style.display = 'none'; 
     bulkFields.style.display = 'block'; 
-    mainSaveButton.innerText = "Save All Entries";
+    mainSaveButton.innerText = "Save Bulk Entries";
     
     const holder = document.getElementById('bulk-rows-holder-div'); 
     if (holder.children.length === 0) { 
@@ -318,7 +319,7 @@ function toggleFormEntryMode(checkbox) {
     singleFields.style.display = 'block'; 
     singleSlider.style.display = 'flex'; 
     bulkFields.style.display = 'none'; 
-    mainSaveButton.innerText = "Save"; 
+    mainSaveButton.innerText = "Save Entry"; 
   }
 }
 
@@ -470,14 +471,14 @@ function executeTransactionSave() {
     const childrenRows = holder.children;
     
     if (childrenRows.length === 0) { 
-        triggerNativeAppAlert("Please add at least one entry."); 
+        triggerNativeAppAlert("Please add at least one line entry to process bulk saves."); 
         return; 
     }
     
     let itemsSavedCount = 0;
     for(let i = 0; i < childrenRows.length; i++) {
       let trackingPointerString = childrenRows[i].id.split('-').pop();
-      let text = document.getElementById(`bulk-text-${trackingPointerString}`).value.trim() || 'Untitled Entry'; 
+      let text = document.getElementById(`bulk-text-${trackingPointerString}`).value.trim() || 'Bulk Untitled Entry'; 
       let amount = parseIndianCommaStringToFloat(document.getElementById(`bulk-amount-${trackingPointerString}`).value); 
       let nature = document.getElementById(`bulk-nature-${trackingPointerString}`).value; 
       let category = document.getElementById(`bulk-category-${trackingPointerString}`).value;
@@ -496,7 +497,7 @@ function executeTransactionSave() {
     }
     
     if(itemsSavedCount === 0) { 
-        triggerNativeAppAlert("No valid amounts found. Please check your numbers."); 
+        triggerNativeAppAlert("No valid numerical row items found. Please check your amounts."); 
         return; 
     }
     
@@ -505,7 +506,7 @@ function executeTransactionSave() {
         generateNewBulkInputRow(); 
         generateNewBulkInputRow(); 
         fetchAndDisplay(); 
-        triggerSuccessNotification(`Saved ${itemsSavedCount} entries!`); 
+        triggerSuccessNotification(`Batch processing complete! Logged ${itemsSavedCount} lines.`); 
     };
     
   } else {
@@ -690,6 +691,7 @@ function applyFilters() {
       else fExpense += Math.abs(t.amount); 
   });
 
+  // ---> PRIVACY MASKING: Filtered Totals Strip
   DOM.fBalance.innerText = isPrivacyMode ? '₹ ••••••' : `${fBalance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(fBalance))}`; 
   DOM.fBalance.className = fBalance >= 0 ? 'amt-inc' : 'amt-exp'; 
   DOM.fInc.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(fIncome)}`; 
@@ -722,6 +724,7 @@ function calculateMasterSummaryTotals(masterArray) {
       if (t.amount < 0) expense += Math.abs(t.amount); 
   });
   
+  // ---> PRIVACY MASKING: Main Balance Dashboard
   DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${balance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(balance))}`; 
   DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(income)}`; 
   DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(expense)}`;
@@ -735,9 +738,10 @@ function calculateMasterSummaryTotals(masterArray) {
 
   if (computationalLimitAnchor > 0) {
     velocityWrapper.style.display = 'block'; 
-    velocityTitle.innerText = manualBudgetLimitSetting > 0 ? "MONTHLY SPENDING LIMIT" : "MONTHLY SPENDING SPEED";
+    velocityTitle.innerText = manualBudgetLimitSetting > 0 ? "MANUAL MONTHLY BUDGET LIMIT" : "INCOME BURN VELOCITY LIMIT";
     let velocityPercentageValue = (expense / computationalLimitAnchor) * 100; 
     
+    // Privacy Masking for Progress Percentage
     velocityLabel.innerText = isPrivacyMode ? `••% SPENT` : `${Math.round(velocityPercentageValue)}% SPENT`; 
     velocityFill.style.width = `${Math.min(velocityPercentageValue, 100)}%`;
     
@@ -770,11 +774,12 @@ function calculateMasterSummaryTotals(masterArray) {
   
   if(!widgetCard) return;
 
+  // ---> PRIVACY MASKING: Baseline Panel
   document.getElementById('rec-cycle-label').innerText = `${cycleDayValueSetting}${suffixMarker} of the Month`; 
   
   document.getElementById('rec-budget-label').innerText = manualBudgetLimitSetting > 0 ? 
-      (isPrivacyMode ? '₹ •••••• (Limit)' : `₹${formatToIndianRupee(manualBudgetLimitSetting).split('.')[0]} (Fixed limit)`) 
-      : "Not Set (Using Income)"; 
+      (isPrivacyMode ? '₹ •••••• (Fixed)' : `₹${formatToIndianRupee(manualBudgetLimitSetting).split('.')[0]} (Fixed boundary)`) 
+      : "Not Configured (Using Income)"; 
       
   document.getElementById('rec-op-label').innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(openingBalanceBaseline)}`;
 
@@ -783,15 +788,15 @@ function calculateMasterSummaryTotals(masterArray) {
     displaySheet.style.display = 'none'; 
     fieldsSheet.style.display = 'block'; 
     actionLinkBtn.style.display = 'none'; 
-    titleHeaderSpan.innerText = "🔧 Set Up Monthly Budget";
+    titleHeaderSpan.innerText = "🔧 Setup Financial Baseline Cycle";
   } else {
     widgetCard.style.display = 'block'; 
     actionLinkBtn.style.display = 'inline-block';
     
     if(fieldsSheet.style.display === 'none') { 
-        titleHeaderSpan.innerText = "📅 Monthly Budget Settings"; 
+        titleHeaderSpan.innerText = "📅 Cycle & Baseline Control"; 
     } else { 
-        titleHeaderSpan.innerText = "⚙️ Edit Budget Goals"; 
+        titleHeaderSpan.innerText = "⚙️ Modify Workspace Targets"; 
     }
     
     if(closingBalanceTarget !== null) {
@@ -801,18 +806,18 @@ function calculateMasterSummaryTotals(masterArray) {
       const diffLabel = document.getElementById('rec-diff-label');
       
       if(Math.abs(variance) < 0.01) { 
-          diffTitle.innerHTML = `Budget Check: <span class="reconcile-status-badge" style="background-color: rgba(22, 163, 74, 0.2); color: var(--income);">On Target ✨</span>`; 
+          diffTitle.innerHTML = `Reconciliation State: <span class="reconcile-status-badge" style="background-color: rgba(22, 163, 74, 0.2); color: var(--income);">Balanced ✨</span>`; 
           diffLabel.innerText = "Perfect Match"; 
           diffLabel.className = "amt-inc"; 
       } 
       else { 
-          diffTitle.innerHTML = `Budget Check: <span class="reconcile-status-badge" style="background-color: rgba(220, 38, 38, 0.1); color: var(--expense);">Off Target ⚠️</span>`; 
+          diffTitle.innerHTML = `Reconciliation State: <span class="reconcile-status-badge" style="background-color: rgba(220, 38, 38, 0.1); color: var(--expense);">Unbalanced ⚠️</span>`; 
           diffLabel.innerText = isPrivacyMode ? '₹ ••••••' : `${variance >= 0 ? '+' : '-'}₹${formatToIndianRupee(Math.abs(variance))}`; 
           diffLabel.className = variance >= 0 ? "amt-inc" : "amt-exp"; 
       }
     } else {
-      document.getElementById('rec-cl-label').innerText = "Not Set"; 
-      document.getElementById('rec-diff-title').innerHTML = `Current Status: <span class="reconcile-status-badge" style="background-color: var(--badge-bg); color: var(--badge-text);">Active</span>`; 
+      document.getElementById('rec-cl-label').innerText = "Not Configured"; 
+      document.getElementById('rec-diff-title').innerHTML = `Running Target Status: <span class="reconcile-status-badge" style="background-color: var(--badge-bg); color: var(--badge-text);">Active Baseline</span>`; 
       document.getElementById('rec-diff-label').innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(balance)}`; 
       document.getElementById('rec-diff-label').className = balance >= 0 ? "amt-inc" : "amt-exp";
     }
@@ -837,6 +842,7 @@ function renderUI(transactions) {
     const isChecked = checkedItemIds.includes(t.id);
     const styleObj = getCategoryStyle(catLabel);
     
+    // ---> PRIVACY MASKING: Single History Logs
     const displayAmount = isPrivacyMode ? '••••••' : `${isExpense ? '-' : '+'} ₹${formatToIndianRupee(Math.abs(t.amount))}`;
     
     const li = document.createElement('li'); 
@@ -894,7 +900,7 @@ function syncToolbarState() {
 
 function openDeleteModal() { 
     document.getElementById('delete-confirm-input').value = ''; 
-    document.getElementById('delete-modal-msg').innerHTML = `Are you sure you want to delete these?`; 
+    document.getElementById('delete-modal-msg').innerHTML = `You are about to delete the selected entries.`; 
     document.getElementById('delete-modal').style.display = 'flex'; 
 }
 
@@ -948,7 +954,7 @@ function openEditModal() {
     const target = allTransactions.find(t => t.id === checkedItemIds[0]); 
     if (!target) return;
     
-    desc.innerText = "Update your details."; 
+    desc.innerText = "Update your entry details."; 
     singleContainer.style.display = "block"; 
     document.getElementById('edit-text').value = target.text;
     
@@ -964,7 +970,7 @@ function openEditModal() {
     else document.getElementById('edit-income-category').value = target.category;
     
   } else {
-    desc.innerText = `Editing ${checkedItemIds.length} items. You can only change whether they are Income/Expense and their Category.`; 
+    desc.innerText = `Editing ${checkedItemIds.length} entries at once. You can only change whether they are Income/Expense and their Category.`; 
     singleContainer.style.display = "none"; 
     document.getElementById('edit-type').value = 'expense'; 
     toggleCategoryInput('edit');
@@ -1033,7 +1039,7 @@ function renderPercentageBreakdown(transactions) {
   
   const expenseKeys = Object.keys(expensesMap);
   if (expenseKeys.length === 0) {
-    DOM.breakdown.innerHTML = `<div class="empty-state-premium" style="padding: 20px;"><div class="empty-icon" style="font-size: 2rem;">📊</div><h4 style="font-size: 0.95rem;">No Spending Data</h4><p style="font-size: 0.8rem;">Add some expenses to see your breakdown.</p></div>`; 
+    DOM.breakdown.innerHTML = `<div class="empty-state-premium" style="padding: 20px;"><div class="empty-icon" style="font-size: 2rem;">📊</div><h4 style="font-size: 0.95rem;">No Spending Data</h4><p style="font-size: 0.8rem;">Log some expenses to see your breakdown.</p></div>`; 
     return;
   }
   
@@ -1041,6 +1047,7 @@ function renderPercentageBreakdown(transactions) {
     const amt = expensesMap[cat]; 
     let percentage = totalIncome > 0 ? (amt / totalIncome) * 100 : 0;
     
+    // ---> PRIVACY MASKING: Breakdown List
     const displayAmt = isPrivacyMode ? '••••' : formatToIndianRupee(amt).split('.')[0];
     
     const itemRow = document.createElement('div'); 
@@ -1073,8 +1080,8 @@ function generateSmartInsights(transactions) {
   });
   
   if (transactions.length === 0) { 
-      DOM.insightsTitle.innerHTML = "💡 Your Money Tips"; 
-      DOM.insightsText.innerText = "Add some income and expenses to see your financial tips here."; 
+      DOM.insightsTitle.innerHTML = "💡 Your Money Insights"; 
+      DOM.insightsText.innerText = "Add some income and expenses to see your money tips here."; 
       return; 
   }
   
@@ -1089,13 +1096,14 @@ function generateSmartInsights(transactions) {
   let dynamicInsightDenominator = manualBudgetLimitSetting > 0 ? manualBudgetLimitSetting : income; 
   const burnRate = (expense / dynamicInsightDenominator) * 100;
   
+  // Privacy masking for percentages
   const displayBurnRate = isPrivacyMode ? '••' : burnRate.toFixed(0);
   const displaySaveRate = isPrivacyMode ? '••' : (100 - burnRate).toFixed(0);
   
   if (burnRate > 85) { 
       DOM.insightsCard.classList.add('danger-state'); 
-      DOM.insightsTitle.innerHTML = "🚨 Alert: Spending is High"; 
-      DOM.insightsText.innerHTML = `You have used <strong>${displayBurnRate}%</strong> of your monthly limit. Try to limit non-essential spending for a few days.`; 
+      DOM.insightsTitle.innerHTML = "🚨 Alert: High Spending Velocity"; 
+      DOM.insightsText.innerHTML = `You have burned through <strong>${displayBurnRate}%</strong> of your active budget line. Limit non-essential spending immediately.`; 
       return; 
   }
   
@@ -1109,20 +1117,20 @@ function generateSmartInsights(transactions) {
       const displayWants = isPrivacyMode ? '••••' : formatToIndianRupee(variableWants).split('.')[0];
       const displayNeeds = isPrivacyMode ? '••••' : formatToIndianRupee(essentialNeeds).split('.')[0];
       
-      DOM.insightsText.innerHTML = `Lifestyle spending (Shopping & Fun: ₹${displayWants}) is higher than your basic needs (Food & Bills: ₹${displayNeeds}). Consider saving a bit more.`; 
+      DOM.insightsText.innerHTML = `Lifestyle spending (Shopping & Fun: ₹${displayWants}) outpaces basic needs (Food & Bills: ₹${displayNeeds}). Consider scaling back lifestyle costs.`; 
       return; 
   }
   
   if (burnRate > 50) { 
       DOM.insightsCard.classList.add('warning-state'); 
-      DOM.insightsTitle.innerHTML = "⚡ Review: You're halfway there"; 
-      DOM.insightsText.innerHTML = `You have spent <strong>${displayBurnRate}%</strong> of your monthly limit. You are doing okay, but watching small extra costs can help you save more.`; 
+      DOM.insightsTitle.innerHTML = "⚡ Review: Spending Limit"; 
+      DOM.insightsText.innerHTML = `You have spent <strong>${displayBurnRate}%</strong> of your income pool. You are doing okay, but cutting out small extra costs can help you save more.`; 
       return; 
   }
   
   DOM.insightsCard.className = "insights-card"; 
   DOM.insightsTitle.innerHTML = "✨ Great Job: Healthy Saving!"; 
-  DOM.insightsText.innerHTML = `Awesome work! You still have <strong>${displaySaveRate}%</strong> of your monthly limit remaining. Keep it up!`;
+  DOM.insightsText.innerHTML = `Awesome work! You saved <strong>${displaySaveRate}%</strong> of your active baseline limits. Keep it up!`;
 }
 
 function renderChart(transactionsToRender) {
@@ -1159,6 +1167,7 @@ function renderChart(transactionsToRender) {
   if(emptyState) emptyState.style.display = 'none';
   if(ratioCard) ratioCard.style.display = 'block';
 
+  // ---> PRIVACY MASKING: Chart Panel Totals
   if(document.getElementById('insight-inc-label')) {
       document.getElementById('insight-inc-label').innerText = isPrivacyMode ? '₹ ••••••' : '₹' + totalIncome.toLocaleString('en-IN', {minimumFractionDigits: 0});
   }
@@ -1175,15 +1184,15 @@ function renderChart(transactionsToRender) {
   if (totalIncome > totalExpense && totalExpense > 0) {
      let savingsRate = ((totalIncome - totalExpense) / totalIncome) * 100;
      const displaySaveRate = isPrivacyMode ? '••%' : `${savingsRate.toFixed(1)}%`;
-     ratioText = `Great job! You saved <span style="color:var(--income)">${displaySaveRate}</span> of your logged income. 🎯`;
+     ratioText = `Great job! You are saving <span style="color:var(--income)">${displaySaveRate}</span> of your logged income. 🎯`;
   } else if (totalExpense > totalIncome && totalIncome > 0) {
      let deficit = totalExpense - totalIncome;
      const displayDeficit = isPrivacyMode ? '••••••' : deficit.toLocaleString('en-IN');
-     ratioText = `You spent <span style="color:var(--expense)">₹${displayDeficit}</span> more than you earned. ⚠️`;
+     ratioText = `You are spending <span style="color:var(--expense)">₹${displayDeficit}</span> more than you earned. ⚠️`;
   } else if (totalIncome > 0 && totalExpense === 0) {
-     ratioText = `You have 100% savings right now. Great job! 🚀`;
+     ratioText = `You have 100% savings right now. Time to invest? 🚀`;
   } else if (totalExpense > 0 && totalIncome === 0) {
-     ratioText = `Don't forget to log your income to see your savings percentage! 💡`;
+     ratioText = `Tracking expenses is great! Don't forget to log your income to see your savings rate. 💡`;
   } else {
      ratioText = `You broke perfectly even! ⚖️`;
   }
@@ -1221,6 +1230,7 @@ function renderChart(transactionsToRender) {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
+        // ---> PRIVACY MASKING: Chart Tooltips
         tooltip: { callbacks: { label: function(context) { return isPrivacyMode ? ' ₹ ••••••' : ' ₹' + context.raw.toLocaleString('en-IN'); } } }
       },
       scales: {
@@ -1235,6 +1245,7 @@ function renderChart(transactionsToRender) {
     let amt = expensesMap[cat];
     let pct = ((amt / totalExpense) * 100).toFixed(1);
     
+    // ---> PRIVACY MASKING: Detailed Breakdown Sub-list
     const displayAmt = isPrivacyMode ? '••••' : amt.toLocaleString('en-IN', {minimumFractionDigits:2});
     const displayPct = isPrivacyMode ? '••' : pct;
     
@@ -1256,17 +1267,17 @@ function triggerDynamicPeriodFinancialReport() {
   const sheetBody = document.getElementById('financial-report-metrics-sheet-body');
   
   if(currentTab === 'all') { 
-      labelLabel.innerText = "All-Time Summary Report"; 
+      labelLabel.innerText = "Full Ledger Archive (All-Time Workspace Statement)"; 
   } else if (currentTab === 'custom') { 
-      let st = document.getElementById('start-date').value || 'Beginning'; 
-      let en = document.getElementById('end-date').value || 'Today'; 
-      labelLabel.innerText = `Dates: ${st} to ${en}`; 
+      let st = document.getElementById('start-date').value || 'Inception'; 
+      let en = document.getElementById('end-date').value || 'Present'; 
+      labelLabel.innerText = `Timeline Window: ${st} to ${en}`; 
   } else { 
-      labelLabel.innerText = `Dates: ${bounds.startDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })} - ${bounds.endDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}`; 
+      labelLabel.innerText = `Timeline Window: ${bounds.startDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })} - ${bounds.endDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}`; 
   }
 
   if(allTransactions.length === 0 || DOM.emptyMsg.style.display === 'flex') { 
-      triggerNativeAppAlert("No transactions found for these dates. Please add some entries first."); 
+      triggerNativeAppAlert("No ledger data matches this filter timeline. Please log entries to run reports."); 
       return; 
   }
 
@@ -1280,6 +1291,7 @@ function triggerDynamicPeriodFinancialReport() {
     let tDate = t.timestamp ? new Date(t.timestamp) : new Date(); 
     const itemTimestamp = tDate.getTime(); 
     
+    // Enforce IST formatting for custom date boundary checks
     const itemDateString = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(tDate);
     
     if (currentTab === 'custom') { 
@@ -1304,10 +1316,12 @@ function triggerDynamicPeriodFinancialReport() {
   let categoryRowsHTMLStr = "";
   
   Object.keys(reportCategoricalMap).sort((a,b) => reportCategoricalMap[b] - reportCategoricalMap[a]).forEach(key => {
+    // ---> PRIVACY MASKING: Report Category Tags
     const rowAmt = isPrivacyMode ? '••••' : formatToIndianRupee(reportCategoricalMap[key]).split('.')[0];
     categoryRowsHTMLStr += `<tr style="border-bottom:1px solid var(--border); font-size:0.8rem;"><td style="padding:6px 0; font-weight:500;">${key}</td><td style="padding:6px 0; text-align:right; font-weight:700; color:var(--expense);">₹${rowAmt}</td></tr>`;
   });
 
+  // ---> PRIVACY MASKING: Report Core Metrics
   const displayInflow = isPrivacyMode ? '••••••' : formatToIndianRupee(reportInflow);
   const displayOutflow = isPrivacyMode ? '••••••' : formatToIndianRupee(reportOutflow);
   const displayNet = isPrivacyMode ? '••••••' : formatToIndianRupee(netSavingsValue);
@@ -1315,21 +1329,21 @@ function triggerDynamicPeriodFinancialReport() {
 
   sheetBody.innerHTML = `
     <div style="background:var(--bg-main); border:1px solid var(--border); padding:12px; border-radius:14px; margin-bottom:14px;">
-      <div class="reconcile-row"><span>Total Earned:</span><span class="amt-inc" style="font-weight:bold;">₹${displayInflow}</span></div>
-      <div class="reconcile-row"><span>Total Spent:</span><span class="amt-exp" style="font-weight:bold;">₹${displayOutflow}</span></div>
-      <div class="reconcile-row" style="border-top:1px dashed var(--border); padding-top:6px; margin-top:6px; font-weight:bold;"><span>Total Saved:</span><span class="${netSavingsValue >= 0 ? 'amt-inc' : 'amt-exp'}">₹${displayNet}</span></div>
-      <div class="reconcile-row" style="font-size:0.75rem; margin-bottom:0; color:var(--text-muted);"><span>Savings Percentage:</span><span style="font-weight:bold; color:var(--text-main);">${displayRate}</span></div>
+      <div class="reconcile-row"><span>Total Inflow Earnings:</span><span class="amt-inc" style="font-weight:bold;">₹${displayInflow}</span></div>
+      <div class="reconcile-row"><span>Total Outflow Spending:</span><span class="amt-exp" style="font-weight:bold;">₹${displayOutflow}</span></div>
+      <div class="reconcile-row" style="border-top:1px dashed var(--border); padding-top:6px; margin-top:6px; font-weight:bold;"><span>Net Timeline Savings:</span><span class="${netSavingsValue >= 0 ? 'amt-inc' : 'amt-exp'}">₹${displayNet}</span></div>
+      <div class="reconcile-row" style="font-size:0.75rem; margin-bottom:0; color:var(--text-muted);"><span>Calculated Savings Rate:</span><span style="font-weight:bold; color:var(--text-main);">${displayRate}</span></div>
     </div>
-    <label style="font-size:0.72rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px; letter-spacing:0.5px;">WHERE YOUR MONEY WENT</label>
+    <label style="font-size:0.72rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px; letter-spacing:0.5px;">TIMELINE EXPENSE PROFILE COSTS</label>
     <table style="width:100%; border-collapse:collapse;">
       <thead>
          <tr style="border-bottom:2px solid var(--border); font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">
-            <th style="text-align:left; padding-bottom:4px;">Category</th>
-            <th style="text-align:right; padding-bottom:4px;">Amount</th>
+            <th style="text-align:left; padding-bottom:4px;">Category Tag</th>
+            <th style="text-align:right; padding-bottom:4px;">Net Volume</th>
          </tr>
       </thead>
       <tbody>
-         ${categoryRowsHTMLStr || '<tr><td colspan="2" style="font-size:0.8rem; color:var(--text-muted); padding:10px 0;">No expenses found for these dates.</td></tr>'}
+         ${categoryRowsHTMLStr || '<tr><td colspan="2" style="font-size:0.8rem; color:var(--text-muted); padding:10px 0;">No outflow costs cataloged for this duration.</td></tr>'}
       </tbody>
     </table>`;
     
@@ -1392,6 +1406,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const tb = document.getElementById('theme-btn');
     if(tb) tb.innerText = savedTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
     
+    // ---> NEW: Sync privacy toggle icon on load
     const privacyBtn = document.getElementById('privacy-toggle-btn');
     if(privacyBtn && isPrivacyMode) privacyBtn.innerText = '🙈';
 });
