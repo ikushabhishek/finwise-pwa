@@ -403,32 +403,32 @@
 <div id="lightning-add-modal" style="display: none; z-index: 100000; overflow: hidden; height: 100dvh; width: 100vw; position: fixed; top: 0; left: 0; background: var(--bg-main); padding-bottom: env(safe-area-inset-bottom, 20px);">
   <div class="settings-page-content" style="display: flex; flex-direction: column; height: 100%; max-width: 500px; margin: 0 auto; padding: 20px;">
     
-    <div class="settings-page-header" style="margin-top: 0;">
-      <h2>⚡ Quick Add</h2>
-      <button class="btn-close-page" onclick="closeModal('lightning-add-modal')">✕</button>
+    <div class="settings-page-header" style="margin-top: 0; margin-bottom: 12px; padding-bottom: 10px;">
+      <h2 style="font-size: 1.4rem;">⚡ Quick Add</h2>
+      <button class="btn-close-page" style="width: 36px; height: 36px; font-size: 1.1rem;" onclick="closeModal('lightning-add-modal')">✕</button>
     </div>
 
-    <div class="nature-segmented-control" id="lightning-nature-slider" style="margin-bottom: 20px; flex-shrink: 0;">
+    <div class="nature-segmented-control" id="lightning-nature-slider" style="margin-bottom: 14px; flex-shrink: 0; padding: 3px;">
       <div class="segment-slider-highlight"></div>
-      <button class="segment-btn segment-btn-expense" onclick="setLightningNature('expense')">Expense</button>
-      <button class="segment-btn segment-btn-income" onclick="setLightningNature('income')">Income</button>
+      <button class="segment-btn segment-btn-expense" style="padding: 8px 0;" onclick="setLightningNature('expense')">Expense</button>
+      <button class="segment-btn segment-btn-income" style="padding: 8px 0;" onclick="setLightningNature('income')">Income</button>
     </div>
 
-    <div style="text-align: center; margin-bottom: 10px; flex-shrink: 0;">
-      <div style="font-size: 3.5rem; font-weight: 800; color: var(--expense);" id="lightning-amount-display">₹0</div>
+    <div style="text-align: center; margin-bottom: 4px; flex-shrink: 0;">
+      <div style="font-size: 2.8rem; font-weight: 800; color: var(--expense);" id="lightning-amount-display">₹0</div>
     </div>
 
-    <input type="text" id="lightning-desc" placeholder="What was this for? (Optional)" style="text-align: center; font-size: 0.95rem; border: none; background: transparent; border-bottom: 2px dashed var(--border); border-radius: 0; box-shadow: none; margin-bottom: 20px; width: 100%; padding-bottom: 8px; flex-shrink: 0;">
+    <input type="text" id="lightning-desc" placeholder="What was this for? (Optional)" style="text-align: center; font-size: 0.9rem; border: none; background: transparent; border-bottom: 2px dashed var(--border); border-radius: 0; box-shadow: none; margin-bottom: 14px; width: 100%; padding-bottom: 6px; flex-shrink: 0;">
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-shrink: 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0;">
       <label style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted);">SELECT CATEGORY</label>
       <button class="inline-edit-action-link" onclick="openCategoryManagerModal()">⚙️ Manage Tags</button>
     </div>
     
-    <div id="lightning-category-chips" style="flex-grow: 1; overflow-y: auto; align-content: flex-start; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 16px;">
+    <div id="lightning-category-chips" style="flex-grow: 1; overflow-y: auto; align-content: flex-start; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 12px; padding-bottom: 10px;">
       </div>
 
-    <div class="numpad" style="margin: 0 auto 16px auto; justify-content: center; gap: 15px; max-width: 320px; width: 100%; flex-shrink: 0;">
+    <div class="numpad" style="margin: 0 auto 12px auto; justify-content: center; gap: 12px; max-width: 320px; width: 100%; flex-shrink: 0;">
       <div class="num-key" onclick="handleLightningNumpad('1')">1</div>
       <div class="num-key" onclick="handleLightningNumpad('2')">2</div>
       <div class="num-key" onclick="handleLightningNumpad('3')">3</div>
@@ -443,7 +443,7 @@
       <div class="num-key" style="background: transparent; border: none; box-shadow: none; color: var(--expense); font-size: 1.8rem;" onclick="handleLightningBackspace()">⌫</div>
     </div>
 
-    <button onclick="if(typeof executeLightningSave === 'function') executeLightningSave()" style="width: 100%; padding: 16px; font-size: 1.2rem; font-weight: 800; background: var(--primary); color: white; border: none; border-radius: 14px; box-shadow: 0 4px 14px rgba(46, 125, 50, 0.4); flex-shrink: 0;">Save Transaction</button>
+    <button onclick="if(typeof executeLightningSave === 'function') executeLightningSave()" style="width: 100%; padding: 14px; font-size: 1.1rem; font-weight: 800; background: var(--primary); color: white; border: none; border-radius: 14px; box-shadow: 0 4px 14px rgba(46, 125, 50, 0.4); flex-shrink: 0;">Save Transaction</button>
   
   </div>
 </div>

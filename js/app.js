@@ -111,17 +111,6 @@ function debounce(callbackFunc, waitingDelayDuration) {
   };
 }
 
-function handleFormEnter(event, targetFieldId) {
-  if (event.key === 'Enter') { 
-      event.preventDefault(); 
-      const element = document.getElementById(targetFieldId); 
-      if (element) { 
-          if (element.tagName === 'BUTTON') element.click(); 
-          else element.focus(); 
-      } 
-  }
-}
-
 window.addEventListener('scroll', () => {
   if (currentActiveMainScreen === 'logs') { 
       const topBtn = document.getElementById('scroll-top-trigger'); 
@@ -155,7 +144,7 @@ function togglePrivacyMode() {
 }
 
 // ==========================================
-// 4. CATEGORY MANAGER
+// 4. CATEGORY MANAGER & DYNAMIC EMOJI ENGINE
 // ==========================================
 const systemDefaultCategoriesPreset = ["Food", "Utilities", "Entertainment", "Travel", "Shopping", "Miscellaneous"];
 let workspaceActiveExpenseCategories = [];
@@ -174,7 +163,24 @@ function getCategoryStyle(catName) {
     'Other Income': { icon: '🔄', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
     'Miscellaneous': { icon: '📦', color: 'var(--text-muted)', bg: 'var(--badge-bg)' }
   };
-  return catMap[catName] || { icon: '🏷️', color: 'var(--primary)', bg: 'rgba(46, 125, 50, 0.1)' };
+  
+  if (catMap[catName]) return { ...catMap[catName], cleanName: catName };
+
+  // ---> NEW: DYNAMIC EMOJI EXTRACTION ENGINE <---
+  // If the user adds an emoji at the start of a custom tag, extract it to use as the icon!
+  const emojiRegex = /^(\p{Emoji_Presentation}|\p{Extended_Pictographic})/u;
+  const match = catName.match(emojiRegex);
+  
+  if (match && match[0]) {
+      return { 
+          icon: match[0], 
+          cleanName: catName.replace(emojiRegex, '').trim() || catName,
+          color: 'var(--primary)', 
+          bg: 'rgba(46, 125, 50, 0.1)' 
+      };
+  }
+  
+  return { icon: '🏷️', cleanName: catName, color: 'var(--primary)', bg: 'rgba(46, 125, 50, 0.1)' };
 }
 
 function initializeCategoriesStorageSystem() {
@@ -242,7 +248,6 @@ function executeSaveNewCustomCategoryTag() {
   syncCategoriesDropdownSelectorsUI(); 
   openCategoryManagerModal(); 
   
-  // Re-render Lightning chips instantly if open
   if (document.getElementById('lightning-add-modal').style.display === 'block') {
       renderLightningCategoryChips();
   }
@@ -256,11 +261,9 @@ function executeDeleteCustomCategoryTag(indexPointer) {
   syncCategoriesDropdownSelectorsUI(); 
   openCategoryManagerModal(); 
   
-  // Re-render Lightning chips instantly if open
   if (document.getElementById('lightning-add-modal').style.display === 'block') {
       renderLightningCategoryChips();
   }
-  
   applyFilters();
 }
 
@@ -363,7 +366,8 @@ function renderLightningCategoryChips() {
         const btn = document.createElement('button');
         btn.className = "quick-chip";
         const styleObj = getCategoryStyle(cat);
-        btn.innerHTML = `${styleObj.icon} ${cat}`;
+        // Using dynamically extracted clean name and icon
+        btn.innerHTML = `${styleObj.icon} ${styleObj.cleanName}`;
         btn.onclick = () => selectLightningChip(btn, cat);
         container.appendChild(btn);
     });
@@ -375,13 +379,14 @@ function selectLightningChip(btnElement, catName) {
     lightningSelectedCategory = catName;
 }
 
-// FIXED: Limits input to exactly 2 decimal places
+// ---> FIXED: 2 DECIMAL DIGIT LIMIT ENGINE <---
 function handleLightningNumpad(val) {
     if (lightningAmountStr === "0" && val !== ".") {
         lightningAmountStr = val;
     } else {
         if(val === '.' && lightningAmountStr.includes('.')) return;
         
+        // Prevent typing more than 2 digits after the decimal point
         if (lightningAmountStr.includes('.') && val !== '.') {
             const parts = lightningAmountStr.split('.');
             if (parts[1] && parts[1].length >= 2) return; 
@@ -431,7 +436,6 @@ function executeLightningSave() {
         return;
     }
     
-    // Safety check for category selection
     if(!lightningSelectedCategory) {
         triggerNativeAppAlert("Please select a category tag for this entry.");
         return;
@@ -660,7 +664,7 @@ function calculateMasterSummaryTotals(masterArray) {
 
   if (computationalLimitAnchor > 0) {
     velocityWrapper.style.display = 'block'; 
-    velocityTitle.innerText = manualBudgetLimitSetting > 0 ? "MANUAL MONTHLY BUDGET LIMIT" : "INCOME BURN VELOCITY LIMIT";
+    velocityTitle.innerText = manualBudgetLimitSetting > 0 ? "BUDGET VELOCITY LIMIT" : "INCOME BURN VELOCITY LIMIT";
     let velocityPercentageValue = (expense / computationalLimitAnchor) * 100; 
     
     velocityLabel.innerText = isPrivacyMode ? `••% SPENT` : `${Math.round(velocityPercentageValue)}% SPENT`; 
@@ -777,7 +781,7 @@ function renderUI(transactions) {
         </div>
         <div style="text-align: right;">
           <span class="${isExpense ? 'amt-exp' : 'amt-inc'}">${displayAmount}</span>
-          <div style="font-size: 0.65rem; font-weight: 700; color: ${styleObj.color}; margin-top: 4px; text-transform: uppercase;">${catLabel}</div>
+          <div style="font-size: 0.65rem; font-weight: 700; color: ${styleObj.color}; margin-top: 4px; text-transform: uppercase;">${styleObj.cleanName}</div>
         </div>
       </div>
     `;
@@ -981,13 +985,14 @@ function renderPercentageBreakdown(transactions) {
     let percentage = totalIncome > 0 ? (amt / totalIncome) * 100 : 0;
     
     const displayAmt = isPrivacyMode ? '••••' : formatToIndianRupee(amt).split('.')[0];
+    const styleObj = getCategoryStyle(cat);
     
     const itemRow = document.createElement('div'); 
     itemRow.className = "breakdown-item";
     
     itemRow.innerHTML = `
       <div class="breakdown-label">
-        <span>${cat} (₹${displayAmt})</span>
+        <span>${styleObj.icon} ${styleObj.cleanName} (₹${displayAmt})</span>
         <span style="color: var(--text-muted);">${totalIncome > 0 ? (isPrivacyMode ? '••%' : percentage.toFixed(1) + '%') : 'Logged'}</span>
       </div>
       <div class="progress-bar">
@@ -1138,7 +1143,8 @@ function renderChart(transactionsToRender) {
   if(breakdownList) breakdownList.style.display = 'block';
 
   const sortedCategories = Object.keys(expensesMap).sort((a,b) => expensesMap[b] - expensesMap[a]);
-  const labels = sortedCategories;
+  // Use clean names for chart labels
+  const labels = sortedCategories.map(cat => getCategoryStyle(cat).cleanName);
   const data = sortedCategories.map(cat => expensesMap[cat]);
 
   if (expenseChartInstance) { expenseChartInstance.destroy(); }
@@ -1176,10 +1182,11 @@ function renderChart(transactionsToRender) {
     
     const displayAmt = isPrivacyMode ? '••••' : amt.toLocaleString('en-IN', {minimumFractionDigits:2});
     const displayPct = isPrivacyMode ? '••' : pct;
+    const styleObj = getCategoryStyle(cat);
     
     detailedHTML += `
       <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); font-size:0.85rem;">
-         <span style="font-weight:600;">${cat}</span>
+         <span style="font-weight:600;">${styleObj.icon} ${styleObj.cleanName}</span>
          <span>
            <span style="color:var(--text-muted); font-size:0.75rem; margin-right:8px;">${displayPct}%</span> 
            <span style="font-weight:700; color:var(--expense);">₹${displayAmt}</span>
@@ -1244,7 +1251,8 @@ function triggerDynamicPeriodFinancialReport() {
   
   Object.keys(reportCategoricalMap).sort((a,b) => reportCategoricalMap[b] - reportCategoricalMap[a]).forEach(key => {
     const rowAmt = isPrivacyMode ? '••••' : formatToIndianRupee(reportCategoricalMap[key]).split('.')[0];
-    categoryRowsHTMLStr += `<tr style="border-bottom:1px solid var(--border); font-size:0.8rem;"><td style="padding:6px 0; font-weight:500;">${key}</td><td style="padding:6px 0; text-align:right; font-weight:700; color:var(--expense);">₹${rowAmt}</td></tr>`;
+    const styleObj = getCategoryStyle(key);
+    categoryRowsHTMLStr += `<tr style="border-bottom:1px solid var(--border); font-size:0.8rem;"><td style="padding:6px 0; font-weight:500;">${styleObj.icon} ${styleObj.cleanName}</td><td style="padding:6px 0; text-align:right; font-weight:700; color:var(--expense);">₹${rowAmt}</td></tr>`;
   });
 
   const displayInflow = isPrivacyMode ? '••••••' : formatToIndianRupee(reportInflow);
@@ -1499,11 +1507,12 @@ function runPeriodComparison() {
       const displayVar = isPrivacyMode ? '••••' : formatToIndianRupee(Math.abs(catVariance)).split('.')[0];
       const displayValA = isPrivacyMode ? '••••' : formatToIndianRupee(valA).split('.')[0];
       const displayValB = isPrivacyMode ? '••••' : formatToIndianRupee(valB).split('.')[0];
+      const styleObj = getCategoryStyle(cat);
       
       breakdownHTML += `
       <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem;">
          <div>
-            <div style="font-weight: 600;">${cat}</div>
+            <div style="font-weight: 600;">${styleObj.icon} ${styleObj.cleanName}</div>
             <div style="font-size: 0.7rem; color: var(--text-muted);">${labelA}: ₹${displayValA} | ${labelB}: ₹${displayValB}</div>
          </div>
          <div style="text-align: right;">
