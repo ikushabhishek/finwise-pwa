@@ -8,7 +8,12 @@ let checkedItemIds = [];
 let currentVisibleIds = []; 
 let currentTab = 'all';
 let dateOffset = 0; 
+let activeTransactionNature = 'expense';
+
+// FIXED: App boots cleanly to the Dashboard
 let currentActiveMainScreen = 'home'; 
+
+let bulkRowIncrementalPointer = 0;
 let expenseChartInstance = null;
 let compareChartInstance = null; 
 
@@ -106,6 +111,17 @@ function debounce(callbackFunc, waitingDelayDuration) {
   };
 }
 
+function handleFormEnter(event, targetFieldId) {
+  if (event.key === 'Enter') { 
+      event.preventDefault(); 
+      const element = document.getElementById(targetFieldId); 
+      if (element) { 
+          if (element.tagName === 'BUTTON') element.click(); 
+          else element.focus(); 
+      } 
+  }
+}
+
 window.addEventListener('scroll', () => {
   if (currentActiveMainScreen === 'logs') { 
       const topBtn = document.getElementById('scroll-top-trigger'); 
@@ -121,6 +137,7 @@ function scrollToLogsTop() {
 function openPreferencesModal() { 
   if (typeof refreshImportHistoryUI === 'function') refreshImportHistoryUI();
   if (typeof renderObligationsList === 'function') renderObligationsList();
+  if (typeof syncCategoriesDropdownSelectorsUI === 'function') syncCategoriesDropdownSelectorsUI(); 
   
   document.getElementById('preferences-modal').style.display = 'block'; 
   document.body.style.overflow = 'hidden'; 
@@ -225,9 +242,11 @@ function executeSaveNewCustomCategoryTag() {
   syncCategoriesDropdownSelectorsUI(); 
   openCategoryManagerModal(); 
   
+  // Re-render Lightning chips instantly if open
   if (document.getElementById('lightning-add-modal').style.display === 'block') {
       renderLightningCategoryChips();
   }
+
   triggerSuccessNotification("📦 Custom category tag appended!");
 }
 
@@ -237,9 +256,11 @@ function executeDeleteCustomCategoryTag(indexPointer) {
   syncCategoriesDropdownSelectorsUI(); 
   openCategoryManagerModal(); 
   
+  // Re-render Lightning chips instantly if open
   if (document.getElementById('lightning-add-modal').style.display === 'block') {
       renderLightningCategoryChips();
   }
+  
   applyFilters();
 }
 
@@ -293,7 +314,7 @@ function saveDashboardCycleAndBaselineConfig() {
 }
 
 // ==========================================
-// 6. LIGHTNING ADD & FAB ENGINE
+// 6. LIGHTNING ADD (CUSTOM NUMPAD ENGINE)
 // ==========================================
 
 function openLightningAdd() {
@@ -321,6 +342,7 @@ function setLightningNature(nature) {
         container.classList.remove('nature-income');
         document.getElementById('lightning-amount-display').style.color = 'var(--expense)';
     }
+    
     renderLightningCategoryChips();
 }
 
@@ -353,12 +375,20 @@ function selectLightningChip(btnElement, catName) {
     lightningSelectedCategory = catName;
 }
 
+// FIXED: Limits input to exactly 2 decimal places
 function handleLightningNumpad(val) {
     if (lightningAmountStr === "0" && val !== ".") {
         lightningAmountStr = val;
     } else {
         if(val === '.' && lightningAmountStr.includes('.')) return;
-        if(lightningAmountStr.length > 9) return; 
+        
+        if (lightningAmountStr.includes('.') && val !== '.') {
+            const parts = lightningAmountStr.split('.');
+            if (parts[1] && parts[1].length >= 2) return; 
+        }
+
+        if(lightningAmountStr.length > 10) return; 
+        
         lightningAmountStr += val;
     }
     updateLightningDisplay();
@@ -400,8 +430,10 @@ function executeLightningSave() {
         triggerNativeAppAlert("Please enter an amount greater than 0.");
         return;
     }
+    
+    // Safety check for category selection
     if(!lightningSelectedCategory) {
-        triggerNativeAppAlert("Please select a category chip.");
+        triggerNativeAppAlert("Please select a category tag for this entry.");
         return;
     }
     
@@ -628,7 +660,7 @@ function calculateMasterSummaryTotals(masterArray) {
 
   if (computationalLimitAnchor > 0) {
     velocityWrapper.style.display = 'block'; 
-    velocityTitle.innerText = manualBudgetLimitSetting > 0 ? "BUDGET VELOCITY LIMIT" : "INCOME BURN VELOCITY LIMIT";
+    velocityTitle.innerText = manualBudgetLimitSetting > 0 ? "MANUAL MONTHLY BUDGET LIMIT" : "INCOME BURN VELOCITY LIMIT";
     let velocityPercentageValue = (expense / computationalLimitAnchor) * 100; 
     
     velocityLabel.innerText = isPrivacyMode ? `••% SPENT` : `${Math.round(velocityPercentageValue)}% SPENT`; 
@@ -833,7 +865,6 @@ function confirmSystemReset() {
     }; 
 }
 
-// ---> STILL NEEDED FOR THE EDIT MODAL TO WORK! <---
 function toggleCategoryInput(context) {
   const typeId = context === 'add' ? 'type' : 'edit-type'; 
   const expId = context === 'add' ? 'expense-cat-container' : 'edit-expense-cat-container'; 
@@ -1487,15 +1518,13 @@ function runPeriodComparison() {
 // ==========================================
 // 11. APP NAVIGATION & THEME
 // ==========================================
-
-// ---> FIXED: Routing now correctly navigates to 'home' and clears states properly <---
 function switchMainScreen(targetView) {
   currentActiveMainScreen = targetView;
   document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active-view'));
   document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('nav-active'));
   document.getElementById('scroll-top-trigger').classList.remove('scroll-visible');
 
-  // Reroute legacy 'add' requests to 'home'
+  // Handle routing fallback to Home
   let safeTarget = targetView === 'add' ? 'home' : targetView;
 
   document.getElementById(`view-${safeTarget}`).classList.add('active-view');

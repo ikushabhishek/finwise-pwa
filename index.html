@@ -399,9 +399,57 @@
 
 </div>
 
-<div class="modal-overlay" id="category-manager-modal">
+
+<div id="lightning-add-modal" style="display: none; z-index: 100000; overflow: hidden; height: 100dvh; width: 100vw; position: fixed; top: 0; left: 0; background: var(--bg-main); padding-bottom: env(safe-area-inset-bottom, 20px);">
+  <div class="settings-page-content" style="display: flex; flex-direction: column; height: 100%; max-width: 500px; margin: 0 auto; padding: 20px;">
+    
+    <div class="settings-page-header" style="margin-top: 0;">
+      <h2>⚡ Quick Add</h2>
+      <button class="btn-close-page" onclick="closeModal('lightning-add-modal')">✕</button>
+    </div>
+
+    <div class="nature-segmented-control" id="lightning-nature-slider" style="margin-bottom: 20px; flex-shrink: 0;">
+      <div class="segment-slider-highlight"></div>
+      <button class="segment-btn segment-btn-expense" onclick="setLightningNature('expense')">Expense</button>
+      <button class="segment-btn segment-btn-income" onclick="setLightningNature('income')">Income</button>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 10px; flex-shrink: 0;">
+      <div style="font-size: 3.5rem; font-weight: 800; color: var(--expense);" id="lightning-amount-display">₹0</div>
+    </div>
+
+    <input type="text" id="lightning-desc" placeholder="What was this for? (Optional)" style="text-align: center; font-size: 0.95rem; border: none; background: transparent; border-bottom: 2px dashed var(--border); border-radius: 0; box-shadow: none; margin-bottom: 20px; width: 100%; padding-bottom: 8px; flex-shrink: 0;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-shrink: 0;">
+      <label style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted);">SELECT CATEGORY</label>
+      <button class="inline-edit-action-link" onclick="openCategoryManagerModal()">⚙️ Manage Tags</button>
+    </div>
+    
+    <div id="lightning-category-chips" style="flex-grow: 1; overflow-y: auto; align-content: flex-start; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 16px;">
+      </div>
+
+    <div class="numpad" style="margin: 0 auto 16px auto; justify-content: center; gap: 15px; max-width: 320px; width: 100%; flex-shrink: 0;">
+      <div class="num-key" onclick="handleLightningNumpad('1')">1</div>
+      <div class="num-key" onclick="handleLightningNumpad('2')">2</div>
+      <div class="num-key" onclick="handleLightningNumpad('3')">3</div>
+      <div class="num-key" onclick="handleLightningNumpad('4')">4</div>
+      <div class="num-key" onclick="handleLightningNumpad('5')">5</div>
+      <div class="num-key" onclick="handleLightningNumpad('6')">6</div>
+      <div class="num-key" onclick="handleLightningNumpad('7')">7</div>
+      <div class="num-key" onclick="handleLightningNumpad('8')">8</div>
+      <div class="num-key" onclick="handleLightningNumpad('9')">9</div>
+      <div class="num-key" onclick="handleLightningNumpad('.')">.</div>
+      <div class="num-key" onclick="handleLightningNumpad('0')">0</div>
+      <div class="num-key" style="background: transparent; border: none; box-shadow: none; color: var(--expense); font-size: 1.8rem;" onclick="handleLightningBackspace()">⌫</div>
+    </div>
+
+    <button onclick="if(typeof executeLightningSave === 'function') executeLightningSave()" style="width: 100%; padding: 16px; font-size: 1.2rem; font-weight: 800; background: var(--primary); color: white; border: none; border-radius: 14px; box-shadow: 0 4px 14px rgba(46, 125, 50, 0.4); flex-shrink: 0;">Save Transaction</button>
+  
+  </div>
+</div>
+<div class="modal-overlay" id="category-manager-modal" style="display: none; z-index: 100005;">
   <div class="modal-card" style="text-align: left; max-width:420px;">
-    <h3 style="text-align:center;">📦 Custom Expense Tags Manager</h3>
+    <h3 style="text-align:center;">📦 Custom Expense Tags</h3>
     <p style="text-align:center; margin-bottom:12px;">Add or delete custom expense categories.</p>
     
     <div style="display:flex; gap:6px; margin-bottom:14px;">
@@ -418,7 +466,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="financial-report-modal">
+<div class="modal-overlay" id="financial-report-modal" style="display: none; z-index: 100005;">
   <div class="modal-card" style="text-align: left; max-width:440px; border-top:4px solid var(--primary);">
     <h3 style="text-align:center; margin-bottom:4px;">📊 Active Period Summary Report</h3>
     <p style="text-align:center; font-size:0.78rem; margin-bottom:16px;" id="report-window-date-bounds-label">Timeline Boundaries</p>
@@ -431,7 +479,7 @@
   </div>
 </div>
 
-<div class="dedicated-page-overlay" id="preferences-modal" style="display: none;">
+<div class="dedicated-page-overlay" id="preferences-modal" style="display: none; z-index: 10000;">
   <div class="settings-page-content">
       
     <div class="settings-page-header">
@@ -513,7 +561,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="delete-modal">
+<div class="modal-overlay" id="delete-modal" style="display: none; z-index: 100005;">
   <div class="modal-card" style="border-top: 4px solid var(--expense);">
     <div class="alert-icon-circle">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
@@ -531,7 +579,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="reset-modal">
+<div class="modal-overlay" id="reset-modal" style="display: none; z-index: 100005;">
   <div class="modal-card" style="border-top: 4px solid var(--expense);">
     <div class="alert-icon-circle">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
@@ -550,7 +598,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="edit-modal">
+<div class="modal-overlay" id="edit-modal" style="display: none; z-index: 100005;">
   <div class="modal-card" style="text-align: left;">
     <h3 style="text-align: center;">📝 Edit Entry</h3>
     <p id="edit-modal-desc" style="text-align: center;">Update your entry details.</p>
@@ -580,7 +628,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="app-alert-modal">
+<div class="modal-overlay" id="app-alert-modal" style="display: none; z-index: 100010;">
   <div class="modal-card" style="border-top: 4px solid var(--expense);">
     <div class="alert-icon-circle">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
@@ -597,7 +645,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="gatekeeper-modal">
+<div class="modal-overlay" id="gatekeeper-modal" style="display: none; z-index: 100005;">
   <div class="modal-card" style="text-align: left; border-top: 4px solid var(--primary); width: 100%; max-width: 400px;">
     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
       <span style="font-size: 1.8rem;">🔔</span>
@@ -611,54 +659,6 @@
     <div class="modal-footer">
       <button style="background: var(--text-main); color: var(--bg-card); width: 100%;" onclick="document.getElementById('gatekeeper-modal').style.display='none'">Close for now</button>
     </div>
-  </div>
-</div>
-
-<div class="dedicated-page-overlay" id="lightning-add-modal" style="display: none; z-index: 100000;">
-  <div class="settings-page-content" style="display: flex; flex-direction: column; min-height: 100%;">
-    
-    <div class="settings-page-header">
-      <h2>⚡ Quick Add</h2>
-      <button class="btn-close-page" onclick="closeModal('lightning-add-modal')">✕</button>
-    </div>
-
-    <div class="nature-segmented-control" id="lightning-nature-slider" style="margin-bottom: 20px;">
-      <div class="segment-slider-highlight"></div>
-      <button class="segment-btn segment-btn-expense" onclick="setLightningNature('expense')">Expense</button>
-      <button class="segment-btn segment-btn-income" onclick="setLightningNature('income')">Income</button>
-    </div>
-
-    <div style="text-align: center; margin-bottom: 10px;">
-      <div style="font-size: 3.5rem; font-weight: 800; color: var(--expense);" id="lightning-amount-display">₹0</div>
-    </div>
-
-    <input type="text" id="lightning-desc" placeholder="What was this for? (Optional)" style="text-align: center; font-size: 0.95rem; border: none; background: transparent; border-bottom: 2px dashed var(--border); border-radius: 0; box-shadow: none; margin-bottom: 24px; width: 100%; padding-bottom: 8px;">
-
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-      <label style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted);">SELECT CATEGORY</label>
-      <button class="inline-edit-action-link" onclick="openCategoryManagerModal()">⚙️ Manage Tags</button>
-    </div>
-    
-    <div id="lightning-category-chips" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 24px;">
-      </div>
-
-    <div class="numpad" style="margin: 0 auto 20px auto; justify-content: center; gap: 15px; max-width: 320px; width: 100%;">
-      <div class="num-key" onclick="handleLightningNumpad('1')">1</div>
-      <div class="num-key" onclick="handleLightningNumpad('2')">2</div>
-      <div class="num-key" onclick="handleLightningNumpad('3')">3</div>
-      <div class="num-key" onclick="handleLightningNumpad('4')">4</div>
-      <div class="num-key" onclick="handleLightningNumpad('5')">5</div>
-      <div class="num-key" onclick="handleLightningNumpad('6')">6</div>
-      <div class="num-key" onclick="handleLightningNumpad('7')">7</div>
-      <div class="num-key" onclick="handleLightningNumpad('8')">8</div>
-      <div class="num-key" onclick="handleLightningNumpad('9')">9</div>
-      <div class="num-key" onclick="handleLightningNumpad('.')">.</div>
-      <div class="num-key" onclick="handleLightningNumpad('0')">0</div>
-      <div class="num-key" style="background: transparent; border: none; box-shadow: none; color: var(--expense); font-size: 1.8rem;" onclick="handleLightningBackspace()">⌫</div>
-    </div>
-
-    <button onclick="if(typeof executeLightningSave === 'function') executeLightningSave()" style="width: 100%; padding: 16px; font-size: 1.2rem; font-weight: 800; background: var(--primary); color: white; border: none; border-radius: 14px; box-shadow: 0 4px 14px rgba(46, 125, 50, 0.4); margin-top: auto;">Save Transaction</button>
-  
   </div>
 </div>
 
