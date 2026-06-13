@@ -446,29 +446,44 @@ button:active { transform: scale(0.96); }
     z-index: 0;
 }
 
-/* The actual clickable Plus button */
+/* THE PREMIUM SVG ACTION BUTTON (NEW) */
 .fab-add-btn {
-    position: absolute;
-    top: -18px; /* Positioned inside the cutout */
-    width: 58px;
-    height: 58px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #1b5e20, #2e7d32);
-    color: white;
-    font-size: 2rem;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 10px rgba(46, 125, 50, 0.4);
-    cursor: pointer;
-    z-index: 1;
-    padding: 0;
-    margin: 0;
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: absolute !important;
+    top: -18px !important; /* Positioned perfectly inside the cutout */
+    width: 58px !important;
+    height: 58px !important;
+    border-radius: 50% !important;
+    
+    /* Smoother, vibrant gradient */
+    background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+    color: white !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    
+    /* Softer glowing drop shadow + inner bevel for 3D feel */
+    box-shadow: 0 6px 16px rgba(22, 163, 74, 0.4), inset 0 2px 4px rgba(255,255,255,0.2) !important;
+    
+    cursor: pointer !important;
+    z-index: 1 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    
+    /* Beautiful, subtle cubic-bezier pop animation */
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease !important;
 }
+
+/* Hover: Slight lift and increased glow */
+.fab-add-btn:hover {
+    transform: translateY(-2px) scale(1.02) !important;
+    box-shadow: 0 8px 20px rgba(22, 163, 74, 0.5), inset 0 2px 4px rgba(255,255,255,0.2) !important;
+}
+
+/* Active: Squish down into the screen */
 .fab-add-btn:active {
-    transform: scale(0.9);
+    transform: translateY(2px) scale(0.95) !important;
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.4) !important;
 }
 
 /* Specific styling for the Category Chips overriding global button behavior */
