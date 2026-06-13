@@ -320,6 +320,102 @@
 
   </div>
 
+  <div id="view-compare" class="view-panel">
+    
+    <div class="reconcile-view-card">
+      <h4 style="text-align: center; margin-bottom: 16px;">⚖️ Smart Comparison</h4>
+      
+      <div style="margin-bottom: 16px;">
+        <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; margin-bottom: 6px; display: block;">QUICK COMPARE</label>
+        <select id="compare-mode-selector" onchange="if(typeof handleCompareModeChange === 'function') handleCompareModeChange()" style="width: 100%; padding: 12px; border-radius: 8px; font-size: 0.9rem; font-weight: bold;">
+          <option value="month">This Month vs Last Month</option>
+          <option value="week">This Week vs Last Week</option>
+          <option value="day">Today vs Yesterday</option>
+          <option value="custom">Custom Date Range...</option>
+        </select>
+      </div>
+
+      <div id="custom-compare-fields" style="display: none; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+        <div style="background: var(--bg-main); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+          <label style="font-size: 0.75rem; color: var(--primary); font-weight: bold; margin-bottom: 6px; display: block;">PERIOD 1 (BASE)</label>
+          <div style="display: flex; gap: 8px;">
+             <div style="flex: 1;">
+                 <small style="color: var(--text-muted); font-size: 0.65rem;">Start Date</small>
+                 <input type="date" id="comp-a-start" style="width: 100%; padding: 8px; font-size: 0.8rem; margin: 0;">
+             </div>
+             <div style="flex: 1;">
+                 <small style="color: var(--text-muted); font-size: 0.65rem;">End Date</small>
+                 <input type="date" id="comp-a-end" style="width: 100%; padding: 8px; font-size: 0.8rem; margin: 0;">
+             </div>
+          </div>
+        </div>
+
+        <div style="background: var(--bg-main); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+          <label style="font-size: 0.75rem; color: var(--expense); font-weight: bold; margin-bottom: 6px; display: block;">PERIOD 2 (COMPARE TO)</label>
+          <div style="display: flex; gap: 8px;">
+             <div style="flex: 1;">
+                 <small style="color: var(--text-muted); font-size: 0.65rem;">Start Date</small>
+                 <input type="date" id="comp-b-start" style="width: 100%; padding: 8px; font-size: 0.8rem; margin: 0;">
+             </div>
+             <div style="flex: 1;">
+                 <small style="color: var(--text-muted); font-size: 0.65rem;">End Date</small>
+                 <input type="date" id="comp-b-end" style="width: 100%; padding: 8px; font-size: 0.8rem; margin: 0;">
+             </div>
+          </div>
+        </div>
+        
+        <button onclick="if(typeof runPeriodComparison === 'function') runPeriodComparison()" style="background: var(--text-main); color: var(--bg-card); width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 4px;">Run Custom Comparison</button>
+      </div>
+    </div>
+
+    <div id="compare-empty-state" class="empty-state-premium" style="display:none; margin-top: 20px;">
+      <div class="empty-icon">📊</div>
+      <h4>No Data Found</h4>
+      <p>Try selecting different dates or log some transactions.</p>
+    </div>
+
+    <div id="compare-results-container" style="display: none;">
+      
+      <div class="insights-card" id="compare-smart-insights" style="margin-bottom: 20px;"></div>
+
+      <div class="reconcile-view-card" style="margin-bottom: 20px;">
+        <h4 style="text-align: center; border-bottom: none; margin-bottom: 10px;">Visual Breakdown</h4>
+        <div style="position: relative; height: 260px; width: 100%;">
+          <canvas id="compareBarChart"></canvas>
+        </div>
+      </div>
+
+      <div class="breakdown-box" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
+         <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+            <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: bold;">Metrics</span>
+            <span id="comp-header-a" style="font-size: 0.85rem; font-weight: bold; color: var(--primary);">Period 1</span>
+            <span id="comp-header-b" style="font-size: 0.85rem; font-weight: bold; color: var(--expense);">Period 2</span>
+         </div>
+         <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; font-size: 0.9rem;">Total Income</span>
+            <span id="comp-metric-inc-a" class="amt-inc" style="font-weight: bold;">₹0</span>
+            <span id="comp-metric-inc-b" class="amt-inc" style="font-weight: bold;">₹0</span>
+         </div>
+         <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; font-size: 0.9rem;">Total Spent</span>
+            <span id="comp-metric-exp-a" class="amt-exp" style="font-weight: bold;">₹0</span>
+            <span id="comp-metric-exp-b" class="amt-exp" style="font-weight: bold;">₹0</span>
+         </div>
+         <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border); padding-top: 8px; margin-top: 4px;">
+            <span style="font-weight: 800; font-size: 0.95rem;">Net Savings</span>
+            <span id="comp-metric-sav-a" style="font-weight: 800; font-size: 0.95rem;">₹0</span>
+            <span id="comp-metric-sav-b" style="font-weight: 800; font-size: 0.95rem;">₹0</span>
+         </div>
+      </div>
+
+      <div class="breakdown-box">
+        <h4>Expense Categories Compared</h4>
+        <div id="compare-category-list"></div>
+      </div>
+    </div>
+
+  </div>
+
   <nav class="bottom-nav">
     <button class="nav-item nav-active" id="nav-btn-add" onclick="switchMainScreen('add')">
       <span class="nav-icon">➕</span>
@@ -332,6 +428,10 @@
     <button class="nav-item" id="nav-btn-insights" onclick="switchMainScreen('insights')">
       <span class="nav-icon">📈</span>
       <span>Insights</span>
+    </button>
+    <button class="nav-item" id="nav-btn-compare" onclick="switchMainScreen('compare')">
+      <span class="nav-icon">⚖️</span>
+      <span>Compare</span>
     </button>
   </nav>
 

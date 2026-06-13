@@ -9,12 +9,18 @@ let currentVisibleIds = [];
 let currentTab = 'all';
 let dateOffset = 0; 
 let activeTransactionNature = 'expense';
-let currentActiveMainScreen = 'add';
+let currentActiveMainScreen = 'home'; // FIXED: App now boots to Home natively
 let bulkRowIncrementalPointer = 0;
 let expenseChartInstance = null;
+let compareChartInstance = null; 
 
-// ---> NEW: Privacy Mode Global State
+// ---> Privacy Mode Global State
 let isPrivacyMode = localStorage.getItem('finwise-privacy') === 'true';
+
+// ---> Lightning Add Global State
+let lightningAmountStr = "0";
+let lightningNature = "expense";
+let lightningSelectedCategory = "";
 
 // ==========================================
 // 2. DOM SELECTOR CACHING
@@ -91,6 +97,7 @@ function triggerNativeAppAlert(messageText) {
 
 function closeModal(id) { 
     document.getElementById(id).style.display = 'none'; 
+    document.body.style.overflow = ''; 
 }
 
 function debounce(callbackFunc, waitingDelayDuration) {
@@ -130,9 +137,9 @@ function openPreferencesModal() {
   if (typeof syncCategoriesDropdownSelectorsUI === 'function') syncCategoriesDropdownSelectorsUI(); 
   
   document.getElementById('preferences-modal').style.display = 'block'; 
+  document.body.style.overflow = 'hidden'; 
 }
 
-// ---> NEW: Privacy Toggle Logic
 function togglePrivacyMode() {
     isPrivacyMode = !isPrivacyMode;
     localStorage.setItem('finwise-privacy', isPrivacyMode);
@@ -140,8 +147,8 @@ function togglePrivacyMode() {
     const btn = document.getElementById('privacy-toggle-btn');
     if (btn) btn.innerText = isPrivacyMode ? '🙈' : '👁️';
     
-    // Applying filters re-renders all lists, charts, and dashboards instantly
     applyFilters(); 
+    if (currentActiveMainScreen === 'compare') runPeriodComparison();
 }
 
 // ==========================================
@@ -190,8 +197,8 @@ function syncCategoriesDropdownSelectorsUI() {
       let cat = workspaceActiveExpenseCategories[i]; 
       fragMarkupOptions += `<option value="${cat}">${cat}</option>`; 
   }
-  addSelect.innerHTML = fragMarkupOptions; 
-  editSelect.innerHTML = fragMarkupOptions;
+  if(addSelect) addSelect.innerHTML = fragMarkupOptions; 
+  if(editSelect) editSelect.innerHTML = fragMarkupOptions;
   if(obSelect) obSelect.innerHTML = fragMarkupOptions;
 }
 
@@ -235,6 +242,12 @@ function executeSaveNewCustomCategoryTag() {
   localStorage.setItem('finwise-custom-expense-tags', JSON.stringify(workspaceActiveExpenseCategories));
   syncCategoriesDropdownSelectorsUI(); 
   openCategoryManagerModal(); 
+  
+  // Re-render Lightning chips instantly if it's open
+  if (document.getElementById('lightning-add-modal').style.display === 'block') {
+      renderLightningCategoryChips();
+  }
+
   triggerSuccessNotification("📦 Custom category tag appended!");
 }
 
@@ -243,6 +256,12 @@ function executeDeleteCustomCategoryTag(indexPointer) {
   localStorage.setItem('finwise-custom-expense-tags', JSON.stringify(workspaceActiveExpenseCategories));
   syncCategoriesDropdownSelectorsUI(); 
   openCategoryManagerModal(); 
+  
+  // Re-render Lightning chips instantly if it's open
+  if (document.getElementById('lightning-add-modal').style.display === 'block') {
+      renderLightningCategoryChips();
+  }
+  
   applyFilters();
 }
 
@@ -296,248 +315,143 @@ function saveDashboardCycleAndBaselineConfig() {
 }
 
 // ==========================================
-// 6. FORM ENTRY LOGIC
+// 6. LIGHTNING ADD (CUSTOM NUMPAD ENGINE)
 // ==========================================
-function toggleFormEntryMode(checkbox) {
-  const singleFields = document.getElementById('single-entry-fields'); 
-  const singleSlider = document.getElementById('single-nature-slider'); 
-  const bulkFields = document.getElementById('bulk-entry-fields'); 
-  const mainSaveButton = document.getElementById('save-btn');
-  
-  if(checkbox.checked) {
-    singleFields.style.display = 'none'; 
-    singleSlider.style.display = 'none'; 
-    bulkFields.style.display = 'block'; 
-    mainSaveButton.innerText = "Save Bulk Entries";
+
+function openLightningAdd() {
+    lightningAmountStr = "0";
+    lightningNature = "expense";
+    lightningSelectedCategory = "";
+    document.getElementById('lightning-desc').value = "";
+    setLightningNature('expense');
+    updateLightningDisplay();
     
-    const holder = document.getElementById('bulk-rows-holder-div'); 
-    if (holder.children.length === 0) { 
-        generateNewBulkInputRow(); 
-        generateNewBulkInputRow(); 
-    }
-  } else { 
-    singleFields.style.display = 'block'; 
-    singleSlider.style.display = 'flex'; 
-    bulkFields.style.display = 'none'; 
-    mainSaveButton.innerText = "Save Entry"; 
-  }
+    document.getElementById('lightning-add-modal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
 }
 
-function generateNewBulkInputRow() {
-  const holder = document.getElementById('bulk-rows-holder-div'); 
-  const rowId = `bulk-row-idx-${bulkRowIncrementalPointer}`; 
-  const targetPointer = bulkRowIncrementalPointer;
-  const rowElement = document.createElement('div'); 
-  
-  rowElement.className = "bulk-row-item"; 
-  rowElement.id = rowId;
-  
-  let selectDropdownTemplateOptions = ""; 
-  workspaceActiveExpenseCategories.forEach(cat => { 
-      selectDropdownTemplateOptions += `<option value="${cat}">${cat}</option>`; 
-  });
-  
-  rowElement.innerHTML = `
-    <select id="bulk-nature-${targetPointer}" onchange="updateBulkRowCategoryDropdown(${targetPointer})" style="flex: 1.1; font-weight: bold; background: var(--bg-main); padding: 10px 2px; font-size:0.78rem;">
-      <option value="expense">💸 Exp</option>
-      <option value="income">💰 Inc</option>
-    </select>
-    <input type="text" id="bulk-text-${targetPointer}" placeholder="Item label" style="flex: 1.8; padding: 10px 4px; font-size:0.8rem;">
-    <input type="text" id="bulk-amount-${targetPointer}" placeholder="0.00" oninput="maskInputToIndianCommas(this)" style="flex: 1.4; padding: 10px 2px; text-align: right; font-size:0.8rem;">
-    <select id="bulk-category-${targetPointer}" style="flex: 1.8; font-size:0.72rem; padding: 10px 2px;">
-      ${selectDropdownTemplateOptions}
-    </select>
-    <button class="btn-remove-row" onclick="removeSelectedBulkInputRow('${rowId}')" style="width:32px; height:32px;">✕</button>
-  `;
-  
-  holder.appendChild(rowElement); 
-  bulkRowIncrementalPointer++;
-}
-
-function removeSelectedBulkInputRow(elementRowId) { 
-    const targetRow = document.getElementById(elementRowId); 
-    if (targetRow) { 
-        targetRow.style.animation = "fadeInSlide 0.2s reverse ease forwards"; 
-        setTimeout(() => targetRow.remove(), 180); 
-    } 
-}
-
-function updateBulkRowCategoryDropdown(indexPointer) {
-  const nature = document.getElementById(`bulk-nature-${indexPointer}`).value; 
-  const catDropdown = document.getElementById(`bulk-category-${indexPointer}`);
-  
-  if (nature === 'income') { 
-      catDropdown.innerHTML = `<option value="Salary">💰 Salary</option><option value="Freelance">💻 Freelance</option><option value="Bonus">✨ Bonus</option><option value="Share Market">📈 Market</option><option value="Other Income">🔄 Other</option>`; 
-  } else { 
-      let selectDropdownTemplateOptions = ""; 
-      workspaceActiveExpenseCategories.forEach(cat => { 
-          selectDropdownTemplateOptions += `<option value="${cat}">${cat}</option>`; 
-      }); 
-      catDropdown.innerHTML = selectDropdownTemplateOptions; 
-  }
-}
-
-function setTransactionNature(nature) { 
-    activeTransactionNature = nature; 
-    const block = document.getElementById('swipe-form-block'); 
-    block.className = nature === 'income' ? "form-group nature-income" : "form-group nature-expense"; 
-    toggleCategoryInput('add'); 
-}
-
-function toggleCategoryInput(context) {
-  const typeId = context === 'add' ? 'type' : 'edit-type'; 
-  const expId = context === 'add' ? 'expense-cat-container' : 'edit-expense-cat-container'; 
-  const incId = context === 'add' ? 'income-cat-container' : 'edit-income-cat-container';
-  
-  const type = context === 'add' ? activeTransactionNature : document.getElementById(typeId).value;
-  
-  document.getElementById(expId).style.display = type === 'income' ? 'none' : 'block'; 
-  document.getElementById(incId).style.display = type === 'income' ? 'block' : 'none';
-  
-  if(context === 'add') syncSegmentedSliderUI();
-}
-
-function syncSegmentedSliderUI() { 
-    const container = document.querySelector('.nature-segmented-control'); 
-    if (!container) return; 
+function setLightningNature(nature) {
+    lightningNature = nature;
+    const container = document.getElementById('lightning-nature-slider');
     
-    if (activeTransactionNature === 'income') { 
-        container.classList.add('nature-income'); 
-        container.classList.remove('nature-expense'); 
-    } else { 
-        container.classList.add('nature-expense'); 
-        container.classList.remove('nature-income'); 
-    } 
-}
-
-let touchStartX = 0; 
-let touchEndX = 0; 
-const swipeFormElement = document.getElementById('swipe-form-block');
-if(swipeFormElement) {
-    swipeFormElement.addEventListener('touchstart', (e) => { 
-        touchStartX = e.changedTouches[0].screenX; 
-    }, { passive: true });
-
-    swipeFormElement.addEventListener('touchend', (e) => { 
-        touchEndX = e.changedTouches[0].screenX; 
-        if(!document.getElementById('bulk-mode-checkbox').checked) { 
-            handleSwipeGestureDetection(); 
-        } 
-    }, { passive: true });
-}
-
-function handleSwipeGestureDetection() { 
-    const thresholdBoundary = 60; 
-    if (touchStartX - touchEndX > thresholdBoundary) { 
-        if (activeTransactionNature === 'expense') setTransactionNature('income'); 
-    } else if (touchEndX - touchStartX > thresholdBoundary) { 
-        if (activeTransactionNature === 'income') setTransactionNature('expense'); 
-    } 
-}
-
-function predictCategoryFromText(textVal) {
-  const val = textVal.toLowerCase().trim(); 
-  if (!val) return; 
-  
-  const expCategory = document.getElementById('expense-category');
-  const map = { 
-      'rent': 'Utilities', 'electricity': 'Utilities', 'bill': 'Utilities', 'gas': 'Utilities', 
-      'food': 'Food', 'lunch': 'Food', 'dinner': 'Food', 'coffee': 'Food', 'restaurant': 'Food', 
-      'movie': 'Entertainment', 'netflix': 'Entertainment', 'game': 'Entertainment', 
-      'petrol': 'Travel', 'fuel': 'Travel', 'cab': 'Travel', 'uber': 'Travel', 
-      'shirt': 'Shopping', 'clothes': 'Shopping', 'amazon': 'Shopping', 'shoes': 'Shopping' 
-  };
-  
-  if (map[val] && workspaceActiveExpenseCategories.includes(map[val])) { 
-      setTransactionNature('expense'); 
-      expCategory.value = map[val]; 
-  } else if (val === 'salary' || val === 'freelance' || val === 'bonus') { 
-      setTransactionNature('income'); 
-      document.getElementById('income-category').value = textVal; 
-  }
-}
-
-function executeTransactionSave() {
-  const isBulkModeActive = document.getElementById('bulk-mode-checkbox').checked; 
-  const today = new Date(); 
-  const tx = db.transaction("transactions", "readwrite"); 
-  const store = tx.objectStore("transactions");
-  
-  const istDateFormatted = today.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
-  const istDateStringForFiltering = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(today);
-  
-  if (isBulkModeActive) {
-    const holder = document.getElementById('bulk-rows-holder-div'); 
-    const childrenRows = holder.children;
-    
-    if (childrenRows.length === 0) { 
-        triggerNativeAppAlert("Please add at least one line entry to process bulk saves."); 
-        return; 
+    if (nature === 'income') {
+        container.classList.add('nature-income');
+        container.classList.remove('nature-expense');
+        document.getElementById('lightning-amount-display').style.color = 'var(--income)';
+    } else {
+        container.classList.add('nature-expense');
+        container.classList.remove('nature-income');
+        document.getElementById('lightning-amount-display').style.color = 'var(--expense)';
     }
     
-    let itemsSavedCount = 0;
-    for(let i = 0; i < childrenRows.length; i++) {
-      let trackingPointerString = childrenRows[i].id.split('-').pop();
-      let text = document.getElementById(`bulk-text-${trackingPointerString}`).value.trim() || 'Bulk Untitled Entry'; 
-      let amount = parseIndianCommaStringToFloat(document.getElementById(`bulk-amount-${trackingPointerString}`).value); 
-      let nature = document.getElementById(`bulk-nature-${trackingPointerString}`).value; 
-      let category = document.getElementById(`bulk-category-${trackingPointerString}`).value;
-      
-      if (!isNaN(amount) && amount > 0) { 
-          store.add({ 
-              text, 
-              amount: nature === 'expense' ? -amount : amount, 
-              category, 
-              date: istDateFormatted, 
-              timestamp: today.getTime(), 
-              dateString: istDateStringForFiltering 
-          }); 
-          itemsSavedCount++; 
-      }
+    renderLightningCategoryChips();
+}
+
+function renderLightningCategoryChips() {
+    const container = document.getElementById('lightning-category-chips');
+    container.innerHTML = "";
+    lightningSelectedCategory = ""; 
+    
+    let categories = [];
+    if(lightningNature === 'income') {
+        categories = ["Salary", "Freelance", "Bonus", "Share Market", "Other Income"];
+    } else {
+        categories = workspaceActiveExpenseCategories; 
     }
     
-    if(itemsSavedCount === 0) { 
-        triggerNativeAppAlert("No valid numerical row items found. Please check your amounts."); 
-        return; 
+    categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = "quick-chip";
+        const styleObj = getCategoryStyle(cat);
+        btn.innerHTML = `${styleObj.icon} ${cat}`;
+        btn.onclick = () => selectLightningChip(btn, cat);
+        container.appendChild(btn);
+    });
+}
+
+function selectLightningChip(btnElement, catName) {
+    document.querySelectorAll('.quick-chip').forEach(c => c.classList.remove('selected'));
+    btnElement.classList.add('selected');
+    lightningSelectedCategory = catName;
+}
+
+function handleLightningNumpad(val) {
+    if (lightningAmountStr === "0" && val !== ".") {
+        lightningAmountStr = val;
+    } else {
+        if(val === '.' && lightningAmountStr.includes('.')) return;
+        if(lightningAmountStr.length > 9) return; 
+        lightningAmountStr += val;
+    }
+    updateLightningDisplay();
+}
+
+function handleLightningBackspace() {
+    if (lightningAmountStr.length <= 1) {
+        lightningAmountStr = "0";
+    } else {
+        lightningAmountStr = lightningAmountStr.slice(0, -1);
+    }
+    updateLightningDisplay();
+}
+
+function updateLightningDisplay() {
+    const num = parseFloat(lightningAmountStr);
+    const display = document.getElementById('lightning-amount-display');
+    
+    if(isNaN(num)) {
+        display.innerText = "₹0";
+    } else {
+        let prefix = "₹";
+        if(lightningAmountStr.endsWith('.')) {
+            display.innerText = prefix + num.toLocaleString('en-IN') + '.';
+        } else if (lightningAmountStr.includes('.')) {
+            const parts = lightningAmountStr.split('.');
+            display.innerText = prefix + parseInt(parts[0]).toLocaleString('en-IN') + '.' + parts[1];
+        } else {
+            display.innerText = prefix + num.toLocaleString('en-IN');
+        }
+    }
+}
+
+function executeLightningSave() {
+    const amount = parseFloat(lightningAmountStr);
+    let text = document.getElementById('lightning-desc').value.trim() || 'Quick Entry';
+    
+    if(isNaN(amount) || amount <= 0) {
+        triggerNativeAppAlert("Please enter an amount greater than 0.");
+        return;
+    }
+    if(!lightningSelectedCategory) {
+        triggerNativeAppAlert("Please select a category chip.");
+        return;
     }
     
-    tx.oncomplete = () => { 
-        holder.innerHTML = ""; 
-        generateNewBulkInputRow(); 
-        generateNewBulkInputRow(); 
-        fetchAndDisplay(); 
-        triggerSuccessNotification(`Batch processing complete! Logged ${itemsSavedCount} lines.`); 
-    };
+    const today = new Date(); 
+    const istDateFormatted = today.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
+    const istDateStringForFiltering = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(today);
     
-  } else {
-    let text = document.getElementById('text').value.trim() || 'Untitled Entry'; 
-    const amount = parseIndianCommaStringToFloat(document.getElementById('amount').value);
-    let category = activeTransactionNature === 'income' ? (document.getElementById('income-category').value.trim() || 'Other Income') : document.getElementById('expense-category').value;
+    const finalAmount = lightningNature === 'expense' ? -amount : amount;
     
-    if (isNaN(amount) || amount <= 0) { 
-        triggerNativeAppAlert("Please enter a valid amount."); 
-        return; 
-    }
+    const tx = db.transaction("transactions", "readwrite"); 
+    const store = tx.objectStore("transactions");
     
     store.add({ 
-        text, 
-        amount: activeTransactionNature === 'expense' ? -amount : amount, 
-        category, 
+        text: text, 
+        amount: finalAmount, 
+        category: lightningSelectedCategory, 
         date: istDateFormatted, 
         timestamp: today.getTime(), 
         dateString: istDateStringForFiltering 
     });
     
     tx.oncomplete = () => { 
-        document.getElementById('text').value = ''; 
-        document.getElementById('amount').value = ''; 
-        document.getElementById('income-category').value = ''; 
+        closeModal('lightning-add-modal');
         fetchAndDisplay(); 
         triggerSuccessNotification("Saved successfully"); 
-        document.getElementById('text').focus(); 
     };
-  }
 }
+
 
 // ==========================================
 // 7. FILTERS & DISPLAY LOGIC
@@ -946,6 +860,21 @@ function confirmSystemReset() {
     }; 
 }
 
+// ---> RESTORED: Required for the Editing Transaction Modal!
+function toggleCategoryInput(context) {
+  const typeId = context === 'add' ? 'type' : 'edit-type'; 
+  const expId = context === 'add' ? 'expense-cat-container' : 'edit-expense-cat-container'; 
+  const incId = context === 'add' ? 'income-cat-container' : 'edit-income-cat-container';
+  
+  const type = context === 'add' ? activeTransactionNature : document.getElementById(typeId).value;
+  
+  const expContainer = document.getElementById(expId);
+  const incContainer = document.getElementById(incId);
+  
+  if (expContainer) expContainer.style.display = type === 'income' ? 'none' : 'block'; 
+  if (incContainer) incContainer.style.display = type === 'income' ? 'block' : 'none';
+}
+
 function openEditModal() {
   const singleContainer = document.getElementById('single-edit-fields'); 
   const desc = document.getElementById('edit-modal-desc');
@@ -1351,7 +1280,250 @@ function triggerDynamicPeriodFinancialReport() {
 }
 
 // ==========================================
-// 10. APP NAVIGATION & THEME
+// 10. DYNAMIC VARIANCE COMPARISON ENGINE
+// ==========================================
+
+function getQuickCompareDates(mode) {
+    const today = new Date();
+    let aStart = new Date(today);
+    let aEnd = new Date(today);
+    let bStart = new Date(today);
+    let bEnd = new Date(today);
+    let labelA = "Period 1", labelB = "Period 2";
+
+    if (mode === 'month') {
+        aStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        aEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        bStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        bEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+        labelA = "This Month"; labelB = "Last Month";
+    } else if (mode === 'week') {
+        const dayOfWeek = today.getDay();
+        const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); 
+        aStart = new Date(today.setDate(diff));
+        aEnd = new Date(aStart);
+        aEnd.setDate(aStart.getDate() + 6);
+
+        bStart = new Date(aStart);
+        bStart.setDate(aStart.getDate() - 7);
+        bEnd = new Date(aEnd);
+        bEnd.setDate(aEnd.getDate() - 7);
+        labelA = "This Week"; labelB = "Last Week";
+    } else if (mode === 'day') {
+        aStart = new Date();
+        aEnd = new Date();
+        bStart = new Date();
+        bStart.setDate(today.getDate() - 1);
+        bEnd = new Date(bStart);
+        labelA = "Today"; labelB = "Yesterday";
+    }
+
+    const format = (d) => {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    return {
+        startA: format(aStart), endA: format(aEnd),
+        startB: format(bStart), endB: format(bEnd),
+        labelA, labelB
+    };
+}
+
+function handleCompareModeChange() {
+    const mode = document.getElementById('compare-mode-selector').value;
+    const customFields = document.getElementById('custom-compare-fields');
+    
+    if (mode === 'custom') {
+        customFields.style.display = 'flex';
+    } else {
+        customFields.style.display = 'none';
+        runPeriodComparison(); 
+    }
+}
+
+function runPeriodComparison() {
+  const mode = document.getElementById('compare-mode-selector').value;
+  let startA, endA, startB, endB;
+  let labelA = "Period 1", labelB = "Period 2";
+
+  if (mode === 'custom') {
+      startA = document.getElementById('comp-a-start').value;
+      endA = document.getElementById('comp-a-end').value;
+      startB = document.getElementById('comp-b-start').value;
+      endB = document.getElementById('comp-b-end').value;
+  } else {
+      const autoDates = getQuickCompareDates(mode);
+      startA = autoDates.startA;
+      endA = autoDates.endA;
+      startB = autoDates.startB;
+      endB = autoDates.endB;
+      labelA = autoDates.labelA;
+      labelB = autoDates.labelB;
+  }
+  
+  if (!startA || !endA || !startB || !endB) {
+      document.getElementById('compare-empty-state').style.display = 'flex';
+      document.getElementById('compare-results-container').style.display = 'none';
+      return;
+  }
+  
+  let incA = 0, expA = 0, catMapA = {};
+  let incB = 0, expB = 0, catMapB = {};
+  let hasData = false;
+  
+  allTransactions.forEach(t => {
+      let tDate = t.timestamp ? new Date(t.timestamp) : new Date(); 
+      const itemDateString = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(tDate);
+      
+      let absVal = Math.abs(t.amount);
+      let cat = t.category || 'Miscellaneous';
+      
+      if (itemDateString >= startA && itemDateString <= endA) {
+          hasData = true;
+          if (t.amount > 0) incA += absVal;
+          else {
+             expA += absVal;
+             catMapA[cat] = (catMapA[cat] || 0) + absVal;
+          }
+      }
+      
+      if (itemDateString >= startB && itemDateString <= endB) {
+          hasData = true;
+          if (t.amount > 0) incB += absVal;
+          else {
+             expB += absVal;
+             catMapB[cat] = (catMapB[cat] || 0) + absVal;
+          }
+      }
+  });
+  
+  const emptyState = document.getElementById('compare-empty-state');
+  const resultsContainer = document.getElementById('compare-results-container');
+  
+  if (!hasData) {
+      emptyState.style.display = 'flex';
+      resultsContainer.style.display = 'none';
+      return;
+  }
+  
+  emptyState.style.display = 'none';
+  resultsContainer.style.display = 'block';
+
+  let savA = incA - expA;
+  let savB = incB - expB;
+
+  let insightsCard = document.getElementById('compare-smart-insights');
+  insightsCard.className = "insights-card"; 
+  let expDiff = expA - expB;
+  let savDiff = savA - savB;
+  
+  let insightText = `<h4 style="margin-bottom:8px;">💡 Comparison Insight</h4>`;
+  
+  if (expA > expB) {
+      insightsCard.classList.add('warning-state');
+      insightText += `<p style="margin-bottom:6px;">📈 You spent <strong>${isPrivacyMode ? '₹••••' : '₹'+formatToIndianRupee(Math.abs(expDiff)).split('.')[0]} MORE</strong> in ${labelA} compared to ${labelB}.</p>`;
+  } else if (expA < expB) {
+      insightsCard.classList.add('success-state');
+      insightText += `<p style="margin-bottom:6px;">📉 Great job! You spent <strong>${isPrivacyMode ? '₹••••' : '₹'+formatToIndianRupee(Math.abs(expDiff)).split('.')[0]} LESS</strong> in ${labelA}.</p>`;
+  } else {
+      insightText += `<p style="margin-bottom:6px;">⚖️ Your spending was exactly the same across both periods.</p>`;
+  }
+
+  if (savDiff > 0) {
+      insightText += `<p>💰 Your net savings improved by <strong>${isPrivacyMode ? '₹••••' : '₹'+formatToIndianRupee(savDiff).split('.')[0]}</strong>!</p>`;
+  } else if (savDiff < 0) {
+      insightText += `<p>⚠️ Your net savings dropped by <strong>${isPrivacyMode ? '₹••••' : '₹'+formatToIndianRupee(Math.abs(savDiff)).split('.')[0]}</strong>.</p>`;
+  }
+  
+  insightsCard.innerHTML = insightText;
+
+  document.getElementById('comp-header-a').innerText = labelA;
+  document.getElementById('comp-header-b').innerText = labelB;
+
+  document.getElementById('comp-metric-inc-a').innerText = isPrivacyMode ? '₹••••' : `₹${formatToIndianRupee(incA).split('.')[0]}`;
+  document.getElementById('comp-metric-inc-b').innerText = isPrivacyMode ? '₹••••' : `₹${formatToIndianRupee(incB).split('.')[0]}`;
+  document.getElementById('comp-metric-exp-a').innerText = isPrivacyMode ? '₹••••' : `₹${formatToIndianRupee(expA).split('.')[0]}`;
+  document.getElementById('comp-metric-exp-b').innerText = isPrivacyMode ? '₹••••' : `₹${formatToIndianRupee(expB).split('.')[0]}`;
+  document.getElementById('comp-metric-sav-a').innerText = isPrivacyMode ? '₹••••' : `₹${formatToIndianRupee(savA).split('.')[0]}`;
+  document.getElementById('comp-metric-sav-b').innerText = isPrivacyMode ? '₹••••' : `₹${formatToIndianRupee(savB).split('.')[0]}`;
+  
+  document.getElementById('comp-metric-sav-a').className = savA >= 0 ? "amt-inc" : "amt-exp";
+  document.getElementById('comp-metric-sav-b').className = savB >= 0 ? "amt-inc" : "amt-exp";
+
+  // ---> FIXED: THREE DISTINCT COLORS FOR CHART BARS
+  const ctx = document.getElementById('compareBarChart').getContext('2d');
+  if (compareChartInstance) { compareChartInstance.destroy(); }
+  
+  compareChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Income', 'Spent', 'Saved'],
+      datasets: [
+        {
+          label: labelA,
+          data: [incA, expA, savA],
+          // Green, Red, Blue
+          backgroundColor: ['#16a34a', '#dc2626', '#3b82f6'],
+          borderRadius: 4
+        },
+        {
+          label: labelB,
+          data: [incB, expB, savB],
+          // Slightly lighter Green, Red, Blue for comparison distinction
+          backgroundColor: ['#4ade80', '#f87171', '#93c5fd'],
+          borderRadius: 4
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#f8fafc' : '#0f172a' } },
+        tooltip: { callbacks: { label: function(context) { return isPrivacyMode ? ' ₹ ••••••' : ' ₹' + context.raw.toLocaleString('en-IN'); } } }
+      },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(200,200,200,0.1)' }, ticks: { color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' } },
+        x: { grid: { display: false }, ticks: { color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' } }
+      }
+    }
+  });
+
+  let allCategories = new Set([...Object.keys(catMapA), ...Object.keys(catMapB)]);
+  let breakdownHTML = '';
+  
+  Array.from(allCategories).forEach(cat => {
+      let valA = catMapA[cat] || 0;
+      let valB = catMapB[cat] || 0;
+      if (valA === 0 && valB === 0) return;
+      
+      let catVariance = valA - valB; 
+      let color = catVariance > 0 ? 'var(--expense)' : (catVariance < 0 ? 'var(--income)' : 'var(--text-muted)');
+      let sign = catVariance > 0 ? '↑' : (catVariance < 0 ? '↓' : '');
+      
+      const displayVar = isPrivacyMode ? '••••' : formatToIndianRupee(Math.abs(catVariance)).split('.')[0];
+      const displayValA = isPrivacyMode ? '••••' : formatToIndianRupee(valA).split('.')[0];
+      const displayValB = isPrivacyMode ? '••••' : formatToIndianRupee(valB).split('.')[0];
+      
+      breakdownHTML += `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem;">
+         <div>
+            <div style="font-weight: 600;">${cat}</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted);">${labelA}: ₹${displayValA} | ${labelB}: ₹${displayValB}</div>
+         </div>
+         <div style="text-align: right;">
+            <div style="font-weight: 700; color: ${color};">${sign} ₹${displayVar}</div>
+         </div>
+      </div>`;
+  });
+  
+  document.getElementById('compare-category-list').innerHTML = breakdownHTML || '<p style="font-size: 0.8rem; color: var(--text-muted);">No category data to compare.</p>';
+}
+
+// ==========================================
+// 11. APP NAVIGATION & THEME
 // ==========================================
 function switchMainScreen(targetView) {
   currentActiveMainScreen = targetView;
@@ -1359,17 +1531,22 @@ function switchMainScreen(targetView) {
   document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('nav-active'));
   document.getElementById('scroll-top-trigger').classList.remove('scroll-visible');
 
-  document.getElementById(`view-${targetView}`).classList.add('active-view');
-  document.getElementById(`nav-btn-${targetView}`).classList.add('nav-active');
+  // Handle routing fallback to Home
+  let safeTarget = targetView === 'add' ? 'home' : targetView;
+
+  document.getElementById(`view-${safeTarget}`).classList.add('active-view');
+  
+  const navBtn = document.getElementById(`nav-btn-${safeTarget}`);
+  if(navBtn) navBtn.classList.add('nav-active');
 
   const sharedFilters = document.getElementById('shared-time-filters');
-  if(targetView === 'logs' || targetView === 'insights') {
+  if(safeTarget === 'logs' || safeTarget === 'insights') {
      sharedFilters.style.display = 'block';
   } else {
      sharedFilters.style.display = 'none';
   }
 
-  if(targetView === 'add') {
+  if(safeTarget === 'home') {
     if (DOM.searchInput) DOM.searchInput.value = '';
     document.getElementById('filter-nature').value = 'all';
     document.getElementById('start-date').value = '';
@@ -1384,6 +1561,15 @@ function switchMainScreen(targetView) {
     checkedItemIds = [];
   }
   
+  if (safeTarget === 'compare') {
+      const modeSelect = document.getElementById('compare-mode-selector');
+      if (modeSelect && modeSelect.value === 'custom') {
+          modeSelect.value = 'month'; 
+          handleCompareModeChange();
+      }
+      setTimeout(() => runPeriodComparison(), 10);
+  }
+  
   applyFilters();
 }
 
@@ -1395,9 +1581,8 @@ function toggleTheme() {
   localStorage.setItem('rupee-tracker-theme', targetTheme); 
   document.getElementById('theme-btn').innerText = targetTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
   
-  if(currentActiveMainScreen === 'insights') {
-      applyFilters(); 
-  }
+  if(currentActiveMainScreen === 'insights') applyFilters(); 
+  if(currentActiveMainScreen === 'compare') runPeriodComparison();
 }
 
 const savedTheme = localStorage.getItem('rupee-tracker-theme') || 'light'; 
@@ -1406,13 +1591,12 @@ window.addEventListener('DOMContentLoaded', () => {
     const tb = document.getElementById('theme-btn');
     if(tb) tb.innerText = savedTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
     
-    // ---> NEW: Sync privacy toggle icon on load
     const privacyBtn = document.getElementById('privacy-toggle-btn');
     if(privacyBtn && isPrivacyMode) privacyBtn.innerText = '🙈';
 });
 
 // ==========================================
-// 11. PWA REGISTRATION (SERVICE WORKER)
+// 12. PWA REGISTRATION (SERVICE WORKER)
 // ==========================================
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

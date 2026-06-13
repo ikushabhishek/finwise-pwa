@@ -356,10 +356,10 @@ button:active { transform: scale(0.96); }
     width: 100vw;
     height: 100vh;
     background: var(--bg-main);
-    z-index: 10000; /* Extremely high to sit above everything */
+    z-index: 10000;
     overflow-y: auto;
     padding: 20px;
-    padding-bottom: 100px; /* Extra padding for scrolling past mobile navigation */
+    padding-bottom: 100px;
     animation: slideInRight 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.05) forwards;
 }
 
@@ -368,7 +368,6 @@ button:active { transform: scale(0.96); }
     to { transform: translateX(0); }
 }
 
-/* Safe container so the settings don't stretch too wide on tablets/desktops */
 .settings-page-content {
     max-width: 500px;
     margin: 0 auto;
@@ -410,3 +409,70 @@ button:active { transform: scale(0.96); }
     transition: transform 0.1s, background-color 0.2s;
 }
 .btn-close-page:active { transform: scale(0.9); background: var(--tab-bg); }
+
+/* ==============================================================
+   FLOATING ACTION BUTTON (FAB) & LIGHTNING ADD CHIPS
+   ============================================================== */
+.fab-wrapper { position: relative; width: 70px; height: 50px; display: flex; justify-content: center; }
+.fab-wrapper::before { content: ''; position: absolute; top: -22px; width: 70px; height: 70px; background: var(--bg-card); border-radius: 50%; border-top: 1px solid var(--border); z-index: -1; }
+
+.fab-add-btn { 
+    position: absolute !important; 
+    top: -30px !important; 
+    width: 60px !important; 
+    height: 60px !important; 
+    border-radius: 50% !important; 
+    background: linear-gradient(135deg, #1b5e20, #2e7d32) !important; 
+    color: white !important; 
+    font-size: 2rem !important; 
+    font-weight: 400 !important; 
+    display: flex !important; 
+    align-items: center !important; 
+    justify-content: center !important; 
+    border: 4px solid var(--bg-card) !important; 
+    box-shadow: 0 6px 16px rgba(46, 125, 50, 0.4) !important; 
+    cursor: pointer !important; 
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important; 
+    z-index: 100 !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+}
+.fab-add-btn:active { transform: scale(0.9) !important; }
+
+/* Quick Category Chips for Lightning Add */
+#lightning-category-chips { 
+    display: flex; 
+    flex-wrap: wrap; 
+    justify-content: center; 
+    gap: 8px; 
+    margin-bottom: 24px; 
+    width: 100%; 
+    max-height: 140px; 
+    overflow-y: auto; 
+}
+
+.quick-chip { 
+    width: auto !important; 
+    display: inline-flex !important; 
+    align-items: center !important; 
+    justify-content: center !important; 
+    padding: 8px 16px !important; 
+    border-radius: 20px !important; 
+    background: var(--bg-card) !important; 
+    border: 1px solid var(--border) !important; 
+    color: var(--text-main) !important; 
+    font-size: 0.85rem !important; 
+    font-weight: 600 !important; 
+    cursor: pointer !important; 
+    transition: all 0.2s !important; 
+    white-space: nowrap !important; 
+    margin: 0 !important; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important; 
+}
+.quick-chip.selected { 
+    background: var(--primary) !important; 
+    color: white !important; 
+    border-color: var(--primary) !important; 
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3) !important; 
+    transform: translateY(-2px) !important; 
+}
