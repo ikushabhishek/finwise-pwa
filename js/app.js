@@ -8,16 +8,14 @@ let checkedItemIds = [];
 let currentVisibleIds = []; 
 let currentTab = 'all';
 let dateOffset = 0; 
-let activeTransactionNature = 'expense';
-let currentActiveMainScreen = 'home'; // FIXED: App now boots to Home natively
-let bulkRowIncrementalPointer = 0;
+let currentActiveMainScreen = 'home'; 
 let expenseChartInstance = null;
 let compareChartInstance = null; 
 
-// ---> Privacy Mode Global State
+// Privacy Mode Global State
 let isPrivacyMode = localStorage.getItem('finwise-privacy') === 'true';
 
-// ---> Lightning Add Global State
+// ---> LIGHTNING ADD GLOBAL STATE <---
 let lightningAmountStr = "0";
 let lightningNature = "expense";
 let lightningSelectedCategory = "";
@@ -108,17 +106,6 @@ function debounce(callbackFunc, waitingDelayDuration) {
   };
 }
 
-function handleFormEnter(event, targetFieldId) {
-  if (event.key === 'Enter') { 
-      event.preventDefault(); 
-      const element = document.getElementById(targetFieldId); 
-      if (element) { 
-          if (element.tagName === 'BUTTON') element.click(); 
-          else element.focus(); 
-      } 
-  }
-}
-
 window.addEventListener('scroll', () => {
   if (currentActiveMainScreen === 'logs') { 
       const topBtn = document.getElementById('scroll-top-trigger'); 
@@ -134,7 +121,6 @@ function scrollToLogsTop() {
 function openPreferencesModal() { 
   if (typeof refreshImportHistoryUI === 'function') refreshImportHistoryUI();
   if (typeof renderObligationsList === 'function') renderObligationsList();
-  if (typeof syncCategoriesDropdownSelectorsUI === 'function') syncCategoriesDropdownSelectorsUI(); 
   
   document.getElementById('preferences-modal').style.display = 'block'; 
   document.body.style.overflow = 'hidden'; 
@@ -186,18 +172,14 @@ function initializeCategoriesStorageSystem() {
 }
 
 function syncCategoriesDropdownSelectorsUI() {
-  const addSelect = document.getElementById('expense-category'); 
   const editSelect = document.getElementById('edit-expense-category');
   const obSelect = document.getElementById('ob-category');
-  
-  if (!addSelect || !editSelect) return;
   
   let fragMarkupOptions = "";
   for (let i = 0, len = workspaceActiveExpenseCategories.length; i < len; i++) { 
       let cat = workspaceActiveExpenseCategories[i]; 
       fragMarkupOptions += `<option value="${cat}">${cat}</option>`; 
   }
-  if(addSelect) addSelect.innerHTML = fragMarkupOptions; 
   if(editSelect) editSelect.innerHTML = fragMarkupOptions;
   if(obSelect) obSelect.innerHTML = fragMarkupOptions;
 }
@@ -217,7 +199,7 @@ function openCategoryManagerModal() {
     row.style.fontSize = "0.85rem";
     
     const isSystemPreset = systemDefaultCategoriesPreset.includes(cat);
-    row.innerHTML = `<span>${cat}</span> ${isSystemPreset ? '<small style="color:var(--text-muted); font-size:0.65rem; font-weight:bold;">SYSTEM PRESET</small>' : `<span style="color:var(--expense); font-weight:bold; cursor:pointer;" onclick="executeDeleteCustomCategoryTag(${idx})">Remove</span>`}`;
+    row.innerHTML = `<span>${cat}</span> ${isSystemPreset ? '<small style="color:var(--text-muted); font-size:0.65rem; font-weight:bold;">PRESET</small>' : `<span style="color:var(--expense); font-weight:bold; cursor:pointer;" onclick="executeDeleteCustomCategoryTag(${idx})">Remove</span>`}`;
     frag.appendChild(row);
   });
   
@@ -243,11 +225,9 @@ function executeSaveNewCustomCategoryTag() {
   syncCategoriesDropdownSelectorsUI(); 
   openCategoryManagerModal(); 
   
-  // Re-render Lightning chips instantly if it's open
   if (document.getElementById('lightning-add-modal').style.display === 'block') {
       renderLightningCategoryChips();
   }
-
   triggerSuccessNotification("📦 Custom category tag appended!");
 }
 
@@ -257,11 +237,9 @@ function executeDeleteCustomCategoryTag(indexPointer) {
   syncCategoriesDropdownSelectorsUI(); 
   openCategoryManagerModal(); 
   
-  // Re-render Lightning chips instantly if it's open
   if (document.getElementById('lightning-add-modal').style.display === 'block') {
       renderLightningCategoryChips();
   }
-  
   applyFilters();
 }
 
@@ -315,7 +293,7 @@ function saveDashboardCycleAndBaselineConfig() {
 }
 
 // ==========================================
-// 6. LIGHTNING ADD (CUSTOM NUMPAD ENGINE)
+// 6. LIGHTNING ADD & FAB ENGINE
 // ==========================================
 
 function openLightningAdd() {
@@ -343,12 +321,12 @@ function setLightningNature(nature) {
         container.classList.remove('nature-income');
         document.getElementById('lightning-amount-display').style.color = 'var(--expense)';
     }
-    
     renderLightningCategoryChips();
 }
 
 function renderLightningCategoryChips() {
     const container = document.getElementById('lightning-category-chips');
+    if (!container) return;
     container.innerHTML = "";
     lightningSelectedCategory = ""; 
     
@@ -605,7 +583,6 @@ function applyFilters() {
       else fExpense += Math.abs(t.amount); 
   });
 
-  // ---> PRIVACY MASKING: Filtered Totals Strip
   DOM.fBalance.innerText = isPrivacyMode ? '₹ ••••••' : `${fBalance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(fBalance))}`; 
   DOM.fBalance.className = fBalance >= 0 ? 'amt-inc' : 'amt-exp'; 
   DOM.fInc.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(fIncome)}`; 
@@ -638,7 +615,6 @@ function calculateMasterSummaryTotals(masterArray) {
       if (t.amount < 0) expense += Math.abs(t.amount); 
   });
   
-  // ---> PRIVACY MASKING: Main Balance Dashboard
   DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${balance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(balance))}`; 
   DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(income)}`; 
   DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(expense)}`;
@@ -652,10 +628,9 @@ function calculateMasterSummaryTotals(masterArray) {
 
   if (computationalLimitAnchor > 0) {
     velocityWrapper.style.display = 'block'; 
-    velocityTitle.innerText = manualBudgetLimitSetting > 0 ? "MANUAL MONTHLY BUDGET LIMIT" : "INCOME BURN VELOCITY LIMIT";
+    velocityTitle.innerText = manualBudgetLimitSetting > 0 ? "BUDGET VELOCITY LIMIT" : "INCOME BURN VELOCITY LIMIT";
     let velocityPercentageValue = (expense / computationalLimitAnchor) * 100; 
     
-    // Privacy Masking for Progress Percentage
     velocityLabel.innerText = isPrivacyMode ? `••% SPENT` : `${Math.round(velocityPercentageValue)}% SPENT`; 
     velocityFill.style.width = `${Math.min(velocityPercentageValue, 100)}%`;
     
@@ -688,7 +663,6 @@ function calculateMasterSummaryTotals(masterArray) {
   
   if(!widgetCard) return;
 
-  // ---> PRIVACY MASKING: Baseline Panel
   document.getElementById('rec-cycle-label').innerText = `${cycleDayValueSetting}${suffixMarker} of the Month`; 
   
   document.getElementById('rec-budget-label').innerText = manualBudgetLimitSetting > 0 ? 
@@ -756,7 +730,6 @@ function renderUI(transactions) {
     const isChecked = checkedItemIds.includes(t.id);
     const styleObj = getCategoryStyle(catLabel);
     
-    // ---> PRIVACY MASKING: Single History Logs
     const displayAmount = isPrivacyMode ? '••••••' : `${isExpense ? '-' : '+'} ₹${formatToIndianRupee(Math.abs(t.amount))}`;
     
     const li = document.createElement('li'); 
@@ -860,7 +833,7 @@ function confirmSystemReset() {
     }; 
 }
 
-// ---> RESTORED: Required for the Editing Transaction Modal!
+// ---> STILL NEEDED FOR THE EDIT MODAL TO WORK! <---
 function toggleCategoryInput(context) {
   const typeId = context === 'add' ? 'type' : 'edit-type'; 
   const expId = context === 'add' ? 'expense-cat-container' : 'edit-expense-cat-container'; 
@@ -976,7 +949,6 @@ function renderPercentageBreakdown(transactions) {
     const amt = expensesMap[cat]; 
     let percentage = totalIncome > 0 ? (amt / totalIncome) * 100 : 0;
     
-    // ---> PRIVACY MASKING: Breakdown List
     const displayAmt = isPrivacyMode ? '••••' : formatToIndianRupee(amt).split('.')[0];
     
     const itemRow = document.createElement('div'); 
@@ -1025,7 +997,6 @@ function generateSmartInsights(transactions) {
   let dynamicInsightDenominator = manualBudgetLimitSetting > 0 ? manualBudgetLimitSetting : income; 
   const burnRate = (expense / dynamicInsightDenominator) * 100;
   
-  // Privacy masking for percentages
   const displayBurnRate = isPrivacyMode ? '••' : burnRate.toFixed(0);
   const displaySaveRate = isPrivacyMode ? '••' : (100 - burnRate).toFixed(0);
   
@@ -1096,7 +1067,6 @@ function renderChart(transactionsToRender) {
   if(emptyState) emptyState.style.display = 'none';
   if(ratioCard) ratioCard.style.display = 'block';
 
-  // ---> PRIVACY MASKING: Chart Panel Totals
   if(document.getElementById('insight-inc-label')) {
       document.getElementById('insight-inc-label').innerText = isPrivacyMode ? '₹ ••••••' : '₹' + totalIncome.toLocaleString('en-IN', {minimumFractionDigits: 0});
   }
@@ -1159,7 +1129,6 @@ function renderChart(transactionsToRender) {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        // ---> PRIVACY MASKING: Chart Tooltips
         tooltip: { callbacks: { label: function(context) { return isPrivacyMode ? ' ₹ ••••••' : ' ₹' + context.raw.toLocaleString('en-IN'); } } }
       },
       scales: {
@@ -1174,7 +1143,6 @@ function renderChart(transactionsToRender) {
     let amt = expensesMap[cat];
     let pct = ((amt / totalExpense) * 100).toFixed(1);
     
-    // ---> PRIVACY MASKING: Detailed Breakdown Sub-list
     const displayAmt = isPrivacyMode ? '••••' : amt.toLocaleString('en-IN', {minimumFractionDigits:2});
     const displayPct = isPrivacyMode ? '••' : pct;
     
@@ -1220,7 +1188,6 @@ function triggerDynamicPeriodFinancialReport() {
     let tDate = t.timestamp ? new Date(t.timestamp) : new Date(); 
     const itemTimestamp = tDate.getTime(); 
     
-    // Enforce IST formatting for custom date boundary checks
     const itemDateString = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(tDate);
     
     if (currentTab === 'custom') { 
@@ -1245,12 +1212,10 @@ function triggerDynamicPeriodFinancialReport() {
   let categoryRowsHTMLStr = "";
   
   Object.keys(reportCategoricalMap).sort((a,b) => reportCategoricalMap[b] - reportCategoricalMap[a]).forEach(key => {
-    // ---> PRIVACY MASKING: Report Category Tags
     const rowAmt = isPrivacyMode ? '••••' : formatToIndianRupee(reportCategoricalMap[key]).split('.')[0];
     categoryRowsHTMLStr += `<tr style="border-bottom:1px solid var(--border); font-size:0.8rem;"><td style="padding:6px 0; font-weight:500;">${key}</td><td style="padding:6px 0; text-align:right; font-weight:700; color:var(--expense);">₹${rowAmt}</td></tr>`;
   });
 
-  // ---> PRIVACY MASKING: Report Core Metrics
   const displayInflow = isPrivacyMode ? '••••••' : formatToIndianRupee(reportInflow);
   const displayOutflow = isPrivacyMode ? '••••••' : formatToIndianRupee(reportOutflow);
   const displayNet = isPrivacyMode ? '••••••' : formatToIndianRupee(netSavingsValue);
@@ -1453,7 +1418,6 @@ function runPeriodComparison() {
   document.getElementById('comp-metric-sav-a').className = savA >= 0 ? "amt-inc" : "amt-exp";
   document.getElementById('comp-metric-sav-b').className = savB >= 0 ? "amt-inc" : "amt-exp";
 
-  // ---> FIXED: THREE DISTINCT COLORS FOR CHART BARS
   const ctx = document.getElementById('compareBarChart').getContext('2d');
   if (compareChartInstance) { compareChartInstance.destroy(); }
   
@@ -1465,14 +1429,12 @@ function runPeriodComparison() {
         {
           label: labelA,
           data: [incA, expA, savA],
-          // Green, Red, Blue
           backgroundColor: ['#16a34a', '#dc2626', '#3b82f6'],
           borderRadius: 4
         },
         {
           label: labelB,
           data: [incB, expB, savB],
-          // Slightly lighter Green, Red, Blue for comparison distinction
           backgroundColor: ['#4ade80', '#f87171', '#93c5fd'],
           borderRadius: 4
         }
@@ -1525,13 +1487,15 @@ function runPeriodComparison() {
 // ==========================================
 // 11. APP NAVIGATION & THEME
 // ==========================================
+
+// ---> FIXED: Routing now correctly navigates to 'home' and clears states properly <---
 function switchMainScreen(targetView) {
   currentActiveMainScreen = targetView;
   document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active-view'));
   document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('nav-active'));
   document.getElementById('scroll-top-trigger').classList.remove('scroll-visible');
 
-  // Handle routing fallback to Home
+  // Reroute legacy 'add' requests to 'home'
   let safeTarget = targetView === 'add' ? 'home' : targetView;
 
   document.getElementById(`view-${safeTarget}`).classList.add('active-view');
@@ -1548,9 +1512,13 @@ function switchMainScreen(targetView) {
 
   if(safeTarget === 'home') {
     if (DOM.searchInput) DOM.searchInput.value = '';
-    document.getElementById('filter-nature').value = 'all';
-    document.getElementById('start-date').value = '';
-    document.getElementById('end-date').value = '';
+    const filterNature = document.getElementById('filter-nature');
+    if (filterNature) filterNature.value = 'all';
+    
+    const startDate = document.getElementById('start-date');
+    const endDate = document.getElementById('end-date');
+    if (startDate) startDate.value = '';
+    if (endDate) endDate.value = '';
     
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     const allTimeTab = document.querySelector('.tab');
