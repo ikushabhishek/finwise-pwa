@@ -39,12 +39,12 @@ function executeSaveObligation() {
       return;
   }
 
-  // ---> BUG FIX: Force user to provide an End Date if EMI is selected
-  if (type === 'EMI' && !endDate) {
+  // ---> NEW: STRICT CHECK FOR EMI END DATE <---
+  if (type === 'EMI' && (!endDate || endDate.trim() === '')) {
       if (typeof triggerNativeAppAlert === 'function') {
-          triggerNativeAppAlert("Please select a Loan End Date for your EMI.");
+          triggerNativeAppAlert("⚠️ Please select a Loan End Date for your EMI.");
       } else {
-          alert("Please select a Loan End Date for your EMI.");
+          alert("⚠️ Please select a Loan End Date for your EMI.");
       }
       return;
   }
@@ -98,7 +98,7 @@ function renderObligationsList() {
           div.style.alignItems = 'center';
           div.style.boxShadow = '0 2px 6px rgba(0,0,0,0.02)';
           
-          // ---> PRIVACY MASKING: Obligations List in Settings
+          // Privacy Masking Logic
           const displayAmt = (typeof isPrivacyMode !== 'undefined' && isPrivacyMode) ? '••••••' : item.amount;
           
           let detailsHTML = `
@@ -108,7 +108,7 @@ function renderObligationsList() {
                 <small style="color:var(--text-muted); font-size: 0.75rem; font-weight: 600;">₹${displayAmt} • Due: Day ${item.billingDate}</small>
                 ${item.endDate ? `<br><small style="color:var(--expense); font-size: 0.65rem; font-weight: 700;">Ends: ${item.endDate}</small>` : ''}
             </div>
-            <button style="background:var(--alert-bg); color:var(--expense); border:1px solid var(--alert-border); box-shadow:none; width:36px; height:36px; padding:0; display:flex; justify-content:center; align-items:center; border-radius:10px; font-size:1.1rem; cursor:pointer;" onclick="executeDeleteObligation(${item.id})">🗑️</button>
+            <button style="background:rgba(220, 38, 38, 0.1); color:var(--expense); border:1px solid rgba(220, 38, 38, 0.2); box-shadow:none; width:36px; height:36px; padding:0; display:flex; justify-content:center; align-items:center; border-radius:10px; font-size:1.1rem; cursor:pointer;" onclick="executeDeleteObligation(${item.id})">🗑️</button>
           `;
           
           div.innerHTML = detailsHTML;
@@ -183,7 +183,6 @@ function renderPendingObligations(pendingItems) {
       div.style.borderRadius = '14px';
       div.style.border = '1px solid var(--border)';
       
-      // ---> PRIVACY MASKING: Gatekeeper Popup EMIs
       let displayAmount = item.amount;
       if (typeof isPrivacyMode !== 'undefined' && isPrivacyMode) {
           displayAmount = '••••••';
@@ -200,8 +199,8 @@ function renderPendingObligations(pendingItems) {
             <strong style="color:var(--expense); font-size: 1.15rem;">₹${displayAmount}</strong>
           </div>
           <div style="display:flex; gap: 10px;">
-            <button onclick="processObligation(${item.id}, 'skip')" style="flex:1; background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.02); font-size: 0.85rem; padding: 10px;">⏭️ Skip</button>
-            <button onclick="processObligation(${item.id}, 'log')" style="flex:1; background:var(--primary); color:white; border:none; box-shadow: 0 4px 10px rgba(46,125,50,0.2); font-size: 0.85rem; padding: 10px;">✅ Log</button>
+            <button onclick="processObligation(${item.id}, 'skip')" style="flex:1; background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.02); font-size: 0.85rem; padding: 10px; margin: 0;">⏭️ Skip</button>
+            <button onclick="processObligation(${item.id}, 'log')" style="flex:1; background:var(--primary); color:white; border:none; box-shadow: 0 4px 10px rgba(46,125,50,0.2); font-size: 0.85rem; padding: 10px; margin: 0;">✅ Log</button>
           </div>
       `;
       container.appendChild(div);
