@@ -39,12 +39,12 @@ function executeSaveObligation() {
       return;
   }
 
-  // ---> NEW: STRICT CHECK FOR EMI END DATE <---
+  // STRICT CHECK FOR EMI END DATE (Removed text emoji since modal has an SVG)
   if (type === 'EMI' && (!endDate || endDate.trim() === '')) {
       if (typeof triggerNativeAppAlert === 'function') {
-          triggerNativeAppAlert("⚠️ Please select a Loan End Date for your EMI.");
+          triggerNativeAppAlert("Please select a Loan End Date for your EMI.");
       } else {
-          alert("⚠️ Please select a Loan End Date for your EMI.");
+          alert("Please select a Loan End Date for your EMI.");
       }
       return;
   }
@@ -101,6 +101,9 @@ function renderObligationsList() {
           // Privacy Masking Logic
           const displayAmt = (typeof isPrivacyMode !== 'undefined' && isPrivacyMode) ? '••••••' : item.amount;
           
+          // SVG Replace: Trash Bin Icon
+          const deleteSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+
           let detailsHTML = `
             <div>
                 <strong style="font-size: 0.9rem; color: var(--text-main);">${item.title}</strong> 
@@ -108,7 +111,9 @@ function renderObligationsList() {
                 <small style="color:var(--text-muted); font-size: 0.75rem; font-weight: 600;">₹${displayAmt} • Due: Day ${item.billingDate}</small>
                 ${item.endDate ? `<br><small style="color:var(--expense); font-size: 0.65rem; font-weight: 700;">Ends: ${item.endDate}</small>` : ''}
             </div>
-            <button style="background:rgba(220, 38, 38, 0.1); color:var(--expense); border:1px solid rgba(220, 38, 38, 0.2); box-shadow:none; width:36px; height:36px; padding:0; display:flex; justify-content:center; align-items:center; border-radius:10px; font-size:1.1rem; cursor:pointer;" onclick="executeDeleteObligation(${item.id})">🗑️</button>
+            <button style="background:rgba(220, 38, 38, 0.1); color:var(--expense); border:1px solid rgba(220, 38, 38, 0.2); box-shadow:none; width:36px; height:36px; padding:0; display:flex; justify-content:center; align-items:center; border-radius:10px; cursor:pointer;" onclick="executeDeleteObligation(${item.id})">
+              ${deleteSvg}
+            </button>
           `;
           
           div.innerHTML = detailsHTML;
@@ -176,6 +181,10 @@ function renderPendingObligations(pendingItems) {
   
   modal.style.display = 'flex';
   
+  // SVG Replace: Skip and Log Icons
+  const skipSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: text-bottom;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>`;
+  const logSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: text-bottom;"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+
   pendingItems.forEach(item => {
       const div = document.createElement('div');
       div.style.background = 'var(--bg-main)'; 
@@ -199,8 +208,12 @@ function renderPendingObligations(pendingItems) {
             <strong style="color:var(--expense); font-size: 1.15rem;">₹${displayAmount}</strong>
           </div>
           <div style="display:flex; gap: 10px;">
-            <button onclick="processObligation(${item.id}, 'skip')" style="flex:1; background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.02); font-size: 0.85rem; padding: 10px; margin: 0;">⏭️ Skip</button>
-            <button onclick="processObligation(${item.id}, 'log')" style="flex:1; background:var(--primary); color:white; border:none; box-shadow: 0 4px 10px rgba(46,125,50,0.2); font-size: 0.85rem; padding: 10px; margin: 0;">✅ Log</button>
+            <button onclick="processObligation(${item.id}, 'skip')" style="flex:1; background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.02); font-size: 0.85rem; padding: 10px; margin: 0; display: flex; align-items: center; justify-content: center;">
+              ${skipSvg} Skip
+            </button>
+            <button onclick="processObligation(${item.id}, 'log')" style="flex:1; background:var(--primary); color:white; border:none; box-shadow: 0 4px 10px rgba(46,125,50,0.2); font-size: 0.85rem; padding: 10px; margin: 0; display: flex; align-items: center; justify-content: center;">
+              ${logSvg} Log
+            </button>
           </div>
       `;
       container.appendChild(div);

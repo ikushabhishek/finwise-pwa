@@ -10,14 +10,12 @@ let currentTab = 'all';
 let dateOffset = 0; 
 let activeTransactionNature = 'expense';
 
-// FIXED: App boots cleanly to the Dashboard
 let currentActiveMainScreen = 'home'; 
 
 let bulkRowIncrementalPointer = 0;
 let expenseChartInstance = null;
 let compareChartInstance = null; 
 
-// Privacy Mode Global State
 let isPrivacyMode = localStorage.getItem('finwise-privacy') === 'true';
 
 // ---> LIGHTNING ADD GLOBAL STATE <---
@@ -132,12 +130,16 @@ function openPreferencesModal() {
   document.body.style.overflow = 'hidden'; 
 }
 
+// ---> SVG ICON REPLACEMENTS <---
 function togglePrivacyMode() {
     isPrivacyMode = !isPrivacyMode;
     localStorage.setItem('finwise-privacy', isPrivacyMode);
     
     const btn = document.getElementById('privacy-toggle-btn');
-    if (btn) btn.innerText = isPrivacyMode ? '🙈' : '👁️';
+    const showSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+    const hideSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+    
+    if (btn) btn.innerHTML = isPrivacyMode ? hideSvg : showSvg;
     
     applyFilters(); 
     if (currentActiveMainScreen === 'compare') runPeriodComparison();
@@ -166,8 +168,6 @@ function getCategoryStyle(catName) {
   
   if (catMap[catName]) return { ...catMap[catName], cleanName: catName };
 
-  // ---> NEW: DYNAMIC EMOJI EXTRACTION ENGINE <---
-  // If the user adds an emoji at the start of a custom tag, extract it to use as the icon!
   const emojiRegex = /^(\p{Emoji_Presentation}|\p{Extended_Pictographic})/u;
   const match = catName.match(emojiRegex);
   
@@ -252,7 +252,7 @@ function executeSaveNewCustomCategoryTag() {
       renderLightningCategoryChips();
   }
 
-  triggerSuccessNotification("📦 Custom category tag appended!");
+  triggerSuccessNotification("Custom category tag appended!");
 }
 
 function executeDeleteCustomCategoryTag(indexPointer) {
@@ -280,7 +280,10 @@ function toggleDashboardConfigPanel() {
   if(fieldsSheet.style.display === 'none') {
     displaySheet.style.display = 'none'; 
     fieldsSheet.style.display = 'block'; 
-    actionBtn.innerText = "✕ Cancel";
+    
+    // SVG Close Icon
+    actionBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Cancel`;
+    
     document.getElementById('dash-cycle-day-input').max = daysInMonth; 
     document.getElementById('dash-cycle-day-input').value = localStorage.getItem('finwise-cycle-day') || '1';
     document.getElementById('dash-budget-limit-input').value = localStorage.getItem('finwise-budget-limit') || '';
@@ -289,7 +292,7 @@ function toggleDashboardConfigPanel() {
   } else { 
     displaySheet.style.display = 'block'; 
     fieldsSheet.style.display = 'none'; 
-    actionBtn.innerText = "✏️ Edit"; 
+    actionBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit`; 
   }
 }
 
@@ -310,9 +313,9 @@ function saveDashboardCycleAndBaselineConfig() {
   
   document.getElementById('dashboard-config-display-sheet').style.display = 'block'; 
   document.getElementById('dashboard-config-fields-sheet').style.display = 'none'; 
-  document.getElementById('dashboard-config-toggle-btn').innerText = "✏️ Edit";
+  document.getElementById('dashboard-config-toggle-btn').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit`;
   
-  triggerSuccessNotification("📅 Account setup profiles updated successfully!"); 
+  triggerSuccessNotification("Account setup updated successfully!"); 
   applyFilters();
 }
 
@@ -366,7 +369,6 @@ function renderLightningCategoryChips() {
         const btn = document.createElement('button');
         btn.className = "quick-chip";
         const styleObj = getCategoryStyle(cat);
-        // Using dynamically extracted clean name and icon
         btn.innerHTML = `${styleObj.icon} ${styleObj.cleanName}`;
         btn.onclick = () => selectLightningChip(btn, cat);
         container.appendChild(btn);
@@ -379,14 +381,12 @@ function selectLightningChip(btnElement, catName) {
     lightningSelectedCategory = catName;
 }
 
-// ---> FIXED: 2 DECIMAL DIGIT LIMIT ENGINE <---
 function handleLightningNumpad(val) {
     if (lightningAmountStr === "0" && val !== ".") {
         lightningAmountStr = val;
     } else {
         if(val === '.' && lightningAmountStr.includes('.')) return;
         
-        // Prevent typing more than 2 digits after the decimal point
         if (lightningAmountStr.includes('.') && val !== '.') {
             const parts = lightningAmountStr.split('.');
             if (parts[1] && parts[1].length >= 2) return; 
@@ -712,16 +712,19 @@ function calculateMasterSummaryTotals(masterArray) {
     displaySheet.style.display = 'none'; 
     fieldsSheet.style.display = 'block'; 
     actionLinkBtn.style.display = 'none'; 
-    titleHeaderSpan.innerText = "🔧 Setup Financial Baseline Cycle";
+    titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg> Setup Financial Baseline Cycle`;
   } else {
     widgetCard.style.display = 'block'; 
-    actionLinkBtn.style.display = 'inline-block';
+    actionLinkBtn.style.display = 'inline-flex';
     
     if(fieldsSheet.style.display === 'none') { 
-        titleHeaderSpan.innerText = "📅 Cycle & Baseline Control"; 
+        titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Cycle & Baseline Control`; 
     } else { 
-        titleHeaderSpan.innerText = "⚙️ Modify Workspace Targets"; 
+        titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Modify Workspace Targets`; 
     }
+    
+    const svgBalanced = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:middle; margin-left:2px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
+    const svgAlert = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:middle; margin-left:2px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
     
     if(closingBalanceTarget !== null) {
       document.getElementById('rec-cl-label').innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(closingBalanceTarget)}`; 
@@ -730,12 +733,12 @@ function calculateMasterSummaryTotals(masterArray) {
       const diffLabel = document.getElementById('rec-diff-label');
       
       if(Math.abs(variance) < 0.01) { 
-          diffTitle.innerHTML = `Reconciliation State: <span class="reconcile-status-badge" style="background-color: rgba(22, 163, 74, 0.2); color: var(--income);">Balanced ✨</span>`; 
+          diffTitle.innerHTML = `Reconciliation State: <span class="reconcile-status-badge" style="background-color: rgba(22, 163, 74, 0.2); color: var(--income);">Balanced ${svgBalanced}</span>`; 
           diffLabel.innerText = "Perfect Match"; 
           diffLabel.className = "amt-inc"; 
       } 
       else { 
-          diffTitle.innerHTML = `Reconciliation State: <span class="reconcile-status-badge" style="background-color: rgba(220, 38, 38, 0.1); color: var(--expense);">Unbalanced ⚠️</span>`; 
+          diffTitle.innerHTML = `Reconciliation State: <span class="reconcile-status-badge" style="background-color: rgba(220, 38, 38, 0.1); color: var(--expense);">Unbalanced ${svgAlert}</span>`; 
           diffLabel.innerText = isPrivacyMode ? '₹ ••••••' : `${variance >= 0 ? '+' : '-'}₹${formatToIndianRupee(Math.abs(variance))}`; 
           diffLabel.className = variance >= 0 ? "amt-inc" : "amt-exp"; 
       }
@@ -976,7 +979,7 @@ function renderPercentageBreakdown(transactions) {
   
   const expenseKeys = Object.keys(expensesMap);
   if (expenseKeys.length === 0) {
-    DOM.breakdown.innerHTML = `<div class="empty-state-premium" style="padding: 20px;"><div class="empty-icon" style="font-size: 2rem;">📊</div><h4 style="font-size: 0.95rem;">No Spending Data</h4><p style="font-size: 0.8rem;">Log some expenses to see your breakdown.</p></div>`; 
+    DOM.breakdown.innerHTML = `<div class="empty-state-premium" style="padding: 20px;"><div class="empty-icon" style="font-size: 2rem;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div><h4 style="font-size: 0.95rem;">No Spending Data</h4><p style="font-size: 0.8rem;">Log some expenses to see your breakdown.</p></div>`; 
     return;
   }
   
@@ -1016,15 +1019,22 @@ function generateSmartInsights(transactions) {
       } 
   });
   
+  const svgIdea = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg>`;
+  const svgAlert = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+  const svgHighAlert = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"></path></svg>`;
+  const svgSearch = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
+  const svgLightning = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`;
+  const svgSparkle = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
+
   if (transactions.length === 0) { 
-      DOM.insightsTitle.innerHTML = "💡 Your Money Insights"; 
+      DOM.insightsTitle.innerHTML = `${svgIdea} Your Money Insights`; 
       DOM.insightsText.innerText = "Add some income and expenses to see your money tips here."; 
       return; 
   }
   
   if (income === 0 && expense > 0) { 
       DOM.insightsCard.classList.add('danger-state'); 
-      DOM.insightsTitle.innerHTML = "⚠️ Action Needed: Add Your Income"; 
+      DOM.insightsTitle.innerHTML = `${svgAlert} Action Needed: Add Your Income`; 
       DOM.insightsText.innerHTML = "Tracking expenses is great! Now, add your income to see how much you are actually saving."; 
       return; 
   }
@@ -1038,7 +1048,7 @@ function generateSmartInsights(transactions) {
   
   if (burnRate > 85) { 
       DOM.insightsCard.classList.add('danger-state'); 
-      DOM.insightsTitle.innerHTML = "🚨 Alert: High Spending Velocity"; 
+      DOM.insightsTitle.innerHTML = `${svgHighAlert} Alert: High Spending Velocity`; 
       DOM.insightsText.innerHTML = `You have burned through <strong>${displayBurnRate}%</strong> of your active budget line. Limit non-essential spending immediately.`; 
       return; 
   }
@@ -1048,7 +1058,7 @@ function generateSmartInsights(transactions) {
   
   if (variableWants > essentialNeeds && variableWants > 0) { 
       DOM.insightsCard.classList.add('warning-state'); 
-      DOM.insightsTitle.innerHTML = "🔍 Wants vs. Needs Check"; 
+      DOM.insightsTitle.innerHTML = `${svgSearch} Wants vs. Needs Check`; 
       
       const displayWants = isPrivacyMode ? '••••' : formatToIndianRupee(variableWants).split('.')[0];
       const displayNeeds = isPrivacyMode ? '••••' : formatToIndianRupee(essentialNeeds).split('.')[0];
@@ -1059,13 +1069,13 @@ function generateSmartInsights(transactions) {
   
   if (burnRate > 50) { 
       DOM.insightsCard.classList.add('warning-state'); 
-      DOM.insightsTitle.innerHTML = "⚡ Review: Spending Limit"; 
+      DOM.insightsTitle.innerHTML = `${svgLightning} Review: Spending Limit`; 
       DOM.insightsText.innerHTML = `You have spent <strong>${displayBurnRate}%</strong> of your income pool. You are doing okay, but cutting out small extra costs can help you save more.`; 
       return; 
   }
   
   DOM.insightsCard.className = "insights-card"; 
-  DOM.insightsTitle.innerHTML = "✨ Great Job: Healthy Saving!"; 
+  DOM.insightsTitle.innerHTML = `${svgSparkle} Great Job: Healthy Saving!`; 
   DOM.insightsText.innerHTML = `Awesome work! You saved <strong>${displaySaveRate}%</strong> of your active baseline limits. Keep it up!`;
 }
 
@@ -1115,21 +1125,27 @@ function renderChart(transactionsToRender) {
   if (totalIncome > 0 && incPct < 2) incPct = 2; 
   if(document.getElementById('insight-ratio-bar')) document.getElementById('insight-ratio-bar').style.width = incPct + '%';
 
+  const svgTarget = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>`;
+  const svgAlert = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+  const svgRocket = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg>`;
+  const svgIdea = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg>`;
+  const svgScale = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path></svg>`;
+
   let ratioText = "";
   if (totalIncome > totalExpense && totalExpense > 0) {
      let savingsRate = ((totalIncome - totalExpense) / totalIncome) * 100;
      const displaySaveRate = isPrivacyMode ? '••%' : `${savingsRate.toFixed(1)}%`;
-     ratioText = `Great job! You are saving <span style="color:var(--income)">${displaySaveRate}</span> of your logged income. 🎯`;
+     ratioText = `Great job! You are saving <span style="color:var(--income)">${displaySaveRate}</span> of your logged income. ${svgTarget}`;
   } else if (totalExpense > totalIncome && totalIncome > 0) {
      let deficit = totalExpense - totalIncome;
      const displayDeficit = isPrivacyMode ? '••••••' : deficit.toLocaleString('en-IN');
-     ratioText = `You are spending <span style="color:var(--expense)">₹${displayDeficit}</span> more than you earned. ⚠️`;
+     ratioText = `You are spending <span style="color:var(--expense)">₹${displayDeficit}</span> more than you earned. ${svgAlert}`;
   } else if (totalIncome > 0 && totalExpense === 0) {
-     ratioText = `You have 100% savings right now. Time to invest? 🚀`;
+     ratioText = `You have 100% savings right now. Time to invest? ${svgRocket}`;
   } else if (totalExpense > 0 && totalIncome === 0) {
-     ratioText = `Tracking expenses is great! Don't forget to log your income to see your savings rate. 💡`;
+     ratioText = `Tracking expenses is great! Don't forget to log your income to see your savings rate. ${svgIdea}`;
   } else {
-     ratioText = `You broke perfectly even! ⚖️`;
+     ratioText = `You broke perfectly even! ${svgScale}`;
   }
   if(document.getElementById('insight-ratio-text')) document.getElementById('insight-ratio-text').innerHTML = ratioText;
 
@@ -1143,7 +1159,6 @@ function renderChart(transactionsToRender) {
   if(breakdownList) breakdownList.style.display = 'block';
 
   const sortedCategories = Object.keys(expensesMap).sort((a,b) => expensesMap[b] - expensesMap[a]);
-  // Use clean names for chart labels
   const labels = sortedCategories.map(cat => getCategoryStyle(cat).cleanName);
   const data = sortedCategories.map(cat => expensesMap[cat]);
 
@@ -1424,22 +1439,29 @@ function runPeriodComparison() {
   let expDiff = expA - expB;
   let savDiff = savA - savB;
   
-  let insightText = `<h4 style="margin-bottom:8px;">💡 Comparison Insight</h4>`;
+  const svgIdea = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg>`;
+  const svgUp = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>`;
+  const svgDown = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><polyline points="22 12 18 12 15 3 9 21 6 12 2 12"></polyline></svg>`;
+  const svgScale = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path></svg>`;
+  const svgMoney = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>`;
+  const svgAlert = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+
+  let insightText = `<h4 style="margin-bottom:8px; display: flex; align-items: center;">${svgIdea} Comparison Insight</h4>`;
   
   if (expA > expB) {
       insightsCard.classList.add('warning-state');
-      insightText += `<p style="margin-bottom:6px;">📈 You spent <strong>${isPrivacyMode ? '₹••••' : '₹'+formatToIndianRupee(Math.abs(expDiff)).split('.')[0]} MORE</strong> in ${labelA} compared to ${labelB}.</p>`;
+      insightText += `<p style="margin-bottom:6px;">${svgUp} You spent <strong>${isPrivacyMode ? '₹••••' : '₹'+formatToIndianRupee(Math.abs(expDiff)).split('.')[0]} MORE</strong> in ${labelA} compared to ${labelB}.</p>`;
   } else if (expA < expB) {
       insightsCard.classList.add('success-state');
-      insightText += `<p style="margin-bottom:6px;">📉 Great job! You spent <strong>${isPrivacyMode ? '₹••••' : '₹'+formatToIndianRupee(Math.abs(expDiff)).split('.')[0]} LESS</strong> in ${labelA}.</p>`;
+      insightText += `<p style="margin-bottom:6px;">${svgDown} Great job! You spent <strong>${isPrivacyMode ? '₹••••' : '₹'+formatToIndianRupee(Math.abs(expDiff)).split('.')[0]} LESS</strong> in ${labelA}.</p>`;
   } else {
-      insightText += `<p style="margin-bottom:6px;">⚖️ Your spending was exactly the same across both periods.</p>`;
+      insightText += `<p style="margin-bottom:6px;">${svgScale} Your spending was exactly the same across both periods.</p>`;
   }
 
   if (savDiff > 0) {
-      insightText += `<p>💰 Your net savings improved by <strong>${isPrivacyMode ? '₹••••' : '₹'+formatToIndianRupee(savDiff).split('.')[0]}</strong>!</p>`;
+      insightText += `<p>${svgMoney} Your net savings improved by <strong>${isPrivacyMode ? '₹••••' : '₹'+formatToIndianRupee(savDiff).split('.')[0]}</strong>!</p>`;
   } else if (savDiff < 0) {
-      insightText += `<p>⚠️ Your net savings dropped by <strong>${isPrivacyMode ? '₹••••' : '₹'+formatToIndianRupee(Math.abs(savDiff)).split('.')[0]}</strong>.</p>`;
+      insightText += `<p>${svgAlert} Your net savings dropped by <strong>${isPrivacyMode ? '₹••••' : '₹'+formatToIndianRupee(Math.abs(savDiff)).split('.')[0]}</strong>.</p>`;
   }
   
   insightsCard.innerHTML = insightText;
@@ -1495,6 +1517,9 @@ function runPeriodComparison() {
   let allCategories = new Set([...Object.keys(catMapA), ...Object.keys(catMapB)]);
   let breakdownHTML = '';
   
+  const iconUp = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:middle; margin-right:2px;"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>`;
+  const iconDown = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:middle; margin-right:2px;"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>`;
+  
   Array.from(allCategories).forEach(cat => {
       let valA = catMapA[cat] || 0;
       let valB = catMapB[cat] || 0;
@@ -1502,7 +1527,7 @@ function runPeriodComparison() {
       
       let catVariance = valA - valB; 
       let color = catVariance > 0 ? 'var(--expense)' : (catVariance < 0 ? 'var(--income)' : 'var(--text-muted)');
-      let sign = catVariance > 0 ? '↑' : (catVariance < 0 ? '↓' : '');
+      let sign = catVariance > 0 ? iconUp : (catVariance < 0 ? iconDown : '');
       
       const displayVar = isPrivacyMode ? '••••' : formatToIndianRupee(Math.abs(catVariance)).split('.')[0];
       const displayValA = isPrivacyMode ? '••••' : formatToIndianRupee(valA).split('.')[0];
@@ -1533,7 +1558,6 @@ function switchMainScreen(targetView) {
   document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('nav-active'));
   document.getElementById('scroll-top-trigger').classList.remove('scroll-visible');
 
-  // Handle routing fallback to Home
   let safeTarget = targetView === 'add' ? 'home' : targetView;
 
   document.getElementById(`view-${safeTarget}`).classList.add('active-view');
@@ -1585,7 +1609,11 @@ function toggleTheme() {
   
   document.documentElement.setAttribute('data-theme', targetTheme); 
   localStorage.setItem('rupee-tracker-theme', targetTheme); 
-  document.getElementById('theme-btn').innerText = targetTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
+  
+  const lightSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+  const darkSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+  
+  document.getElementById('theme-btn').innerHTML = targetTheme === 'dark' ? `${lightSvg} Light` : `${darkSvg} Dark`;
   
   if(currentActiveMainScreen === 'insights') applyFilters(); 
   if(currentActiveMainScreen === 'compare') runPeriodComparison();
@@ -1595,10 +1623,14 @@ const savedTheme = localStorage.getItem('rupee-tracker-theme') || 'light';
 document.documentElement.setAttribute('data-theme', savedTheme); 
 window.addEventListener('DOMContentLoaded', () => {
     const tb = document.getElementById('theme-btn');
-    if(tb) tb.innerText = savedTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
+    const lightSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+    const darkSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+    if(tb) tb.innerHTML = savedTheme === 'dark' ? `${lightSvg} Light` : `${darkSvg} Dark`;
     
     const privacyBtn = document.getElementById('privacy-toggle-btn');
-    if(privacyBtn && isPrivacyMode) privacyBtn.innerText = '🙈';
+    const showSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+    const hideSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+    if(privacyBtn && isPrivacyMode) privacyBtn.innerHTML = hideSvg;
 });
 
 // ==========================================
