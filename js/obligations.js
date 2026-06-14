@@ -1,5 +1,5 @@
 // ==========================================
-// 1. RECURRING COMMITMENTS UI & SAVING
+// 1. RECURRING BILLS UI & SAVING
 // ==========================================
 
 function toggleEndDateField() {
@@ -24,9 +24,9 @@ function executeSaveObligation() {
 
   if (!title || isNaN(amount) || isNaN(billingDate)) {
       if (typeof triggerNativeAppAlert === 'function') {
-          triggerNativeAppAlert("Please fill in all valid details for the commitment.");
+          triggerNativeAppAlert("Please fill in all details for this bill.");
       } else {
-          alert("Please fill in all valid details for the commitment.");
+          alert("Please fill in all details for this bill.");
       }
       return;
   }
@@ -39,12 +39,12 @@ function executeSaveObligation() {
       return;
   }
 
-  // STRICT CHECK FOR EMI END DATE (Removed text emoji since modal has an SVG)
+  // STRICT CHECK FOR EMI END DATE
   if (type === 'EMI' && (!endDate || endDate.trim() === '')) {
       if (typeof triggerNativeAppAlert === 'function') {
-          triggerNativeAppAlert("Please select a Loan End Date for your EMI.");
+          triggerNativeAppAlert("Please select an end date for your EMI.");
       } else {
-          alert("Please select a Loan End Date for your EMI.");
+          alert("Please select an end date for your EMI.");
       }
       return;
   }
@@ -66,7 +66,7 @@ function executeSaveObligation() {
       document.getElementById('ob-end-date').value = '';
       
       if (typeof triggerSuccessNotification === 'function') {
-          triggerSuccessNotification("Commitment saved!");
+          triggerSuccessNotification("Bill saved!");
       }
       
       renderObligationsList();
@@ -108,7 +108,7 @@ function renderObligationsList() {
             <div>
                 <strong style="font-size: 0.9rem; color: var(--text-main);">${item.title}</strong> 
                 <br>
-                <small style="color:var(--text-muted); font-size: 0.75rem; font-weight: 600;">₹${displayAmt} • Due: Day ${item.billingDate}</small>
+                <small style="color:var(--text-muted); font-size: 0.75rem; font-weight: 600;">₹${displayAmt} • Due on the ${item.billingDate}</small>
                 ${item.endDate ? `<br><small style="color:var(--expense); font-size: 0.65rem; font-weight: 700;">Ends: ${item.endDate}</small>` : ''}
             </div>
             <button style="background:rgba(220, 38, 38, 0.1); color:var(--expense); border:1px solid rgba(220, 38, 38, 0.2); box-shadow:none; width:36px; height:36px; padding:0; display:flex; justify-content:center; align-items:center; border-radius:10px; cursor:pointer;" onclick="executeDeleteObligation(${item.id})">
@@ -128,7 +128,7 @@ function executeDeleteObligation(id) {
   tx.objectStore('obligations').delete(id);
   tx.oncomplete = () => {
       if (typeof triggerSuccessNotification === 'function') {
-          triggerSuccessNotification("Commitment removed");
+          triggerSuccessNotification("Bill removed");
       }
       renderObligationsList();
   };
@@ -203,7 +203,7 @@ function renderPendingObligations(pendingItems) {
           <div style="display:flex; justify-content:space-between; margin-bottom: 14px; align-items:center;">
             <div>
                 <strong style="font-size: 1rem; color: var(--text-main); display:block; margin-bottom: 2px;">${item.title}</strong>
-                <small style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">${item.type} • Day ${item.billingDate}</small>
+                <small style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">${item.type} • Due on the ${item.billingDate}</small>
             </div>
             <strong style="color:var(--expense); font-size: 1.15rem;">₹${displayAmount}</strong>
           </div>
@@ -245,7 +245,7 @@ function processObligation(id, action) {
       tx.oncomplete = () => { 
           if (typeof triggerSuccessNotification === 'function') {
               if(action === 'log') {
-                  triggerSuccessNotification(`${obligation.title} logged to expenses!`);
+                  triggerSuccessNotification(`${obligation.title} logged as an expense!`);
               } else {
                   triggerSuccessNotification(`${obligation.title} skipped for this month.`);
               }

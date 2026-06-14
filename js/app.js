@@ -130,7 +130,6 @@ function openPreferencesModal() {
   document.body.style.overflow = 'hidden'; 
 }
 
-// ---> SVG ICON REPLACEMENTS <---
 function togglePrivacyMode() {
     isPrivacyMode = !isPrivacyMode;
     localStorage.setItem('finwise-privacy', isPrivacyMode);
@@ -235,11 +234,11 @@ function openCategoryManagerModal() {
 function executeSaveNewCustomCategoryTag() {
   const tagVal = document.getElementById('new-custom-tag-input').value.trim();
   if(!tagVal) { 
-      triggerNativeAppAlert("Please enter a valid tag name."); 
+      triggerNativeAppAlert("Please enter a valid category name."); 
       return; 
   }
   if(workspaceActiveExpenseCategories.includes(tagVal)) { 
-      triggerNativeAppAlert("This category tag already exists."); 
+      triggerNativeAppAlert("This category already exists."); 
       return; 
   }
   
@@ -252,7 +251,7 @@ function executeSaveNewCustomCategoryTag() {
       renderLightningCategoryChips();
   }
 
-  triggerSuccessNotification("Custom category tag appended!");
+  triggerSuccessNotification("Category added!");
 }
 
 function executeDeleteCustomCategoryTag(indexPointer) {
@@ -281,7 +280,6 @@ function toggleDashboardConfigPanel() {
     displaySheet.style.display = 'none'; 
     fieldsSheet.style.display = 'block'; 
     
-    // SVG Close Icon
     actionBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Cancel`;
     
     document.getElementById('dash-cycle-day-input').max = daysInMonth; 
@@ -302,7 +300,7 @@ function saveDashboardCycleAndBaselineConfig() {
   let day = parseInt(cycleInput.value);
   
   if (isNaN(day) || day < 1 || day > maxDays) { 
-      triggerNativeAppAlert(`Please enter a valid billing cycle date between 1 and ${maxDays}.`); 
+      triggerNativeAppAlert(`Please enter a valid start date between 1 and ${maxDays}.`); 
       return; 
   }
   
@@ -315,7 +313,7 @@ function saveDashboardCycleAndBaselineConfig() {
   document.getElementById('dashboard-config-fields-sheet').style.display = 'none'; 
   document.getElementById('dashboard-config-toggle-btn').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit`;
   
-  triggerSuccessNotification("Account setup updated successfully!"); 
+  triggerSuccessNotification("Budget settings updated!"); 
   applyFilters();
 }
 
@@ -437,7 +435,7 @@ function executeLightningSave() {
     }
     
     if(!lightningSelectedCategory) {
-        triggerNativeAppAlert("Please select a category tag for this entry.");
+        triggerNativeAppAlert("Please select a category for this entry.");
         return;
     }
     
@@ -664,7 +662,7 @@ function calculateMasterSummaryTotals(masterArray) {
 
   if (computationalLimitAnchor > 0) {
     velocityWrapper.style.display = 'block'; 
-    velocityTitle.innerText = manualBudgetLimitSetting > 0 ? "BUDGET VELOCITY LIMIT" : "INCOME BURN VELOCITY LIMIT";
+    velocityTitle.innerText = manualBudgetLimitSetting > 0 ? "MONTHLY SPENDING LIMIT" : "INCOME USED";
     let velocityPercentageValue = (expense / computationalLimitAnchor) * 100; 
     
     velocityLabel.innerText = isPrivacyMode ? `••% SPENT` : `${Math.round(velocityPercentageValue)}% SPENT`; 
@@ -702,8 +700,8 @@ function calculateMasterSummaryTotals(masterArray) {
   document.getElementById('rec-cycle-label').innerText = `${cycleDayValueSetting}${suffixMarker} of the Month`; 
   
   document.getElementById('rec-budget-label').innerText = manualBudgetLimitSetting > 0 ? 
-      (isPrivacyMode ? '₹ •••••• (Fixed)' : `₹${formatToIndianRupee(manualBudgetLimitSetting).split('.')[0]} (Fixed boundary)`) 
-      : "Not Configured (Using Income)"; 
+      (isPrivacyMode ? '₹ •••••• (Fixed)' : `₹${formatToIndianRupee(manualBudgetLimitSetting).split('.')[0]} (Fixed limit)`) 
+      : "Not Set (Using Income)"; 
       
   document.getElementById('rec-op-label').innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(openingBalanceBaseline)}`;
 
@@ -712,15 +710,15 @@ function calculateMasterSummaryTotals(masterArray) {
     displaySheet.style.display = 'none'; 
     fieldsSheet.style.display = 'block'; 
     actionLinkBtn.style.display = 'none'; 
-    titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg> Setup Financial Baseline Cycle`;
+    titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg> Setup Monthly Budget`;
   } else {
     widgetCard.style.display = 'block'; 
     actionLinkBtn.style.display = 'inline-flex';
     
     if(fieldsSheet.style.display === 'none') { 
-        titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Cycle & Baseline Control`; 
+        titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Budget Settings`; 
     } else { 
-        titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Modify Workspace Targets`; 
+        titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Edit Budget Goals`; 
     }
     
     const svgBalanced = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:middle; margin-left:2px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
@@ -733,18 +731,18 @@ function calculateMasterSummaryTotals(masterArray) {
       const diffLabel = document.getElementById('rec-diff-label');
       
       if(Math.abs(variance) < 0.01) { 
-          diffTitle.innerHTML = `Reconciliation State: <span class="reconcile-status-badge" style="background-color: rgba(22, 163, 74, 0.2); color: var(--income);">Balanced ${svgBalanced}</span>`; 
+          diffTitle.innerHTML = `Budget Status: <span class="reconcile-status-badge" style="background-color: rgba(22, 163, 74, 0.2); color: var(--income);">On Track ${svgBalanced}</span>`; 
           diffLabel.innerText = "Perfect Match"; 
           diffLabel.className = "amt-inc"; 
       } 
       else { 
-          diffTitle.innerHTML = `Reconciliation State: <span class="reconcile-status-badge" style="background-color: rgba(220, 38, 38, 0.1); color: var(--expense);">Unbalanced ${svgAlert}</span>`; 
+          diffTitle.innerHTML = `Budget Status: <span class="reconcile-status-badge" style="background-color: rgba(220, 38, 38, 0.1); color: var(--expense);">Off Target ${svgAlert}</span>`; 
           diffLabel.innerText = isPrivacyMode ? '₹ ••••••' : `${variance >= 0 ? '+' : '-'}₹${formatToIndianRupee(Math.abs(variance))}`; 
           diffLabel.className = variance >= 0 ? "amt-inc" : "amt-exp"; 
       }
     } else {
-      document.getElementById('rec-cl-label').innerText = "Not Configured"; 
-      document.getElementById('rec-diff-title').innerHTML = `Running Target Status: <span class="reconcile-status-badge" style="background-color: var(--badge-bg); color: var(--badge-text);">Active Baseline</span>`; 
+      document.getElementById('rec-cl-label').innerText = "Not Set"; 
+      document.getElementById('rec-diff-title').innerHTML = `Goal Status: <span class="reconcile-status-badge" style="background-color: var(--badge-bg); color: var(--badge-text);">Tracking</span>`; 
       document.getElementById('rec-diff-label').innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(balance)}`; 
       document.getElementById('rec-diff-label').className = balance >= 0 ? "amt-inc" : "amt-exp";
     }
@@ -1048,8 +1046,8 @@ function generateSmartInsights(transactions) {
   
   if (burnRate > 85) { 
       DOM.insightsCard.classList.add('danger-state'); 
-      DOM.insightsTitle.innerHTML = `${svgHighAlert} Alert: High Spending Velocity`; 
-      DOM.insightsText.innerHTML = `You have burned through <strong>${displayBurnRate}%</strong> of your active budget line. Limit non-essential spending immediately.`; 
+      DOM.insightsTitle.innerHTML = `${svgHighAlert} Alert: Spending Too Fast`; 
+      DOM.insightsText.innerHTML = `You have spent <strong>${displayBurnRate}%</strong> of your monthly limit. Try to hold back on non-essential spending.`; 
       return; 
   }
   
@@ -1063,20 +1061,20 @@ function generateSmartInsights(transactions) {
       const displayWants = isPrivacyMode ? '••••' : formatToIndianRupee(variableWants).split('.')[0];
       const displayNeeds = isPrivacyMode ? '••••' : formatToIndianRupee(essentialNeeds).split('.')[0];
       
-      DOM.insightsText.innerHTML = `Lifestyle spending (Shopping & Fun: ₹${displayWants}) outpaces basic needs (Food & Bills: ₹${displayNeeds}). Consider scaling back lifestyle costs.`; 
+      DOM.insightsText.innerHTML = `Lifestyle spending (Shopping & Fun: ₹${displayWants}) is higher than basic needs (Food & Bills: ₹${displayNeeds}). Consider scaling back lifestyle costs.`; 
       return; 
   }
   
   if (burnRate > 50) { 
       DOM.insightsCard.classList.add('warning-state'); 
       DOM.insightsTitle.innerHTML = `${svgLightning} Review: Spending Limit`; 
-      DOM.insightsText.innerHTML = `You have spent <strong>${displayBurnRate}%</strong> of your income pool. You are doing okay, but cutting out small extra costs can help you save more.`; 
+      DOM.insightsText.innerHTML = `You have spent <strong>${displayBurnRate}%</strong> of your budget. You are doing okay, but cutting out small extra costs can help you save more.`; 
       return; 
   }
   
   DOM.insightsCard.className = "insights-card"; 
   DOM.insightsTitle.innerHTML = `${svgSparkle} Great Job: Healthy Saving!`; 
-  DOM.insightsText.innerHTML = `Awesome work! You saved <strong>${displaySaveRate}%</strong> of your active baseline limits. Keep it up!`;
+  DOM.insightsText.innerHTML = `Awesome work! You are saving <strong>${displaySaveRate}%</strong> of your budget. Keep it up!`;
 }
 
 function renderChart(transactionsToRender) {
@@ -1217,17 +1215,17 @@ function triggerDynamicPeriodFinancialReport() {
   const sheetBody = document.getElementById('financial-report-metrics-sheet-body');
   
   if(currentTab === 'all') { 
-      labelLabel.innerText = "Full Ledger Archive (All-Time Workspace Statement)"; 
+      labelLabel.innerText = "All-Time Summary Report"; 
   } else if (currentTab === 'custom') { 
-      let st = document.getElementById('start-date').value || 'Inception'; 
+      let st = document.getElementById('start-date').value || 'Start'; 
       let en = document.getElementById('end-date').value || 'Present'; 
-      labelLabel.innerText = `Timeline Window: ${st} to ${en}`; 
+      labelLabel.innerText = `Selected Timeframe: ${st} to ${en}`; 
   } else { 
-      labelLabel.innerText = `Timeline Window: ${bounds.startDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })} - ${bounds.endDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}`; 
+      labelLabel.innerText = `Selected Timeframe: ${bounds.startDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })} - ${bounds.endDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}`; 
   }
 
   if(allTransactions.length === 0 || DOM.emptyMsg.style.display === 'flex') { 
-      triggerNativeAppAlert("No ledger data matches this filter timeline. Please log entries to run reports."); 
+      triggerNativeAppAlert("No matching data found for this timeframe. Please log entries to run reports."); 
       return; 
   }
 
@@ -1277,21 +1275,21 @@ function triggerDynamicPeriodFinancialReport() {
 
   sheetBody.innerHTML = `
     <div style="background:var(--bg-main); border:1px solid var(--border); padding:12px; border-radius:14px; margin-bottom:14px;">
-      <div class="reconcile-row"><span>Total Inflow Earnings:</span><span class="amt-inc" style="font-weight:bold;">₹${displayInflow}</span></div>
-      <div class="reconcile-row"><span>Total Outflow Spending:</span><span class="amt-exp" style="font-weight:bold;">₹${displayOutflow}</span></div>
-      <div class="reconcile-row" style="border-top:1px dashed var(--border); padding-top:6px; margin-top:6px; font-weight:bold;"><span>Net Timeline Savings:</span><span class="${netSavingsValue >= 0 ? 'amt-inc' : 'amt-exp'}">₹${displayNet}</span></div>
-      <div class="reconcile-row" style="font-size:0.75rem; margin-bottom:0; color:var(--text-muted);"><span>Calculated Savings Rate:</span><span style="font-weight:bold; color:var(--text-main);">${displayRate}</span></div>
+      <div class="reconcile-row"><span>Total Income:</span><span class="amt-inc" style="font-weight:bold;">₹${displayInflow}</span></div>
+      <div class="reconcile-row"><span>Total Expenses:</span><span class="amt-exp" style="font-weight:bold;">₹${displayOutflow}</span></div>
+      <div class="reconcile-row" style="border-top:1px dashed var(--border); padding-top:6px; margin-top:6px; font-weight:bold;"><span>Net Savings:</span><span class="${netSavingsValue >= 0 ? 'amt-inc' : 'amt-exp'}">₹${displayNet}</span></div>
+      <div class="reconcile-row" style="font-size:0.75rem; margin-bottom:0; color:var(--text-muted);"><span>Savings Rate:</span><span style="font-weight:bold; color:var(--text-main);">${displayRate}</span></div>
     </div>
-    <label style="font-size:0.72rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px; letter-spacing:0.5px;">TIMELINE EXPENSE PROFILE COSTS</label>
+    <label style="font-size:0.72rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px; letter-spacing:0.5px;">EXPENSE BREAKDOWN</label>
     <table style="width:100%; border-collapse:collapse;">
       <thead>
          <tr style="border-bottom:2px solid var(--border); font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">
-            <th style="text-align:left; padding-bottom:4px;">Category Tag</th>
-            <th style="text-align:right; padding-bottom:4px;">Net Volume</th>
+            <th style="text-align:left; padding-bottom:4px;">Category</th>
+            <th style="text-align:right; padding-bottom:4px;">Amount</th>
          </tr>
       </thead>
       <tbody>
-         ${categoryRowsHTMLStr || '<tr><td colspan="2" style="font-size:0.8rem; color:var(--text-muted); padding:10px 0;">No outflow costs cataloged for this duration.</td></tr>'}
+         ${categoryRowsHTMLStr || '<tr><td colspan="2" style="font-size:0.8rem; color:var(--text-muted); padding:10px 0;">No expenses recorded for this period.</td></tr>'}
       </tbody>
     </table>`;
     
