@@ -1,7 +1,7 @@
 // ==========================================
-// 1. INITIALIZE INDEXEDDB (UPGRADED TO V2)
+// 1. INITIALIZE INDEXEDDB (UPGRADED TO V3)
 // ==========================================
-const request = indexedDB.open("RupeeTrackerDB", 2);
+const request = indexedDB.open("RupeeTrackerDB", 3);
 
 request.onupgradeneeded = (e) => { 
     db = e.target.result; 
@@ -15,6 +15,11 @@ request.onupgradeneeded = (e) => {
     if(!db.objectStoreNames.contains("obligations")) {
         const obStore = db.createObjectStore("obligations", { keyPath: "id", autoIncrement: true });
         obStore.createIndex('billingDate', 'billingDate', { unique: false });
+    }
+
+    // Phase 3 Prep: Goal-Based Budgeting Store
+    if(!db.objectStoreNames.contains("goals")) {
+        db.createObjectStore("goals", { keyPath: "id", autoIncrement: true });
     }
 };
 
@@ -69,11 +74,16 @@ function exportToCSV() {
       return; 
   }
   
-  let csvContent = "data:text/csv;charset=utf-8,ID,Description,Amount,Category,Date\n";
+  // UPGRADED: Added Type, Timestamp, and LinkedGoal to export headers
+  let csvContent = "data:text/csv;charset=utf-8,ID,Type,Description,Amount,Category,Date,Timestamp,LinkedGoal\n";
   allTransactions.forEach(t => {
-    let safeText = t.text ? t.text.replace(/"/g, '""') : 'Untitled';
-    let safeCat = t.category ? t.category.replace(/"/g, '""') : 'Uncategorized';
-    csvContent += `${t.id},"${safeText}",${t.amount},"${safeCat}",${t.dateString}\n`;
+    const txType = t.type || (t.amount < 0 ? 'expense' : 'income');
+    const safeText = t.text ? t.text.replace(/"/g, '""') : 'Untitled';
+    const safeCat = t.category ? t.category.replace(/"/g, '""') : 'Uncategorized';
+    const linkedGoal = t.linkedGoal ? t.linkedGoal.replace(/"/g, '""') : '';
+    const timestamp = t.timestamp || Date.now();
+    
+    csvContent += `${t.id},${txType},"${safeText}",${t.amount},"${safeCat}",${t.dateString},${timestamp},"${linkedGoal}"\n`;
   });
   
   const encodedUri = encodeURI(csvContent);
@@ -99,6 +109,11 @@ function importFromCSV(event) {
   
   reader.onload = function(e) {
     const text = e.target.result;
+    
+    // Check if the CSV is the legacy format (5 columns) or the new format (8 columns)
+    const headerLine = text.split("\n")[0].toLowerCase();
+    const isLegacyFormat = !headerLine.includes("type"); 
+
     const lines = text.split("\n").slice(1);
     const tx = db.transaction("transactions", "readwrite");
     const store = tx.objectStore("transactions");
@@ -112,19 +127,38 @@ function importFromCSV(event) {
       const parts = parseCSVLine(line.trim());
       
       if (parts && parts.length >= 5) {
-        let cleanText = parts[1] ? parts[1].trim() : 'Imported Entry';
-        let cleanCat = parts[3] ? parts[3].trim() : 'Other';
-        let amt = parseFloat(parts[2]);
-        let dateStr = parts[4] ? parts[4].trim() : ''; 
+        let cleanText, cleanCat, amt, dateStr, txType, timestampVal, linkedGoal;
+
+        if (isLegacyFormat) {
+            // Mapping for OLD CSV format
+            cleanText = parts[1] ? parts[1].trim() : 'Imported Entry';
+            amt = parseFloat(parts[2]);
+            cleanCat = parts[3] ? parts[3].trim() : 'Other';
+            dateStr = parts[4] ? parts[4].trim() : '';
+            txType = amt < 0 ? 'expense' : 'income';
+            timestampVal = dateStr ? new Date(dateStr).getTime() : Date.now();
+            linkedGoal = null;
+        } else {
+            // Mapping for NEW CSV format
+            txType = parts[1] ? parts[1].trim().toLowerCase() : 'expense';
+            cleanText = parts[2] ? parts[2].trim() : 'Imported Entry';
+            amt = parseFloat(parts[3]);
+            cleanCat = parts[4] ? parts[4].trim() : 'Other';
+            dateStr = parts[5] ? parts[5].trim() : '';
+            timestampVal = parts[6] ? parseInt(parts[6].trim()) : (dateStr ? new Date(dateStr).getTime() : Date.now());
+            linkedGoal = parts[7] ? parts[7].trim() : null;
+        }
         
         if(!isNaN(amt) && dateStr) {
            const parsedDate = new Date(dateStr);
            store.add({
+             type: txType,
              text: cleanText || 'Imported Entry', 
              amount: amt, 
              category: cleanCat || 'Other',
+             linkedGoal: linkedGoal,
              date: parsedDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }),
-             timestamp: parsedDate.getTime(), 
+             timestamp: isNaN(timestampVal) ? parsedDate.getTime() : timestampVal, 
              dateString: dateStr,
              batchId: importBatchId 
            });

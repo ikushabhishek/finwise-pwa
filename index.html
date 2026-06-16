@@ -198,7 +198,7 @@
         </div>
         <div style="margin-bottom:10px;">
           <label>Account Opening Statement Cash</label>
-          <input type="text" id="dash-op-bal-input" placeholder="e.g. 15,000.00" oninput="maskInputToIndianCommas(this)" stylewidth:100%;">
+          <input type="text" id="dash-op-bal-input" placeholder="e.g. 15,000.00" oninput="maskInputToIndianCommas(this)" style="width:100%;">
         </div>
         <div style="margin-bottom:12px;">
           <label>Target Bank Statement Close (Optional)</label>
@@ -254,6 +254,7 @@
         <option value="all">Show All</option>
         <option value="income">Income</option>
         <option value="expense">Expenses</option>
+        <option value="save">Savings/Investments</option>
       </select>
     </div>
 
@@ -602,10 +603,19 @@
           </select>
           <select id="ob-category" style="margin-bottom: 0; flex: 1; padding: 12px;"></select>
         </div>
-        <div id="end-date-container" style="display: none; margin-bottom: 10px;">
-          <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">Loan End Date</label>
-          <input type="date" id="ob-end-date" style="width: 100%; padding: 12px; margin-bottom: 0;">
+        
+        <!-- UPGRADED Phase 2: EMI Details Container -->
+        <div id="emi-details-container" style="display: none; flex-direction: column; gap: 8px; margin-bottom: 10px; background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px dashed var(--border);">
+          <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">LOAN DETAILS (EMI ONLY)</label>
+          <input type="number" id="ob-principal" placeholder="Outstanding Principal (₹)" style="margin-bottom: 0; width: 100%; padding: 12px;">
+          <div style="display: flex; gap: 8px;">
+            <input type="number" id="ob-interest" placeholder="Interest Rate (%)" step="0.1" style="margin-bottom: 0; flex: 1; padding: 12px;">
+            <div style="flex: 1; position: relative;">
+               <input type="date" id="ob-end-date" style="width: 100%; padding: 12px; margin-bottom: 0;" title="Loan End Date">
+            </div>
+          </div>
         </div>
+
         <button onclick="executeSaveObligation()" style="background: var(--primary); color: white; width: 100%; box-shadow: none; padding: 14px; border: none; border-radius: 8px;">Save Commitment</button>
       </div>
 

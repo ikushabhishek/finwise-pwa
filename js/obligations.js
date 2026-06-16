@@ -4,13 +4,15 @@
 
 function toggleEndDateField() {
   const type = document.getElementById('ob-type').value;
-  const container = document.getElementById('end-date-container');
+  const emiContainer = document.getElementById('emi-details-container');
   
   if (type === 'EMI') {
-      container.style.display = 'block';
+      emiContainer.style.display = 'flex';
   } else { 
-      container.style.display = 'none'; 
+      emiContainer.style.display = 'none'; 
       document.getElementById('ob-end-date').value = ''; 
+      document.getElementById('ob-principal').value = ''; 
+      document.getElementById('ob-interest').value = ''; 
   }
 }
 
@@ -21,6 +23,10 @@ function executeSaveObligation() {
   const category = document.getElementById('ob-category').value;
   const billingDate = parseInt(document.getElementById('ob-date').value);
   const endDate = document.getElementById('ob-end-date').value || null;
+  
+  // New Phase 2 EMI Fields
+  const principal = type === 'EMI' ? parseFloat(document.getElementById('ob-principal').value) || 0 : 0;
+  const interestRate = type === 'EMI' ? parseFloat(document.getElementById('ob-interest').value) || 0 : 0;
 
   if (!title || isNaN(amount) || isNaN(billingDate)) {
       if (typeof triggerNativeAppAlert === 'function') {
@@ -33,192 +39,154 @@ function executeSaveObligation() {
 
   // Safety constraint: Billing date must be a valid calendar day
   if (billingDate < 1 || billingDate > 31) {
-      if (typeof triggerNativeAppAlert === 'function') {
-          triggerNativeAppAlert("Billing day must be between 1 and 31.");
-      }
+      if (typeof triggerNativeAppAlert === 'function') triggerNativeAppAlert("Day must be between 1 and 31.");
       return;
   }
 
-  // STRICT CHECK FOR EMI END DATE (Removed text emoji since modal has an SVG)
-  if (type === 'EMI' && (!endDate || endDate.trim() === '')) {
-      if (typeof triggerNativeAppAlert === 'function') {
-          triggerNativeAppAlert("Please select a Loan End Date for your EMI.");
-      } else {
-          alert("Please select a Loan End Date for your EMI.");
-      }
-      return;
-  }
-
-  const tx = db.transaction(['obligations'], 'readwrite');
-  tx.objectStore('obligations').add({ 
-      title: title, 
-      amount: amount, 
-      type: type, 
-      category: category, 
-      billingDate: billingDate, 
-      endDate: endDate, 
-      lastProcessedMonth: null
+  const tx = db.transaction("obligations", "readwrite");
+  tx.objectStore("obligations").add({
+      title, 
+      amount, 
+      type, 
+      category, 
+      billingDate, 
+      endDate,
+      principal,          // Added to DB
+      interest: interestRate, // Added to DB
+      lastProcessedMonth: null,
+      createdAt: Date.now()
   });
 
   tx.oncomplete = () => {
-      document.getElementById('ob-title').value = ''; 
+      document.getElementById('ob-title').value = '';
       document.getElementById('ob-amount').value = '';
+      document.getElementById('ob-date').value = '';
       document.getElementById('ob-end-date').value = '';
+      document.getElementById('ob-principal').value = '';
+      document.getElementById('ob-interest').value = '';
       
-      if (typeof triggerSuccessNotification === 'function') {
-          triggerSuccessNotification("Commitment saved!");
-      }
-      
+      if (typeof triggerSuccessNotification === 'function') triggerSuccessNotification("Commitment saved!");
       renderObligationsList();
   };
 }
+
+// ==========================================
+// 2. RENDERING THE SETTINGS LIST
+// ==========================================
 
 function renderObligationsList() {
-  const listContainer = document.getElementById('obligations-list');
-  if(!listContainer) return;
-  
-  listContainer.innerHTML = '';
-  
-  if (!db || !db.objectStoreNames.contains('obligations')) return;
-  
-  const tx = db.transaction(['obligations'], 'readonly');
-  
-  tx.objectStore('obligations').openCursor().onsuccess = (e) => {
-      const cursor = e.target.result;
-      if (cursor) {
-          const item = cursor.value;
-          const div = document.createElement('div');
-          
-          div.style.background = 'var(--bg-card)';
-          div.style.padding = '12px'; 
-          div.style.borderRadius = '12px';
-          div.style.border = '1px solid var(--border)'; 
-          div.style.display = 'flex'; 
-          div.style.justifyContent = 'space-between'; 
-          div.style.alignItems = 'center';
-          div.style.boxShadow = '0 2px 6px rgba(0,0,0,0.02)';
-          
-          // Privacy Masking Logic
-          const displayAmt = (typeof isPrivacyMode !== 'undefined' && isPrivacyMode) ? '••••••' : item.amount;
-          
-          // SVG Replace: Trash Bin Icon
-          const deleteSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
-
-          let detailsHTML = `
-            <div>
-                <strong style="font-size: 0.9rem; color: var(--text-main);">${item.title}</strong> 
-                <br>
-                <small style="color:var(--text-muted); font-size: 0.75rem; font-weight: 600;">₹${displayAmt} • Due: Day ${item.billingDate}</small>
-                ${item.endDate ? `<br><small style="color:var(--expense); font-size: 0.65rem; font-weight: 700;">Ends: ${item.endDate}</small>` : ''}
-            </div>
-            <button style="background:rgba(220, 38, 38, 0.1); color:var(--expense); border:1px solid rgba(220, 38, 38, 0.2); box-shadow:none; width:36px; height:36px; padding:0; display:flex; justify-content:center; align-items:center; border-radius:10px; cursor:pointer;" onclick="executeDeleteObligation(${item.id})">
-              ${deleteSvg}
-            </button>
-          `;
-          
-          div.innerHTML = detailsHTML;
-          listContainer.appendChild(div);
-          cursor.continue();
-      }
-  };
-}
-
-function executeDeleteObligation(id) {
-  const tx = db.transaction(['obligations'], 'readwrite');
-  tx.objectStore('obligations').delete(id);
-  tx.oncomplete = () => {
-      if (typeof triggerSuccessNotification === 'function') {
-          triggerSuccessNotification("Commitment removed");
-      }
-      renderObligationsList();
-  };
-}
-
-// ==========================================
-// 2. GATEKEEPER ENGINE (AUTO-PROMPT LOGIC)
-// ==========================================
-
-function runGatekeeperCheck() {
-  if (!db || !db.objectStoreNames.contains('obligations')) return;
+  const list = document.getElementById('obligations-list');
+  if (!list) return;
 
   const tx = db.transaction("obligations", "readonly");
   tx.objectStore("obligations").getAll().onsuccess = (e) => {
       const obligations = e.target.result || [];
-      
-      const istDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
-      const currentDay = istDate.getDate();
-      const currentYearMonth = `${istDate.getFullYear()}-${String(istDate.getMonth() + 1).padStart(2, '0')}`;
-      const currentDateStringForEnd = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(istDate);
-      
-      const daysInCurrentMonth = new Date(istDate.getFullYear(), istDate.getMonth() + 1, 0).getDate();
+      if (obligations.length === 0) {
+          list.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; margin: 10px 0;">No active bills or EMIs.</p>';
+          return;
+      }
 
-      let pending = obligations.filter(ob => {
-          let effectiveBillingDay = ob.billingDate > daysInCurrentMonth ? daysInCurrentMonth : ob.billingDate;
+      list.innerHTML = obligations.map(ob => {
+          const typeColor = ob.type === 'EMI' ? 'var(--expense)' : 'var(--primary)';
+          let extraDetails = '';
           
-          if (currentDay < effectiveBillingDay) return false;
-          if (ob.lastProcessedMonth === currentYearMonth) return false;
-          if (ob.type === 'EMI' && ob.endDate && currentDateStringForEnd > ob.endDate) return false;
-          
-          return true; 
-      });
-      
-      renderPendingObligations(pending);
+          if (ob.type === 'EMI' && ob.principal > 0) {
+              const displayPrincipal = typeof formatToIndianRupee === 'function' ? formatToIndianRupee(ob.principal) : ob.principal;
+              extraDetails = `<div style="font-size: 0.7rem; color: var(--expense); font-weight: 700; margin-top: 4px;">Remaining Principal: ₹${displayPrincipal}</div>`;
+          }
+
+          return `
+          <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                  <div style="font-weight: bold; font-size: 0.9rem; color: var(--text-main);">${ob.title}</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                      <span style="color: ${typeColor}; font-weight: bold;">${ob.type}</span> • Day ${ob.billingDate} • ₹${ob.amount}
+                  </div>
+                  ${extraDetails}
+              </div>
+              <button onclick="deleteObligation(${ob.id})" style="background: transparent; color: var(--expense); border: 1px solid var(--border); width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; border-radius: 8px; font-size: 1rem; padding: 0; box-shadow: none;">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+          </div>
+          `;
+      }).join('');
   };
 }
 
-function renderPendingObligations(pendingItems) {
-  const container = document.getElementById('pending-obligations-list');
-  const modal = document.getElementById('gatekeeper-modal');
-  
-  if(!container || !modal) return;
-  
-  container.innerHTML = '';
-  
-  if(pendingItems.length === 0) { 
-      modal.style.display = 'none'; 
-      return; 
-  }
-  
-  modal.style.display = 'flex';
-  
-  // SVG Replace: Skip and Log Icons
-  const skipSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: text-bottom;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>`;
-  const logSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: text-bottom;"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-
-  pendingItems.forEach(item => {
-      const div = document.createElement('div');
-      div.style.background = 'var(--bg-main)'; 
-      div.style.padding = '16px'; 
-      div.style.borderRadius = '14px';
-      div.style.border = '1px solid var(--border)';
-      
-      let displayAmount = item.amount;
-      if (typeof isPrivacyMode !== 'undefined' && isPrivacyMode) {
-          displayAmount = '••••••';
-      } else if (typeof formatToIndianRupee === 'function') {
-          displayAmount = formatToIndianRupee(item.amount).split('.')[0];
-      }
-
-      div.innerHTML = `
-          <div style="display:flex; justify-content:space-between; margin-bottom: 14px; align-items:center;">
-            <div>
-                <strong style="font-size: 1rem; color: var(--text-main); display:block; margin-bottom: 2px;">${item.title}</strong>
-                <small style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">${item.type} • Day ${item.billingDate}</small>
-            </div>
-            <strong style="color:var(--expense); font-size: 1.15rem;">₹${displayAmount}</strong>
-          </div>
-          <div style="display:flex; gap: 10px;">
-            <button onclick="processObligation(${item.id}, 'skip')" style="flex:1; background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.02); font-size: 0.85rem; padding: 10px; margin: 0; display: flex; align-items: center; justify-content: center;">
-              ${skipSvg} Skip
-            </button>
-            <button onclick="processObligation(${item.id}, 'log')" style="flex:1; background:var(--primary); color:white; border:none; box-shadow: 0 4px 10px rgba(46,125,50,0.2); font-size: 0.85rem; padding: 10px; margin: 0; display: flex; align-items: center; justify-content: center;">
-              ${logSvg} Log
-            </button>
-          </div>
-      `;
-      container.appendChild(div);
-  });
+function deleteObligation(id) {
+  const tx = db.transaction("obligations", "readwrite");
+  tx.objectStore("obligations").delete(id);
+  tx.oncomplete = () => {
+      if (typeof triggerSuccessNotification === 'function') triggerSuccessNotification("Deleted successfully.");
+      renderObligationsList();
+  };
 }
+
+// ==========================================
+// 3. THE GATEKEEPER ENGINE (HOME SCREEN CHECKS)
+// ==========================================
+
+function runGatekeeperCheck() {
+  const tx = db.transaction("obligations", "readonly");
+  tx.objectStore("obligations").getAll().onsuccess = (e) => {
+      const obligations = e.target.result || [];
+      const istDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+      const currentDay = istDate.getDate();
+      const currentMonthKey = `${istDate.getFullYear()}-${String(istDate.getMonth() + 1).padStart(2, '0')}`;
+      
+      const pending = obligations.filter(ob => {
+          // If the due date hasn't passed yet, don't trigger.
+          if (currentDay < ob.billingDate) return false;
+          
+          // If we already processed it this month, don't trigger.
+          if (ob.lastProcessedMonth === currentMonthKey) return false;
+          
+          // Check if loan has expired
+          if (ob.endDate) {
+              const end = new Date(ob.endDate);
+              if (istDate > end) return false;
+          }
+
+          // Check if principal is fully paid off (Only for EMIs tracking principal)
+          if (ob.type === 'EMI' && typeof ob.principal !== 'undefined' && ob.principal <= 0) {
+              return false;
+          }
+          
+          return true;
+      });
+
+      if (pending.length > 0) {
+          showGatekeeperModal(pending);
+      }
+  };
+}
+
+function showGatekeeperModal(pendingObligations) {
+  const list = document.getElementById('pending-obligations-list');
+  if (!list) return;
+
+  list.innerHTML = pendingObligations.map(ob => `
+      <div style="background: var(--bg-main); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <div>
+                  <div style="font-weight: bold; font-size: 0.95rem; color: var(--text-main);">${ob.title}</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Due on the ${ob.billingDate}th</div>
+              </div>
+              <div style="font-weight: 800; font-size: 1.1rem; color: var(--expense);">₹${ob.amount}</div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+              <button onclick="processObligation(${ob.id}, 'log')" style="flex: 1; margin: 0; padding: 10px; font-size: 0.8rem; box-shadow: none;">Log Payment</button>
+              <button onclick="processObligation(${ob.id}, 'skip')" style="flex: 1; margin: 0; padding: 10px; font-size: 0.8rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); box-shadow: none;">Skip</button>
+          </div>
+      </div>
+  `).join('');
+
+  document.getElementById('gatekeeper-modal').style.display = 'flex';
+}
+
+// ==========================================
+// 4. SMART EMI PROCESSING (PRINCIPAL VS INTEREST)
+// ==========================================
 
 function processObligation(id, action) {
   const tx = db.transaction(["obligations", "transactions"], "readwrite");
@@ -228,19 +196,55 @@ function processObligation(id, action) {
       const obligation = e.target.result;
       const istDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
       
+      // Mark as processed for the current month
       obligation.lastProcessedMonth = `${istDate.getFullYear()}-${String(istDate.getMonth() + 1).padStart(2, '0')}`;
-      obStore.put(obligation);
       
       if(action === 'log') {
+          // --- PHASE 2 MATH LOGIC ---
+          let principalDeducted = 0;
+          let interestCalculated = 0;
+          let logDescription = obligation.title;
+
+          if (obligation.type === 'EMI' && obligation.principal > 0 && obligation.interest > 0) {
+              // 1. Calculate the Interest for this month: (Outstanding * Annual Rate) / 12 months
+              const monthlyRate = (obligation.interest / 100) / 12;
+              interestCalculated = obligation.principal * monthlyRate;
+              
+              // 2. The rest of the EMI goes towards the Principal
+              principalDeducted = obligation.amount - interestCalculated;
+
+              // Ensure we don't deduct more than what is owed
+              if (principalDeducted > obligation.principal) {
+                  principalDeducted = obligation.principal;
+              }
+
+              // 3. Shrink the Outstanding Principal in the database
+              obligation.principal -= principalDeducted;
+              
+              // Ensure we don't have floating point dust (like 0.00000001)
+              if (obligation.principal < 0.01) obligation.principal = 0;
+
+              // 4. Add smart insights to the description so the user sees the breakdown in their history
+              const displayPrin = typeof formatToIndianRupee === 'function' ? formatToIndianRupee(principalDeducted).split('.')[0] : Math.round(principalDeducted);
+              const displayInt = typeof formatToIndianRupee === 'function' ? formatToIndianRupee(interestCalculated).split('.')[0] : Math.round(interestCalculated);
+              logDescription = `${obligation.title} (Prin: ₹${displayPrin}, Int: ₹${displayInt})`;
+          }
+          // ----------------------------
+
+          // Log the transaction (The FULL amount comes out of the bank balance)
           tx.objectStore("transactions").add({ 
-              text: obligation.title, 
+              text: logDescription, 
               amount: -Math.abs(obligation.amount), 
+              type: 'expense',
               category: obligation.category || 'Utilities', 
               date: istDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }), 
               timestamp: istDate.getTime(), 
               dateString: new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(istDate) 
           });
       }
+      
+      // Save the updated obligation (with the shrunken principal) back to DB
+      obStore.put(obligation);
       
       tx.oncomplete = () => { 
           if (typeof triggerSuccessNotification === 'function') {
@@ -251,8 +255,11 @@ function processObligation(id, action) {
               }
           }
           
-          if (typeof fetchAndDisplay === 'function') fetchAndDisplay(); 
-          runGatekeeperCheck(); 
+          if (typeof fetchAndDisplay === 'function') fetchAndDisplay();
+          
+          // Check if there are more pending, otherwise close the modal
+          document.getElementById('gatekeeper-modal').style.display = 'none';
+          setTimeout(() => { runGatekeeperCheck(); }, 300);
       };
   };
 }
