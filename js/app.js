@@ -130,7 +130,6 @@ function openPreferencesModal() {
   document.body.style.overflow = 'hidden'; 
 }
 
-// ---> SVG ICON REPLACEMENTS <---
 function togglePrivacyMode() {
     isPrivacyMode = !isPrivacyMode;
     localStorage.setItem('finwise-privacy', isPrivacyMode);
@@ -148,21 +147,29 @@ function togglePrivacyMode() {
 // ==========================================
 // 4. CATEGORY MANAGER & DYNAMIC EMOJI ENGINE
 // ==========================================
-const systemDefaultCategoriesPreset = ["Food", "Utilities", "Entertainment", "Travel", "Shopping", "Miscellaneous"];
+const systemDefaultCategoriesPreset = ["Food & Dining", "Shopping", "Utilities & Bills", "Transport & Fuel", "Business", "Miscellaneous"];
 let workspaceActiveExpenseCategories = [];
 
 function getCategoryStyle(catName) {
   const catMap = {
+    'Food & Dining': { icon: '🍔', color: 'var(--expense)', bg: 'rgba(220, 38, 38, 0.1)' },
     'Food': { icon: '🍔', color: 'var(--expense)', bg: 'rgba(220, 38, 38, 0.1)' },
+    'Utilities & Bills': { icon: '💡', color: '#0ea5e9', bg: 'rgba(14, 165, 233, 0.1)' },
     'Utilities': { icon: '💡', color: '#0ea5e9', bg: 'rgba(14, 165, 233, 0.1)' },
     'Entertainment': { icon: '🍿', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' },
+    'Transport & Fuel': { icon: '🚗', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' },
     'Travel': { icon: '🚗', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' },
     'Shopping': { icon: '🛍️', color: '#ec4899', bg: 'rgba(236, 72, 153, 0.1)' },
     'Salary': { icon: '💰', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
     'Freelance': { icon: '💻', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
     'Bonus': { icon: '✨', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
-    'Share Market': { icon: '📈', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
+    'Business': { icon: '💼', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
     'Other Income': { icon: '🔄', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
+    // Phase 1 Savings Categories
+    'Share Market': { icon: '📈', color: 'var(--save)', bg: 'rgba(99, 102, 241, 0.1)' },
+    'Mutual Funds': { icon: '📊', color: 'var(--save)', bg: 'rgba(99, 102, 241, 0.1)' },
+    'Bank Savings': { icon: '🏦', color: 'var(--save)', bg: 'rgba(99, 102, 241, 0.1)' },
+    'Other Investments': { icon: '💎', color: 'var(--save)', bg: 'rgba(99, 102, 241, 0.1)' },
     'Miscellaneous': { icon: '📦', color: 'var(--text-muted)', bg: 'var(--badge-bg)' }
   };
   
@@ -235,11 +242,11 @@ function openCategoryManagerModal() {
 function executeSaveNewCustomCategoryTag() {
   const tagVal = document.getElementById('new-custom-tag-input').value.trim();
   if(!tagVal) { 
-      triggerNativeAppAlert("Please enter a valid tag name."); 
+      triggerNativeAppAlert("Please enter a valid category name."); 
       return; 
   }
   if(workspaceActiveExpenseCategories.includes(tagVal)) { 
-      triggerNativeAppAlert("This category tag already exists."); 
+      triggerNativeAppAlert("This category already exists."); 
       return; 
   }
   
@@ -248,11 +255,11 @@ function executeSaveNewCustomCategoryTag() {
   syncCategoriesDropdownSelectorsUI(); 
   openCategoryManagerModal(); 
   
-  if (document.getElementById('lightning-add-modal').style.display === 'block') {
+  if (document.getElementById('lightning-add-modal').style.display === 'block' || document.getElementById('lightning-add-modal').style.display === 'flex') {
       renderLightningCategoryChips();
   }
 
-  triggerSuccessNotification("Custom category tag appended!");
+  triggerSuccessNotification("Category added!");
 }
 
 function executeDeleteCustomCategoryTag(indexPointer) {
@@ -261,7 +268,7 @@ function executeDeleteCustomCategoryTag(indexPointer) {
   syncCategoriesDropdownSelectorsUI(); 
   openCategoryManagerModal(); 
   
-  if (document.getElementById('lightning-add-modal').style.display === 'block') {
+  if (document.getElementById('lightning-add-modal').style.display === 'block' || document.getElementById('lightning-add-modal').style.display === 'flex') {
       renderLightningCategoryChips();
   }
   applyFilters();
@@ -281,7 +288,6 @@ function toggleDashboardConfigPanel() {
     displaySheet.style.display = 'none'; 
     fieldsSheet.style.display = 'block'; 
     
-    // SVG Close Icon
     actionBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Cancel`;
     
     document.getElementById('dash-cycle-day-input').max = daysInMonth; 
@@ -302,7 +308,7 @@ function saveDashboardCycleAndBaselineConfig() {
   let day = parseInt(cycleInput.value);
   
   if (isNaN(day) || day < 1 || day > maxDays) { 
-      triggerNativeAppAlert(`Please enter a valid billing cycle date between 1 and ${maxDays}.`); 
+      triggerNativeAppAlert(`Please enter a valid start date between 1 and ${maxDays}.`); 
       return; 
   }
   
@@ -315,7 +321,7 @@ function saveDashboardCycleAndBaselineConfig() {
   document.getElementById('dashboard-config-fields-sheet').style.display = 'none'; 
   document.getElementById('dashboard-config-toggle-btn').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit`;
   
-  triggerSuccessNotification("Account setup updated successfully!"); 
+  triggerSuccessNotification("Budget settings updated!"); 
   applyFilters();
 }
 
@@ -331,22 +337,30 @@ function openLightningAdd() {
     setLightningNature('expense');
     updateLightningDisplay();
     
-    document.getElementById('lightning-add-modal').style.display = 'block';
+    document.getElementById('lightning-add-modal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
 
 function setLightningNature(nature) {
     lightningNature = nature;
     const container = document.getElementById('lightning-nature-slider');
+    const goalContainer = document.getElementById('lightning-goal-link-container');
+    const display = document.getElementById('lightning-amount-display');
+    
+    container.classList.remove('nature-expense', 'nature-income', 'nature-save');
     
     if (nature === 'income') {
         container.classList.add('nature-income');
-        container.classList.remove('nature-expense');
-        document.getElementById('lightning-amount-display').style.color = 'var(--income)';
+        display.style.color = 'var(--income)';
+        if(goalContainer) goalContainer.style.display = 'none';
+    } else if (nature === 'save') {
+        container.classList.add('nature-save');
+        display.style.color = 'var(--save)';
+        if(goalContainer) goalContainer.style.display = 'flex'; // Reveal Goal Linking
     } else {
         container.classList.add('nature-expense');
-        container.classList.remove('nature-income');
-        document.getElementById('lightning-amount-display').style.color = 'var(--expense)';
+        display.style.color = 'var(--expense)';
+        if(goalContainer) goalContainer.style.display = 'none';
     }
     
     renderLightningCategoryChips();
@@ -359,8 +373,10 @@ function renderLightningCategoryChips() {
     lightningSelectedCategory = ""; 
     
     let categories = [];
-    if(lightningNature === 'income') {
-        categories = ["Salary", "Freelance", "Bonus", "Share Market", "Other Income"];
+    if (lightningNature === 'income') {
+        categories = ["Salary", "Freelance", "Bonus", "Business", "Other Income"];
+    } else if (lightningNature === 'save') {
+        categories = ["Share Market", "Mutual Funds", "Bank Savings", "Other Investments"];
     } else {
         categories = workspaceActiveExpenseCategories; 
     }
@@ -370,7 +386,10 @@ function renderLightningCategoryChips() {
         btn.className = "quick-chip";
         const styleObj = getCategoryStyle(cat);
         btn.innerHTML = `${styleObj.icon} ${styleObj.cleanName}`;
-        btn.onclick = () => selectLightningChip(btn, cat);
+        btn.onclick = (e) => {
+            e.preventDefault();
+            selectLightningChip(btn, cat);
+        };
         container.appendChild(btn);
     });
 }
@@ -437,7 +456,7 @@ function executeLightningSave() {
     }
     
     if(!lightningSelectedCategory) {
-        triggerNativeAppAlert("Please select a category tag for this entry.");
+        triggerNativeAppAlert("Please select a category for this entry.");
         return;
     }
     
@@ -445,7 +464,11 @@ function executeLightningSave() {
     const istDateFormatted = today.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
     const istDateStringForFiltering = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(today);
     
-    const finalAmount = lightningNature === 'expense' ? -amount : amount;
+    // Core Logic: Both Expense and Save deduct from Bank Balance (so they are negative)
+    const finalAmount = (lightningNature === 'expense' || lightningNature === 'save') ? -amount : amount;
+    
+    const linkedGoalDropdown = document.getElementById('lightning-linked-goal');
+    const linkedGoal = (lightningNature === 'save' && linkedGoalDropdown) ? linkedGoalDropdown.value : null;
     
     const tx = db.transaction("transactions", "readwrite"); 
     const store = tx.objectStore("transactions");
@@ -453,7 +476,9 @@ function executeLightningSave() {
     store.add({ 
         text: text, 
         amount: finalAmount, 
+        type: lightningNature, // explicitly save 'save', 'expense', or 'income'
         category: lightningSelectedCategory, 
+        linkedGoal: linkedGoal,
         date: istDateFormatted, 
         timestamp: today.getTime(), 
         dateString: istDateStringForFiltering 
@@ -600,8 +625,13 @@ function applyFilters() {
     }
     
     if (searchQuery && !t.text.toLowerCase().includes(searchQuery)) return false;
-    if (filterNature === 'income' && t.amount < 0) return false; 
-    if (filterNature === 'expense' && t.amount > 0) return false;
+    
+    // Backward Compatibility logic for older transactions without 'type'
+    const txType = t.type || (t.amount < 0 ? 'expense' : 'income');
+    
+    if (filterNature === 'income' && txType !== 'income') return false; 
+    if (filterNature === 'expense' && txType !== 'expense') return false;
+    if (filterNature === 'save' && txType !== 'save') return false;
     
     return true;
   });
@@ -614,9 +644,13 @@ function applyFilters() {
   
   let fBalance = 0, fIncome = 0, fExpense = 0; 
   filtered.forEach(t => { 
+      const txType = t.type || (t.amount < 0 ? 'expense' : 'income');
+      
       fBalance += t.amount; 
-      if (t.amount > 0) fIncome += t.amount; 
-      else fExpense += Math.abs(t.amount); 
+      
+      if (txType === 'income') fIncome += t.amount; 
+      if (txType === 'expense') fExpense += Math.abs(t.amount); 
+      // Note: 'save' correctly deducts from fBalance, but is NOT added to fExpense!
   });
 
   DOM.fBalance.innerText = isPrivacyMode ? '₹ ••••••' : `${fBalance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(fBalance))}`; 
@@ -646,9 +680,12 @@ function calculateMasterSummaryTotals(masterArray) {
   
   let balance = openingBalanceBaseline, income = 0, expense = 0;
   masterArray.forEach(t => { 
-      balance += t.amount; 
-      if (t.amount > 0) income += t.amount; 
-      if (t.amount < 0) expense += Math.abs(t.amount); 
+      const txType = t.type || (t.amount < 0 ? 'expense' : 'income');
+      
+      balance += t.amount; // Save and Expense both correctly reduce liquid cash here.
+      
+      if (txType === 'income') income += t.amount; 
+      if (txType === 'expense') expense += Math.abs(t.amount); 
   });
   
   DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${balance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(balance))}`; 
@@ -664,7 +701,7 @@ function calculateMasterSummaryTotals(masterArray) {
 
   if (computationalLimitAnchor > 0) {
     velocityWrapper.style.display = 'block'; 
-    velocityTitle.innerText = manualBudgetLimitSetting > 0 ? "BUDGET VELOCITY LIMIT" : "INCOME BURN VELOCITY LIMIT";
+    velocityTitle.innerText = manualBudgetLimitSetting > 0 ? "MONTHLY SPENDING LIMIT" : "INCOME SPENT";
     let velocityPercentageValue = (expense / computationalLimitAnchor) * 100; 
     
     velocityLabel.innerText = isPrivacyMode ? `••% SPENT` : `${Math.round(velocityPercentageValue)}% SPENT`; 
@@ -702,8 +739,8 @@ function calculateMasterSummaryTotals(masterArray) {
   document.getElementById('rec-cycle-label').innerText = `${cycleDayValueSetting}${suffixMarker} of the Month`; 
   
   document.getElementById('rec-budget-label').innerText = manualBudgetLimitSetting > 0 ? 
-      (isPrivacyMode ? '₹ •••••• (Fixed)' : `₹${formatToIndianRupee(manualBudgetLimitSetting).split('.')[0]} (Fixed boundary)`) 
-      : "Not Configured (Using Income)"; 
+      (isPrivacyMode ? '₹ •••••• (Fixed)' : `₹${formatToIndianRupee(manualBudgetLimitSetting).split('.')[0]} (Fixed limit)`) 
+      : "Not Set (Using Income)"; 
       
   document.getElementById('rec-op-label').innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(openingBalanceBaseline)}`;
 
@@ -712,15 +749,15 @@ function calculateMasterSummaryTotals(masterArray) {
     displaySheet.style.display = 'none'; 
     fieldsSheet.style.display = 'block'; 
     actionLinkBtn.style.display = 'none'; 
-    titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg> Setup Financial Baseline Cycle`;
+    titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg> Setup Monthly Budget`;
   } else {
     widgetCard.style.display = 'block'; 
     actionLinkBtn.style.display = 'inline-flex';
     
     if(fieldsSheet.style.display === 'none') { 
-        titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Cycle & Baseline Control`; 
+        titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Monthly Budget Setup`; 
     } else { 
-        titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Modify Workspace Targets`; 
+        titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Edit Configuration`; 
     }
     
     const svgBalanced = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:middle; margin-left:2px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
@@ -733,18 +770,18 @@ function calculateMasterSummaryTotals(masterArray) {
       const diffLabel = document.getElementById('rec-diff-label');
       
       if(Math.abs(variance) < 0.01) { 
-          diffTitle.innerHTML = `Reconciliation State: <span class="reconcile-status-badge" style="background-color: rgba(22, 163, 74, 0.2); color: var(--income);">Balanced ${svgBalanced}</span>`; 
+          diffTitle.innerHTML = `Budget Status: <span class="reconcile-status-badge" style="background-color: rgba(22, 163, 74, 0.2); color: var(--income);">On Track ${svgBalanced}</span>`; 
           diffLabel.innerText = "Perfect Match"; 
           diffLabel.className = "amt-inc"; 
       } 
       else { 
-          diffTitle.innerHTML = `Reconciliation State: <span class="reconcile-status-badge" style="background-color: rgba(220, 38, 38, 0.1); color: var(--expense);">Unbalanced ${svgAlert}</span>`; 
+          diffTitle.innerHTML = `Budget Status: <span class="reconcile-status-badge" style="background-color: rgba(220, 38, 38, 0.1); color: var(--expense);">Off Target ${svgAlert}</span>`; 
           diffLabel.innerText = isPrivacyMode ? '₹ ••••••' : `${variance >= 0 ? '+' : '-'}₹${formatToIndianRupee(Math.abs(variance))}`; 
           diffLabel.className = variance >= 0 ? "amt-inc" : "amt-exp"; 
       }
     } else {
       document.getElementById('rec-cl-label').innerText = "Not Configured"; 
-      document.getElementById('rec-diff-title').innerHTML = `Running Target Status: <span class="reconcile-status-badge" style="background-color: var(--badge-bg); color: var(--badge-text);">Active Baseline</span>`; 
+      document.getElementById('rec-diff-title').innerHTML = `Tracking Status: <span class="reconcile-status-badge" style="background-color: var(--badge-bg); color: var(--badge-text);">Active</span>`; 
       document.getElementById('rec-diff-label').innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(balance)}`; 
       document.getElementById('rec-diff-label').className = balance >= 0 ? "amt-inc" : "amt-exp";
     }
@@ -762,14 +799,19 @@ function renderUI(transactions) {
   }
   
   transactions.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0)).forEach((t, index) => {
-    const isExpense = t.amount < 0; 
+    const txType = t.type || (t.amount < 0 ? 'expense' : 'income');
     const baseDateString = t.date || new Date(t.timestamp).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }); 
     const timeMarkerString = t.timestamp ? formatTo12HourTime(t.timestamp) : '12:00:00 AM'; 
     const catLabel = t.category || 'Miscellaneous'; 
     const isChecked = checkedItemIds.includes(t.id);
     const styleObj = getCategoryStyle(catLabel);
     
-    const displayAmount = isPrivacyMode ? '••••••' : `${isExpense ? '-' : '+'} ₹${formatToIndianRupee(Math.abs(t.amount))}`;
+    let amountClass = 'amt-exp';
+    let sign = '-';
+    if (txType === 'income') { amountClass = 'amt-inc'; sign = '+'; }
+    else if (txType === 'save') { amountClass = 'amt-sav'; sign = '-'; } // Save gets unique indigo styling
+    
+    const displayAmount = isPrivacyMode ? '••••••' : `${sign} ₹${formatToIndianRupee(Math.abs(t.amount))}`;
     
     const li = document.createElement('li'); 
     li.style.animationDelay = `${Math.min(index * 0.02, 0.24)}s`; 
@@ -783,7 +825,7 @@ function renderUI(transactions) {
           <small>${baseDateString} • ${timeMarkerString}</small>
         </div>
         <div style="text-align: right;">
-          <span class="${isExpense ? 'amt-exp' : 'amt-inc'}">${displayAmount}</span>
+          <span class="${amountClass}">${displayAmount}</span>
           <div style="font-size: 0.65rem; font-weight: 700; color: ${styleObj.color}; margin-top: 4px; text-transform: uppercase;">${styleObj.cleanName}</div>
         </div>
       </div>
@@ -903,10 +945,19 @@ function openEditModal() {
     const decimalPart = (rawAbs % 1).toFixed(2).substring(1);
     
     document.getElementById('edit-amount').value = integerPart + decimalPart; 
-    document.getElementById('edit-type').value = target.amount < 0 ? 'expense' : 'income'; 
+    
+    const txType = target.type || (target.amount < 0 ? 'expense' : 'income');
+    const editTypeSelect = document.getElementById('edit-type');
+    
+    // Dynamically add Save to edit modal if missing
+    if (!editTypeSelect.querySelector('option[value="save"]')) {
+         editTypeSelect.insertAdjacentHTML('beforeend', '<option value="save">Save/Invest</option>');
+    }
+    editTypeSelect.value = txType;
+    
     toggleCategoryInput('edit');
     
-    if (target.amount < 0) document.getElementById('edit-expense-category').value = target.category; 
+    if (txType !== 'income') document.getElementById('edit-expense-category').value = target.category; 
     else document.getElementById('edit-income-category').value = target.category;
     
   } else {
@@ -937,7 +988,8 @@ function saveBatchEdit() {
     store.get(targetId).onsuccess = (e) => { 
         let record = e.target.result; 
         record.text = newText; 
-        record.amount = newType === 'expense' ? -newAmtRaw : newAmtRaw; 
+        record.amount = (newType === 'expense' || newType === 'save') ? -newAmtRaw : newAmtRaw; 
+        record.type = newType;
         record.category = newCategory; 
         store.put(record); 
     };
@@ -946,7 +998,8 @@ function saveBatchEdit() {
         store.get(id).onsuccess = (e) => { 
             let record = e.target.result; 
             const rawAbsAmt = Math.abs(record.amount); 
-            record.amount = newType === 'expense' ? -rawAbsAmt : rawAbsAmt; 
+            record.amount = (newType === 'expense' || newType === 'save') ? -rawAbsAmt : rawAbsAmt; 
+            record.type = newType;
             record.category = newCategory; 
             store.put(record); 
         }; 
@@ -970,8 +1023,10 @@ function renderPercentageBreakdown(transactions) {
   let totalIncome = 0, expensesMap = {};
   
   transactions.forEach(t => { 
-      if (t.amount > 0) totalIncome += t.amount; 
-      else { 
+      const txType = t.type || (t.amount < 0 ? 'expense' : 'income');
+      
+      if (txType === 'income') totalIncome += t.amount; 
+      else if (txType === 'expense') { // Specifically excluding 'save'
           const cat = t.category || 'Miscellaneous'; 
           expensesMap[cat] = (expensesMap[cat] || 0) + Math.abs(t.amount); 
       } 
@@ -1012,8 +1067,10 @@ function generateSmartInsights(transactions) {
   let income = 0, expense = 0, catMap = {};
   
   transactions.forEach(t => { 
-      if (t.amount > 0) income += t.amount; 
-      else { 
+      const txType = t.type || (t.amount < 0 ? 'expense' : 'income');
+      
+      if (txType === 'income') income += t.amount; 
+      else if (txType === 'expense') { 
           expense += Math.abs(t.amount); 
           catMap[t.category] = (catMap[t.category] || 0) + Math.abs(t.amount); 
       } 
@@ -1048,13 +1105,13 @@ function generateSmartInsights(transactions) {
   
   if (burnRate > 85) { 
       DOM.insightsCard.classList.add('danger-state'); 
-      DOM.insightsTitle.innerHTML = `${svgHighAlert} Alert: High Spending Velocity`; 
-      DOM.insightsText.innerHTML = `You have burned through <strong>${displayBurnRate}%</strong> of your active budget line. Limit non-essential spending immediately.`; 
+      DOM.insightsTitle.innerHTML = `${svgHighAlert} Alert: Spending Too Fast`; 
+      DOM.insightsText.innerHTML = `You have spent <strong>${displayBurnRate}%</strong> of your monthly limit. Try to hold back on non-essential spending.`; 
       return; 
   }
   
   let shoppingCost = catMap['Shopping'] || 0, entertainmentCost = catMap['Entertainment'] || 0; 
-  let variableWants = shoppingCost + entertainmentCost, essentialNeeds = (catMap['Food'] || 0) + (catMap['Utilities'] || 0);
+  let variableWants = shoppingCost + entertainmentCost, essentialNeeds = (catMap['Food & Dining'] || 0) + (catMap['Utilities & Bills'] || 0);
   
   if (variableWants > essentialNeeds && variableWants > 0) { 
       DOM.insightsCard.classList.add('warning-state'); 
@@ -1063,20 +1120,20 @@ function generateSmartInsights(transactions) {
       const displayWants = isPrivacyMode ? '••••' : formatToIndianRupee(variableWants).split('.')[0];
       const displayNeeds = isPrivacyMode ? '••••' : formatToIndianRupee(essentialNeeds).split('.')[0];
       
-      DOM.insightsText.innerHTML = `Lifestyle spending (Shopping & Fun: ₹${displayWants}) outpaces basic needs (Food & Bills: ₹${displayNeeds}). Consider scaling back lifestyle costs.`; 
+      DOM.insightsText.innerHTML = `Lifestyle spending (Shopping & Fun: ₹${displayWants}) is higher than basic needs (Food & Bills: ₹${displayNeeds}). Consider scaling back lifestyle costs.`; 
       return; 
   }
   
   if (burnRate > 50) { 
       DOM.insightsCard.classList.add('warning-state'); 
       DOM.insightsTitle.innerHTML = `${svgLightning} Review: Spending Limit`; 
-      DOM.insightsText.innerHTML = `You have spent <strong>${displayBurnRate}%</strong> of your income pool. You are doing okay, but cutting out small extra costs can help you save more.`; 
+      DOM.insightsText.innerHTML = `You have spent <strong>${displayBurnRate}%</strong> of your budget. You are doing okay, but cutting out small extra costs can help you save more.`; 
       return; 
   }
   
   DOM.insightsCard.className = "insights-card"; 
   DOM.insightsTitle.innerHTML = `${svgSparkle} Great Job: Healthy Saving!`; 
-  DOM.insightsText.innerHTML = `Awesome work! You saved <strong>${displaySaveRate}%</strong> of your active baseline limits. Keep it up!`;
+  DOM.insightsText.innerHTML = `Awesome work! You are saving <strong>${displaySaveRate}%</strong> of your budget. Keep it up!`;
 }
 
 function renderChart(transactionsToRender) {
@@ -1088,11 +1145,13 @@ function renderChart(transactionsToRender) {
   let totalIncome = 0;
 
   transactionsToRender.forEach(t => {
-    if (t.amount < 0) {
+    const txType = t.type || (t.amount < 0 ? 'expense' : 'income');
+    
+    if (txType === 'expense') {
       let cat = t.category || 'Miscellaneous';
       expensesMap[cat] = (expensesMap[cat] || 0) + Math.abs(t.amount);
       totalExpense += Math.abs(t.amount);
-    } else if (t.amount > 0) {
+    } else if (txType === 'income') {
       totalIncome += t.amount;
     }
   });
@@ -1129,13 +1188,13 @@ function renderChart(transactionsToRender) {
   const svgAlert = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
   const svgRocket = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg>`;
   const svgIdea = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg>`;
-  const svgScale = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path></svg>`;
+  const svgScale = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2h2"></path></svg>`;
 
   let ratioText = "";
   if (totalIncome > totalExpense && totalExpense > 0) {
      let savingsRate = ((totalIncome - totalExpense) / totalIncome) * 100;
      const displaySaveRate = isPrivacyMode ? '••%' : `${savingsRate.toFixed(1)}%`;
-     ratioText = `Great job! You are saving <span style="color:var(--income)">${displaySaveRate}</span> of your logged income. ${svgTarget}`;
+     ratioText = `Great job! You are keeping <span style="color:var(--income)">${displaySaveRate}</span> of your logged income. ${svgTarget}`;
   } else if (totalExpense > totalIncome && totalIncome > 0) {
      let deficit = totalExpense - totalIncome;
      const displayDeficit = isPrivacyMode ? '••••••' : deficit.toLocaleString('en-IN');
@@ -1217,17 +1276,17 @@ function triggerDynamicPeriodFinancialReport() {
   const sheetBody = document.getElementById('financial-report-metrics-sheet-body');
   
   if(currentTab === 'all') { 
-      labelLabel.innerText = "Full Ledger Archive (All-Time Workspace Statement)"; 
+      labelLabel.innerText = "All-Time Summary Report"; 
   } else if (currentTab === 'custom') { 
-      let st = document.getElementById('start-date').value || 'Inception'; 
+      let st = document.getElementById('start-date').value || 'Start'; 
       let en = document.getElementById('end-date').value || 'Present'; 
-      labelLabel.innerText = `Timeline Window: ${st} to ${en}`; 
+      labelLabel.innerText = `Selected Timeframe: ${st} to ${en}`; 
   } else { 
-      labelLabel.innerText = `Timeline Window: ${bounds.startDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })} - ${bounds.endDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}`; 
+      labelLabel.innerText = `Selected Timeframe: ${bounds.startDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })} - ${bounds.endDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}`; 
   }
 
   if(allTransactions.length === 0 || DOM.emptyMsg.style.display === 'flex') { 
-      triggerNativeAppAlert("No ledger data matches this filter timeline. Please log entries to run reports."); 
+      triggerNativeAppAlert("No matching data found for this timeframe. Please log entries to run reports."); 
       return; 
   }
 
@@ -1250,9 +1309,11 @@ function triggerDynamicPeriodFinancialReport() {
         if (itemTimestamp < startBoundaryTime || itemTimestamp > endBoundaryTime) return; 
     }
     
-    if(t.amount > 0) { 
+    const txType = t.type || (t.amount < 0 ? 'expense' : 'income');
+    
+    if(txType === 'income') { 
         reportInflow += t.amount; 
-    } else { 
+    } else if (txType === 'expense') { 
         let absVal = Math.abs(t.amount); 
         reportOutflow += absVal; 
         let tag = t.category || 'Miscellaneous'; 
@@ -1277,21 +1338,21 @@ function triggerDynamicPeriodFinancialReport() {
 
   sheetBody.innerHTML = `
     <div style="background:var(--bg-main); border:1px solid var(--border); padding:12px; border-radius:14px; margin-bottom:14px;">
-      <div class="reconcile-row"><span>Total Inflow Earnings:</span><span class="amt-inc" style="font-weight:bold;">₹${displayInflow}</span></div>
-      <div class="reconcile-row"><span>Total Outflow Spending:</span><span class="amt-exp" style="font-weight:bold;">₹${displayOutflow}</span></div>
-      <div class="reconcile-row" style="border-top:1px dashed var(--border); padding-top:6px; margin-top:6px; font-weight:bold;"><span>Net Timeline Savings:</span><span class="${netSavingsValue >= 0 ? 'amt-inc' : 'amt-exp'}">₹${displayNet}</span></div>
-      <div class="reconcile-row" style="font-size:0.75rem; margin-bottom:0; color:var(--text-muted);"><span>Calculated Savings Rate:</span><span style="font-weight:bold; color:var(--text-main);">${displayRate}</span></div>
+      <div class="reconcile-row"><span>Total Income:</span><span class="amt-inc" style="font-weight:bold;">₹${displayInflow}</span></div>
+      <div class="reconcile-row"><span>Total Expenses:</span><span class="amt-exp" style="font-weight:bold;">₹${displayOutflow}</span></div>
+      <div class="reconcile-row" style="border-top:1px dashed var(--border); padding-top:6px; margin-top:6px; font-weight:bold;"><span>Net Savings:</span><span class="${netSavingsValue >= 0 ? 'amt-inc' : 'amt-exp'}">₹${displayNet}</span></div>
+      <div class="reconcile-row" style="font-size:0.75rem; margin-bottom:0; color:var(--text-muted);"><span>Savings Rate:</span><span style="font-weight:bold; color:var(--text-main);">${displayRate}</span></div>
     </div>
-    <label style="font-size:0.72rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px; letter-spacing:0.5px;">TIMELINE EXPENSE PROFILE COSTS</label>
+    <label style="font-size:0.72rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px; letter-spacing:0.5px;">EXPENSE BREAKDOWN</label>
     <table style="width:100%; border-collapse:collapse;">
       <thead>
          <tr style="border-bottom:2px solid var(--border); font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">
-            <th style="text-align:left; padding-bottom:4px;">Category Tag</th>
-            <th style="text-align:right; padding-bottom:4px;">Net Volume</th>
+            <th style="text-align:left; padding-bottom:4px;">Category</th>
+            <th style="text-align:right; padding-bottom:4px;">Amount</th>
          </tr>
       </thead>
       <tbody>
-         ${categoryRowsHTMLStr || '<tr><td colspan="2" style="font-size:0.8rem; color:var(--text-muted); padding:10px 0;">No outflow costs cataloged for this duration.</td></tr>'}
+         ${categoryRowsHTMLStr || '<tr><td colspan="2" style="font-size:0.8rem; color:var(--text-muted); padding:10px 0;">No expenses recorded for this period.</td></tr>'}
       </tbody>
     </table>`;
     
@@ -1397,13 +1458,14 @@ function runPeriodComparison() {
       let tDate = t.timestamp ? new Date(t.timestamp) : new Date(); 
       const itemDateString = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(tDate);
       
+      const txType = t.type || (t.amount < 0 ? 'expense' : 'income');
       let absVal = Math.abs(t.amount);
       let cat = t.category || 'Miscellaneous';
       
       if (itemDateString >= startA && itemDateString <= endA) {
           hasData = true;
-          if (t.amount > 0) incA += absVal;
-          else {
+          if (txType === 'income') incA += absVal;
+          else if (txType === 'expense') {
              expA += absVal;
              catMapA[cat] = (catMapA[cat] || 0) + absVal;
           }
@@ -1411,8 +1473,8 @@ function runPeriodComparison() {
       
       if (itemDateString >= startB && itemDateString <= endB) {
           hasData = true;
-          if (t.amount > 0) incB += absVal;
-          else {
+          if (txType === 'income') incB += absVal;
+          else if (txType === 'expense') {
              expB += absVal;
              catMapB[cat] = (catMapB[cat] || 0) + absVal;
           }
@@ -1442,7 +1504,7 @@ function runPeriodComparison() {
   const svgIdea = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg>`;
   const svgUp = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>`;
   const svgDown = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><polyline points="22 12 18 12 15 3 9 21 6 12 2 12"></polyline></svg>`;
-  const svgScale = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path></svg>`;
+  const svgScale = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2h2"></path></svg>`;
   const svgMoney = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>`;
   const svgAlert = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
 
