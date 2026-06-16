@@ -334,6 +334,12 @@ function openLightningAdd() {
     lightningNature = "expense";
     lightningSelectedCategory = "";
     document.getElementById('lightning-desc').value = "";
+    
+    // PHASE 3: Ensure dropdown is populated before showing modal
+    if (typeof populateGoalDropdowns === 'function') {
+        populateGoalDropdowns();
+    }
+    
     setLightningNature('expense');
     updateLightningDisplay();
     
@@ -487,6 +493,10 @@ function executeLightningSave() {
     tx.oncomplete = () => { 
         closeModal('lightning-add-modal');
         fetchAndDisplay(); 
+        
+        // PHASE 3: Reset dropdown
+        if (linkedGoalDropdown) linkedGoalDropdown.value = "";
+        
         triggerSuccessNotification("Saved successfully"); 
     };
 }
@@ -500,6 +510,11 @@ function fetchAndDisplay() {
     tx.objectStore("transactions").getAll().onsuccess = (e) => { 
         allTransactions = e.target.result || []; 
         applyFilters(); 
+        
+        // PHASE 3: Update goal progress instantly whenever data changes
+        if (typeof renderGoals === 'function') {
+            renderGoals();
+        }
     }; 
 }
 

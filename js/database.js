@@ -26,10 +26,11 @@ request.onupgradeneeded = (e) => {
 request.onsuccess = (e) => { 
     db = e.target.result; 
     
-    // Safely trigger initialization functions from app.js and security.js
+    // Safely trigger initialization functions from app.js, security.js, and goals.js
     if (typeof initSelectorCachePointers === 'function') initSelectorCachePointers(); 
     if (typeof initializeCategoriesStorageSystem === 'function') initializeCategoriesStorageSystem(); 
     if (typeof initSecurityEngine === 'function') initSecurityEngine(); 
+    if (typeof initGoalsModule === 'function') initGoalsModule(); // <-- NEW: Phase 3 Goal Initialization
     if (typeof fetchAndDisplay === 'function') fetchAndDisplay(); 
 };
 
