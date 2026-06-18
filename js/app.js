@@ -17,6 +17,7 @@ let expenseChartInstance = null;
 let compareChartInstance = null; 
 
 let isPrivacyMode = localStorage.getItem('finwise-privacy') === 'true';
+let currentWealthView = 'cash'; // NEW: Tracks Liquid Cash vs Net Worth
 
 // ---> LIGHTNING ADD GLOBAL STATE <---
 let lightningAmountStr = "0";
@@ -28,8 +29,9 @@ let lightningSelectedCategory = "";
 // ==========================================
 function initSelectorCachePointers() {
   DOM.balance = document.getElementById('balance');
-  DOM.income = document.getElementById('total-income');
-  DOM.expense = document.getElementById('total-expense');
+  // FIXED: Adjusted to fallback gracefully so it works with both the old and new HTML layout
+  DOM.income = document.getElementById('stat-value-left') || document.getElementById('total-income');
+  DOM.expense = document.getElementById('stat-value-right') || document.getElementById('total-expense');
   DOM.list = document.getElementById('list');
   DOM.emptyMsg = document.getElementById('empty-msg');
   DOM.fBalance = document.getElementById('filtered-balance');
@@ -49,6 +51,31 @@ function initSelectorCachePointers() {
 // ==========================================
 // 3. UTILITIES & HELPERS
 // ==========================================
+
+// NEW: Phase 4 Toggle Engine
+function toggleWealthView(view) {
+    currentWealthView = view;
+    const btnCash = document.getElementById('view-toggle-cash');
+    const btnNW = document.getElementById('view-toggle-networth');
+
+    if(btnCash && btnNW) {
+        if(view === 'cash') {
+            btnCash.style.background = 'rgba(255,255,255,0.2)';
+            btnCash.style.color = 'white';
+            btnNW.style.background = 'transparent';
+            btnNW.style.color = 'rgba(255,255,255,0.7)';
+        } else {
+            btnNW.style.background = 'rgba(255,255,255,0.2)';
+            btnNW.style.color = 'white';
+            btnCash.style.background = 'transparent';
+            btnCash.style.color = 'rgba(255,255,255,0.7)';
+        }
+    }
+    
+    // Refresh the Master Card using existing data
+    if (typeof fetchAndDisplay === 'function') fetchAndDisplay();
+}
+
 function formatToIndianRupee(number) { 
     return Number(number).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
 }
@@ -687,13 +714,16 @@ function applyFilters() {
 // ==========================================
 // 8. LIST ACTIONS & SUMMARY RENDERING
 // ==========================================
+
+// FIXED: PHASE 4 MASTER WEALTH ENGINE
 function calculateMasterSummaryTotals(masterArray) {
   let openingBalanceBaseline = parseIndianCommaStringToFloat(localStorage.getItem('finwise-op-bal') || '0'); 
   let closingBalanceTarget = localStorage.getItem('finwise-cl-bal') ? parseIndianCommaStringToFloat(localStorage.getItem('finwise-cl-bal')) : null; 
   let cycleDayValueSetting = localStorage.getItem('finwise-cycle-day') || '1'; 
   let manualBudgetLimitSetting = parseIndianCommaStringToFloat(localStorage.getItem('finwise-budget-limit') || '0');
   
-  let balance = openingBalanceBaseline, income = 0, expense = 0;
+  let balance = openingBalanceBaseline, income = 0, expense = 0, saved = 0;
+  
   masterArray.forEach(t => { 
       const txType = t.type || (t.amount < 0 ? 'expense' : 'income');
       
@@ -701,12 +731,56 @@ function calculateMasterSummaryTotals(masterArray) {
       
       if (txType === 'income') income += t.amount; 
       if (txType === 'expense') expense += Math.abs(t.amount); 
+      if (txType === 'save') saved += Math.abs(t.amount);
   });
   
-  DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${balance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(balance))}`; 
-  DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(income)}`; 
-  DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(expense)}`;
+  // Phase 4 Math: Fetch obligations to deduct debt for Net Worth calculation
+  if (window.db && db.objectStoreNames.contains("obligations")) {
+      const tx = db.transaction("obligations", "readonly");
+      tx.objectStore("obligations").getAll().onsuccess = (e) => {
+          const allObs = e.target.result || [];
+          let totalDebt = 0;
+          
+          allObs.forEach(ob => {
+              if (ob.type === 'EMI' && ob.status !== 'archived' && ob.principal > 0) {
+                  totalDebt += ob.principal;
+              }
+          });
 
+          // TRUE WEALTH FORMULA
+          const totalAssets = balance + saved;
+          const netWorth = totalAssets - totalDebt;
+
+          const titleLabel = document.getElementById('master-balance-label') || document.querySelector('.balance-title');
+          const labelLeft = document.getElementById('stat-label-left') || document.querySelector('.stat-box p');
+          const labelRight = document.getElementById('stat-label-right') || document.querySelectorAll('.stat-box p')[1];
+
+          if (currentWealthView === 'cash') {
+              if (titleLabel) titleLabel.innerText = "Total Liquid Balance";
+              if (labelLeft) labelLeft.innerText = "INCOME";
+              if (labelRight) labelRight.innerText = "EXPENSES";
+
+              DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${balance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(balance))}`;
+              if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(income)}`;
+              if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(expense)}`;
+          } else {
+              if (titleLabel) titleLabel.innerText = "Total Net Worth";
+              if (labelLeft) labelLeft.innerText = "TOTAL ASSETS";
+              if (labelRight) labelRight.innerText = "TOTAL DEBT";
+
+              DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${netWorth >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(netWorth))}`;
+              if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(totalAssets)}`;
+              if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(totalDebt)}`;
+          }
+      };
+  } else {
+      // Fallback if obligations DB doesn't exist yet
+      DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${balance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(balance))}`;
+      if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(income)}`;
+      if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(expense)}`;
+  }
+
+  // --- Original Velocity Wrapper UI Logic (Remains identical) ---
   const velocityWrapper = document.getElementById('budget-velocity-tracker'); 
   const velocityTitle = document.getElementById('velocity-title-label'); 
   const velocityLabel = document.getElementById('velocity-percentage-label'); 
@@ -772,7 +846,7 @@ function calculateMasterSummaryTotals(masterArray) {
     if(fieldsSheet.style.display === 'none') { 
         titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Monthly Budget Setup`; 
     } else { 
-        titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Edit Configuration`; 
+        titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Edit Configuration`; 
     }
     
     const svgBalanced = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:middle; margin-left:2px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
