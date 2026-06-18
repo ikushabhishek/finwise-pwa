@@ -1,4 +1,4 @@
-﻿﻿const CACHE_NAME = 'finwise-cache-v7';
+﻿﻿const CACHE_NAME = 'finwise-cache-v8';
 const urlsToCache = [
   './',
   './index.html',
