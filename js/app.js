@@ -17,7 +17,7 @@ let expenseChartInstance = null;
 let compareChartInstance = null; 
 
 let isPrivacyMode = localStorage.getItem('finwise-privacy') === 'true';
-let currentWealthView = 'cash'; // NEW: Tracks Liquid Cash vs Net Worth
+let currentWealthView = 'cash'; // Tracks Liquid Cash vs Net Worth
 
 // ---> LIGHTNING ADD GLOBAL STATE <---
 let lightningAmountStr = "0";
@@ -29,7 +29,6 @@ let lightningSelectedCategory = "";
 // ==========================================
 function initSelectorCachePointers() {
   DOM.balance = document.getElementById('balance');
-  // FIXED: Adjusted to fallback gracefully so it works with both the old and new HTML layout
   DOM.income = document.getElementById('stat-value-left') || document.getElementById('total-income');
   DOM.expense = document.getElementById('stat-value-right') || document.getElementById('total-expense');
   DOM.list = document.getElementById('list');
@@ -52,7 +51,6 @@ function initSelectorCachePointers() {
 // 3. UTILITIES & HELPERS
 // ==========================================
 
-// NEW: Phase 4 Toggle Engine
 function toggleWealthView(view) {
     currentWealthView = view;
     const btnCash = document.getElementById('view-toggle-cash');
@@ -192,7 +190,6 @@ function getCategoryStyle(catName) {
     'Bonus': { icon: '✨', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
     'Business': { icon: '💼', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
     'Other Income': { icon: '🔄', color: 'var(--income)', bg: 'rgba(22, 163, 74, 0.1)' },
-    // Phase 1 Savings Categories
     'Share Market': { icon: '📈', color: 'var(--save)', bg: 'rgba(99, 102, 241, 0.1)' },
     'Mutual Funds': { icon: '📊', color: 'var(--save)', bg: 'rgba(99, 102, 241, 0.1)' },
     'Bank Savings': { icon: '🏦', color: 'var(--save)', bg: 'rgba(99, 102, 241, 0.1)' },
@@ -315,6 +312,7 @@ function toggleDashboardConfigPanel() {
     displaySheet.style.display = 'none'; 
     fieldsSheet.style.display = 'block'; 
     
+    // Cancel Icon
     actionBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Cancel`;
     
     document.getElementById('dash-cycle-day-input').max = daysInMonth; 
@@ -325,6 +323,7 @@ function toggleDashboardConfigPanel() {
   } else { 
     displaySheet.style.display = 'block'; 
     fieldsSheet.style.display = 'none'; 
+    // FIXED: Properly restored the Pencil Edit icon instead of the broken gear!
     actionBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit`; 
   }
 }
@@ -346,6 +345,8 @@ function saveDashboardCycleAndBaselineConfig() {
   
   document.getElementById('dashboard-config-display-sheet').style.display = 'block'; 
   document.getElementById('dashboard-config-fields-sheet').style.display = 'none'; 
+  
+  // FIXED: Restored Pencil Edit Icon
   document.getElementById('dashboard-config-toggle-btn').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit`;
   
   triggerSuccessNotification("Budget settings updated!"); 
@@ -362,7 +363,6 @@ function openLightningAdd() {
     lightningSelectedCategory = "";
     document.getElementById('lightning-desc').value = "";
     
-    // PHASE 3: Ensure dropdown is populated before showing modal
     if (typeof populateGoalDropdowns === 'function') {
         populateGoalDropdowns();
     }
@@ -389,7 +389,7 @@ function setLightningNature(nature) {
     } else if (nature === 'save') {
         container.classList.add('nature-save');
         display.style.color = 'var(--save)';
-        if(goalContainer) goalContainer.style.display = 'flex'; // Reveal Goal Linking
+        if(goalContainer) goalContainer.style.display = 'flex'; 
     } else {
         container.classList.add('nature-expense');
         display.style.color = 'var(--expense)';
@@ -438,12 +438,10 @@ function handleLightningNumpad(val) {
         lightningAmountStr = val;
     } else {
         if(val === '.' && lightningAmountStr.includes('.')) return;
-        
         if (lightningAmountStr.includes('.') && val !== '.') {
             const parts = lightningAmountStr.split('.');
             if (parts[1] && parts[1].length >= 2) return; 
         }
-
         if(lightningAmountStr.length > 10) return; 
         
         lightningAmountStr += val;
@@ -497,7 +495,6 @@ function executeLightningSave() {
     const istDateFormatted = today.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
     const istDateStringForFiltering = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(today);
     
-    // Core Logic: Both Expense and Save deduct from Bank Balance (so they are negative)
     const finalAmount = (lightningNature === 'expense' || lightningNature === 'save') ? -amount : amount;
     
     const linkedGoalDropdown = document.getElementById('lightning-linked-goal');
@@ -509,7 +506,7 @@ function executeLightningSave() {
     store.add({ 
         text: text, 
         amount: finalAmount, 
-        type: lightningNature, // explicitly save 'save', 'expense', or 'income'
+        type: lightningNature,
         category: lightningSelectedCategory, 
         linkedGoal: linkedGoal,
         date: istDateFormatted, 
@@ -520,10 +517,7 @@ function executeLightningSave() {
     tx.oncomplete = () => { 
         closeModal('lightning-add-modal');
         fetchAndDisplay(); 
-        
-        // PHASE 3: Reset dropdown
         if (linkedGoalDropdown) linkedGoalDropdown.value = "";
-        
         triggerSuccessNotification("Saved successfully"); 
     };
 }
@@ -538,7 +532,6 @@ function fetchAndDisplay() {
         allTransactions = e.target.result || []; 
         applyFilters(); 
         
-        // PHASE 3: Update goal progress instantly whenever data changes
         if (typeof renderGoals === 'function') {
             renderGoals();
         }
@@ -668,7 +661,6 @@ function applyFilters() {
     
     if (searchQuery && !t.text.toLowerCase().includes(searchQuery)) return false;
     
-    // Backward Compatibility logic for older transactions without 'type'
     const txType = t.type || (t.amount < 0 ? 'expense' : 'income');
     
     if (filterNature === 'income' && txType !== 'income') return false; 
@@ -692,7 +684,6 @@ function applyFilters() {
       
       if (txType === 'income') fIncome += t.amount; 
       if (txType === 'expense') fExpense += Math.abs(t.amount); 
-      // Note: 'save' correctly deducts from fBalance, but is NOT added to fExpense!
   });
 
   DOM.fBalance.innerText = isPrivacyMode ? '₹ ••••••' : `${fBalance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(fBalance))}`; 
@@ -714,8 +705,6 @@ function applyFilters() {
 // ==========================================
 // 8. LIST ACTIONS & SUMMARY RENDERING
 // ==========================================
-
-// FIXED: PHASE 4 MASTER WEALTH ENGINE
 function calculateMasterSummaryTotals(masterArray) {
   let openingBalanceBaseline = parseIndianCommaStringToFloat(localStorage.getItem('finwise-op-bal') || '0'); 
   let closingBalanceTarget = localStorage.getItem('finwise-cl-bal') ? parseIndianCommaStringToFloat(localStorage.getItem('finwise-cl-bal')) : null; 
@@ -727,14 +716,29 @@ function calculateMasterSummaryTotals(masterArray) {
   masterArray.forEach(t => { 
       const txType = t.type || (t.amount < 0 ? 'expense' : 'income');
       
-      balance += t.amount; // Save and Expense both correctly reduce liquid cash here.
+      balance += t.amount; 
       
       if (txType === 'income') income += t.amount; 
       if (txType === 'expense') expense += Math.abs(t.amount); 
       if (txType === 'save') saved += Math.abs(t.amount);
   });
   
-  // Phase 4 Math: Fetch obligations to deduct debt for Net Worth calculation
+  // Phase 4 Text Flip Logic ensuring it sets safely outside DB call to prevent flashing
+  const titleLabel = document.getElementById('master-balance-label');
+  const labelLeft = document.getElementById('stat-label-left');
+  const labelRight = document.getElementById('stat-label-right');
+  
+  if (currentWealthView === 'cash') {
+      if (titleLabel) titleLabel.innerText = "Total Liquid Balance";
+      if (labelLeft) labelLeft.innerText = "INCOME";
+      if (labelRight) labelRight.innerText = "EXPENSES";
+  } else {
+      if (titleLabel) titleLabel.innerText = "Total Net Worth";
+      if (labelLeft) labelLeft.innerText = "TOTAL ASSETS";
+      if (labelRight) labelRight.innerText = "TOTAL DEBT";
+  }
+  
+  // Phase 4 Math Engine
   if (window.db && db.objectStoreNames.contains("obligations")) {
       const tx = db.transaction("obligations", "readonly");
       tx.objectStore("obligations").getAll().onsuccess = (e) => {
@@ -747,40 +751,25 @@ function calculateMasterSummaryTotals(masterArray) {
               }
           });
 
-          // TRUE WEALTH FORMULA
           const totalAssets = balance + saved;
           const netWorth = totalAssets - totalDebt;
 
-          const titleLabel = document.getElementById('master-balance-label') || document.querySelector('.balance-title');
-          const labelLeft = document.getElementById('stat-label-left') || document.querySelector('.stat-box p');
-          const labelRight = document.getElementById('stat-label-right') || document.querySelectorAll('.stat-box p')[1];
-
           if (currentWealthView === 'cash') {
-              if (titleLabel) titleLabel.innerText = "Total Liquid Balance";
-              if (labelLeft) labelLeft.innerText = "INCOME";
-              if (labelRight) labelRight.innerText = "EXPENSES";
-
-              DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${balance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(balance))}`;
+              if(DOM.balance) DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${balance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(balance))}`;
               if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(income)}`;
               if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(expense)}`;
           } else {
-              if (titleLabel) titleLabel.innerText = "Total Net Worth";
-              if (labelLeft) labelLeft.innerText = "TOTAL ASSETS";
-              if (labelRight) labelRight.innerText = "TOTAL DEBT";
-
-              DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${netWorth >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(netWorth))}`;
+              if(DOM.balance) DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${netWorth >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(netWorth))}`;
               if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(totalAssets)}`;
               if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(totalDebt)}`;
           }
       };
   } else {
-      // Fallback if obligations DB doesn't exist yet
-      DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${balance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(balance))}`;
+      if(DOM.balance) DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${balance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(balance))}`;
       if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(income)}`;
       if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(expense)}`;
   }
 
-  // --- Original Velocity Wrapper UI Logic (Remains identical) ---
   const velocityWrapper = document.getElementById('budget-velocity-tracker'); 
   const velocityTitle = document.getElementById('velocity-title-label'); 
   const velocityLabel = document.getElementById('velocity-percentage-label'); 
@@ -838,15 +827,18 @@ function calculateMasterSummaryTotals(masterArray) {
     displaySheet.style.display = 'none'; 
     fieldsSheet.style.display = 'block'; 
     actionLinkBtn.style.display = 'none'; 
-    titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg> Setup Monthly Budget`;
+    // FIXED: Setup Budget uses the Settings Sliders Icon
+    titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Setup Monthly Budget`;
   } else {
     widgetCard.style.display = 'block'; 
     actionLinkBtn.style.display = 'inline-flex';
     
     if(fieldsSheet.style.display === 'none') { 
+        // FIXED: Monthly Budget Setup uses the Settings Sliders Icon
         titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Monthly Budget Setup`; 
     } else { 
-        titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Edit Configuration`; 
+        // FIXED: Edit Configuration uses the Settings Sliders Icon
+        titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Edit Configuration`; 
     }
     
     const svgBalanced = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:middle; margin-left:2px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
@@ -898,7 +890,7 @@ function renderUI(transactions) {
     let amountClass = 'amt-exp';
     let sign = '-';
     if (txType === 'income') { amountClass = 'amt-inc'; sign = '+'; }
-    else if (txType === 'save') { amountClass = 'amt-sav'; sign = '-'; } // Save gets unique indigo styling
+    else if (txType === 'save') { amountClass = 'amt-sav'; sign = '-'; } 
     
     const displayAmount = isPrivacyMode ? '••••••' : `${sign} ₹${formatToIndianRupee(Math.abs(t.amount))}`;
     
@@ -1038,7 +1030,6 @@ function openEditModal() {
     const txType = target.type || (target.amount < 0 ? 'expense' : 'income');
     const editTypeSelect = document.getElementById('edit-type');
     
-    // Dynamically add Save to edit modal if missing
     if (!editTypeSelect.querySelector('option[value="save"]')) {
          editTypeSelect.insertAdjacentHTML('beforeend', '<option value="save">Save/Invest</option>');
     }
@@ -1115,7 +1106,7 @@ function renderPercentageBreakdown(transactions) {
       const txType = t.type || (t.amount < 0 ? 'expense' : 'income');
       
       if (txType === 'income') totalIncome += t.amount; 
-      else if (txType === 'expense') { // Specifically excluding 'save'
+      else if (txType === 'expense') { 
           const cat = t.category || 'Miscellaneous'; 
           expensesMap[cat] = (expensesMap[cat] || 0) + Math.abs(t.amount); 
       } 
@@ -1277,7 +1268,9 @@ function renderChart(transactionsToRender) {
   const svgAlert = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
   const svgRocket = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg>`;
   const svgIdea = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg>`;
-  const svgScale = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2h2"></path></svg>`;
+  
+  // FIXED: SVG Scale swapped for the new Side-by-Side Compare Icon
+  const svgScale = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><rect width="8" height="18" x="3" y="3" rx="2"></rect><rect width="8" height="18" x="13" y="3" rx="2"></rect></svg>`;
 
   let ratioText = "";
   if (totalIncome > totalExpense && totalExpense > 0) {
@@ -1592,8 +1585,11 @@ function runPeriodComparison() {
   
   const svgIdea = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg>`;
   const svgUp = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>`;
-  const svgDown = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><polyline points="22 12 18 12 15 3 9 21 6 12 2 12"></polyline></svg>`;
-  const svgScale = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2h2"></path></svg>`;
+  const svgDown = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><polyline points="12 5 12 19"></polyline><polyline points="19 12 12 19 5 12"></polyline></svg>`;
+  
+  // FIXED: SVG Scale swapped for the new Compare Side-by-Side icon
+  const svgScale = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><rect width="8" height="18" x="3" y="3" rx="2"></rect><rect width="8" height="18" x="13" y="3" rx="2"></rect></svg>`;
+  
   const svgMoney = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>`;
   const svgAlert = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
 
