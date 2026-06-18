@@ -60,7 +60,11 @@ body {
   padding-bottom: 110px; 
   overscroll-behavior-y: none; 
 }
-.container { max-width: 500px; margin: 0 auto; }
+
+.container { 
+  max-width: 500px; 
+  margin: 0 auto; 
+}
 
 /* Fixed Top Header Architecture Layout */
 header { 
@@ -330,21 +334,20 @@ button:active { transform: scale(0.96); }
 .btn-reset-isolated:active { background: var(--alert-bg); transform: scale(0.96); }
 
 /* ========================================== */
-/* BOTTOM NAVIGATION BAR (FIXED FOR OVERFLOW) */
+/* BOTTOM NAVIGATION BAR (FIXED UI ERROR)     */
 /* ========================================== */
 .bottom-nav { 
   position: fixed; 
   bottom: 0; 
   left: 0; 
-  width: 100%; 
+  right: 0; 
   background: var(--bg-card); 
   border-top: 1px solid var(--border); 
   display: flex; 
-  /* FIXED: Use space-around to prevent crushing the center FAB button */
   justify-content: space-around; 
   align-items: center;
-  /* iOS Safe Area Padding to prevent system bar overlap */
-  padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 10px)) 0; 
+  padding: 8px 16px; 
+  padding-bottom: calc(8px + env(safe-area-inset-bottom, 10px)); 
   z-index: 900; 
   box-shadow: 0 -4px 12px rgba(0,0,0,0.04); 
 }
@@ -356,22 +359,53 @@ button:active { transform: scale(0.96); }
   background: transparent; 
   border: none; 
   color: var(--text-muted); 
-  font-size: 0.7rem; /* Slightly smaller to fit 5 items comfortably */
+  font-size: 0.7rem; 
   font-weight: bold; 
   cursor: pointer; 
-  padding: 4px 2px; 
+  padding: 4px 8px; 
   margin: 0; 
   box-shadow: none; 
   transition: transform 0.15s ease, color 0.2s; 
+  min-width: 60px;
 }
 .nav-item:active { transform: scale(0.92); }
 .nav-item.nav-active { color: var(--primary); }
 .nav-icon { font-size: 1.3rem; margin-bottom: 2px; }
 
+/* FLOATING ACTION BUTTON (FAB) RESTORED POSITION */
+.fab-wrapper { 
+  position: relative; 
+  /* FIXED: Restored exactly the negative margin that pops the button up! */
+  top: -24px; 
+  z-index: 1010; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.fab-add-btn { 
+  background: linear-gradient(135deg, #22c55e, #16a34a); 
+  color: white; 
+  width: 60px; 
+  height: 60px; 
+  border-radius: 50%; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  box-shadow: 0 6px 16px rgba(22, 163, 74, 0.4), inset 0 2px 4px rgba(255,255,255,0.2); 
+  border: 4px solid var(--bg-main); 
+  padding: 0; 
+  margin: 0; 
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease; 
+}
+.fab-add-btn:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 20px rgba(22, 163, 74, 0.5); }
+.fab-add-btn:active { transform: translateY(2px) scale(0.95); box-shadow: 0 2px 8px rgba(22, 163, 74, 0.4); }
+
 /* GLOBAL UNIFIED MODERN APP BOTTOM SHEETS */
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 100010; justify-content: center; align-items: flex-end; padding: 16px; }
 
-/* Modal Cards (Gatekeeper, Edit, Delete, Report) with max-height to prevent cutoff */
+/* Modal Cards (Gatekeeper, Edit, Delete, Report) */
 .modal-card { 
   background: var(--bg-card); 
   border: 1px solid var(--border); 
@@ -383,7 +417,6 @@ button:active { transform: scale(0.96); }
   text-align: center; 
   animation: slideUpAlert 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.15); 
   margin-bottom: env(safe-area-inset-bottom, 10px);
-  
   max-height: 85vh; 
   overflow-y: auto;
   overscroll-behavior-y: contain;
@@ -404,7 +437,7 @@ button:active { transform: scale(0.96); }
 .alert-icon-circle { width: 54px; height: 54px; background: rgba(220, 38, 38, 0.1); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 16px auto; color: var(--expense); }
 .alert-icon-circle svg { width: 26px; height: 26px; stroke-width: 2.5; }
 
-/* DEDICATED FULL-SCREEN SETTINGS PAGE - FIXED LAYOUT */
+/* DEDICATED FULL-SCREEN SETTINGS PAGE */
 .dedicated-page-overlay {
     display: none;
     position: fixed;
@@ -467,57 +500,6 @@ button:active { transform: scale(0.96); }
 }
 .btn-close-page:active { transform: scale(0.9); background: var(--tab-bg); }
 
-/* FLOATING ACTION BUTTON (FAB) & LIGHTNING ADD */
-.fab-wrapper {
-    position: relative;
-    width: 70px; /* Fixed width prevents flexing issues */
-    flex-shrink: 0; /* Important: do not shrink the FAB area */
-    height: 100%;
-    display: flex;
-    justify-content: center;
-}
-
-.fab-cutout {
-    position: absolute;
-    top: -24px;
-    width: 70px;
-    height: 70px;
-    background-color: var(--bg-main);
-    border-radius: 50%;
-    border-top: 1px solid var(--border);
-    z-index: 0;
-}
-
-.fab-add-btn {
-    position: absolute !important;
-    top: -18px !important;
-    width: 58px !important;
-    height: 58px !important;
-    border-radius: 50% !important;
-    background: linear-gradient(135deg, #22c55e, #16a34a) !important;
-    color: white !important;
-    border: none !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-shadow: 0 6px 16px rgba(22, 163, 74, 0.4), inset 0 2px 4px rgba(255,255,255,0.2) !important;
-    cursor: pointer !important;
-    z-index: 1 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease !important;
-}
-
-.fab-add-btn:hover {
-    transform: translateY(-2px) scale(1.02) !important;
-    box-shadow: 0 8px 20px rgba(22, 163, 74, 0.5), inset 0 2px 4px rgba(255,255,255,0.2) !important;
-}
-
-.fab-add-btn:active {
-    transform: translateY(2px) scale(0.95) !important;
-    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.4) !important;
-}
-
 .quick-chip {
     display: inline-flex;
     align-items: center;
@@ -549,7 +531,7 @@ button:active { transform: scale(0.96); }
     transform: translateY(-2px);
 }
 
-/* PHASE 3: GOAL CARDS */
+/* PHASE 3: GOAL CARDS (Compact layout) */
 .goal-card { 
   background: var(--bg-card); 
   border-radius: 16px; 
@@ -561,19 +543,22 @@ button:active { transform: scale(0.96); }
 .goal-header { 
   display: flex; 
   justify-content: space-between; 
-  align-items: flex-start; 
+  align-items: center; /* FIXED: Now centers perfectly on one line */
   margin-bottom: 12px; 
 }
 .goal-title { 
   font-weight: 700; 
-  font-size: 1.05rem; 
+  font-size: 0.95rem; /* Slightly smaller for compact feel */
   color: var(--text-main); 
-  margin-bottom: 4px; 
+  margin-right: 8px; /* Added spacing */
 }
 .goal-meta { 
   font-size: 0.75rem; 
   color: var(--text-muted); 
   font-weight: 600; 
+  background: var(--tab-bg);
+  padding: 4px 8px;
+  border-radius: 12px;
 }
 .goal-progress-wrapper { 
   background: var(--tab-bg); 

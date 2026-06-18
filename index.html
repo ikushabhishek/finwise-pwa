@@ -82,8 +82,8 @@
             <button class="theme-toggle-btn" onclick="toggleTheme()" id="theme-btn" style="display: flex; align-items: center; gap: 6px;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg> Dark
             </button>
-            <button class="settings-gear-btn" onclick="openPreferencesModal()" style="padding: 0; margin: 0;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <button class="settings-gear-btn" onclick="openPreferencesModal()" style="padding: 0; margin: 0; min-width: 36px; min-height: 36px; flex-shrink: 0;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             </button>
         </div>
     </header>
@@ -290,7 +290,7 @@
             <h4 style="display: flex; justify-content: space-between; align-items: center; border-bottom: none; margin-bottom: 12px;">
                 <span style="display: flex; align-items: center; gap: 8px;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--save)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg> 
-                    Savings Goals
+                    Active Goals
                 </span>
                 <button onclick="document.getElementById('add-goal-modal').style.display='flex'" style="background: var(--save); color: white; border: none; padding: 6px 12px; font-size: 0.75rem; border-radius: 8px; box-shadow: none; width: auto; margin: 0;">+ New Goal</button>
             </h4>
@@ -298,6 +298,7 @@
                 <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; margin: 10px 0;">Loading goals...</p>
             </div>
         </div>
+
         <div id="insights-empty-state" class="empty-state-premium" style="display:none; margin-top: 20px;">
             <div class="empty-icon">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
@@ -485,7 +486,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0;">
             <label style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted);">SELECT CATEGORY</label>
             <button class="inline-edit-action-link" style="display: flex; align-items: center; gap: 4px;" onclick="openCategoryManagerModal()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Manage Tags
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 0 2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Manage Tags
             </button>
         </div>
         
@@ -554,7 +555,6 @@
         <p style="text-align: center; margin-bottom: 16px;">Set a target and track your progress.</p>
         
         <input type="text" id="goal-title-input" placeholder="Goal Name (e.g., New Laptop, Goa Trip)" style="width: 100%; margin-bottom: 12px; padding: 12px;">
-        
         <input type="text" id="goal-target-input" placeholder="Target Amount (₹)" style="width: 100%; margin-bottom: 12px; padding: 12px;" oninput="maskInputToIndianCommas(this)">
         
         <div style="margin-bottom: 16px;">
@@ -588,7 +588,7 @@
     <div class="settings-page-content">
         <div class="settings-page-header" style="justify-content: flex-start; gap: 8px;">
             <h2 style="display: flex; align-items: center; gap: 8px; margin: 0; flex: 1;">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Settings
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Settings
             </h2>
             <button class="btn-close-page" onclick="closeModal('preferences-modal')">✕</button>
         </div>
@@ -649,6 +649,14 @@
 
         <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
             <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: var(--text-main); border-bottom: none; display: flex; align-items: center; gap: 8px; justify-content: flex-start;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"></path><path d="M1 3h22v5H1z"></path><path d="M10 12h4"></path></svg> Financial Archive Vault
+            </h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">View your completed goals, paid-off loans, and inactive subscriptions.</p>
+            <button onclick="document.getElementById('archive-vault-modal').style.display = 'flex'; if(typeof renderArchiveVault === 'function') renderArchiveVault();" style="width: 100%; padding: 12px; font-size: 0.85rem; background: var(--tab-bg); color: var(--text-main); border: 1px solid var(--border); border-radius: 8px; box-shadow: none;">Open Vault</button>
+        </div>
+
+        <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
+            <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: var(--text-main); border-bottom: none; display: flex; align-items: center; gap: 8px; justify-content: flex-start;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> Backup & Restore Data
             </h4>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Export your transactions to a CSV file or import an existing one.</p>
@@ -678,6 +686,113 @@
             <button class="btn-reset-isolated" onclick="openResetModal()">Erase All Data</button>
         </div>
 
+    </div>
+</div>
+
+<div class="dedicated-page-overlay" id="archive-vault-modal" style="display: none; z-index: 100015;">
+    <div class="settings-page-content">
+        <div class="settings-page-header" style="justify-content: flex-start; gap: 8px;">
+            <h2 style="display: flex; align-items: center; gap: 8px; margin: 0; flex: 1;">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"></path><path d="M1 3h22v5H1z"></path><path d="M10 12h4"></path></svg> Archive Vault
+            </h2>
+            <button class="btn-close-page" onclick="document.getElementById('archive-vault-modal').style.display='none'">✕</button>
+        </div>
+        
+        <div class="tabs" style="margin-bottom: 20px;">
+            <div class="tab active" id="tab-archive-goals" onclick="switchArchiveTab('goals', this)">Goals</div>
+            <div class="tab" id="tab-archive-emis" onclick="switchArchiveTab('emis', this)">EMIs & Subs</div>
+        </div>
+
+        <div id="archive-content-goals" style="display: block;">
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">Completed and deactivated savings goals.</p>
+            <div id="archived-goals-list-container" style="display: flex; flex-direction: column; gap: 12px;"></div>
+        </div>
+
+        <div id="archive-content-emis" style="display: none;">
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">Past EMIs and inactive subscriptions.</p>
+            <div id="archived-obligations-list-container" style="display: flex; flex-direction: column; gap: 12px;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="emi-prepay-modal" style="display: none; z-index: 100005;">
+    <div class="modal-card" style="border-top: 4px solid var(--primary);">
+        <div class="alert-icon-circle" style="background: rgba(22, 163, 74, 0.1); color: var(--primary);">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <h3 style="color: var(--primary);">Log Prepayment</h3>
+        <p style="margin-bottom: 12px;">Make an extra payment to reduce the outstanding principal for <strong id="prepay-emi-title" style="color: var(--text-main);"></strong>.</p>
+        
+        <input type="text" id="emi-prepay-amount" placeholder="Extra Payment (₹)" style="width: 100%; margin-bottom: 16px; padding: 12px; text-align: center; font-weight: bold;" oninput="maskInputToIndianCommas(this)">
+        <input type="hidden" id="prepay-emi-id">
+        
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal('emi-prepay-modal')">Cancel</button>
+            <button style="background: var(--primary); color: white;" onclick="if(typeof executeEmiPrepayment === 'function') executeEmiPrepayment()">Log Payment</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="hard-delete-modal" style="display: none; z-index: 100006;">
+    <div class="modal-card" style="border-top: 4px solid var(--expense);">
+        <div class="alert-icon-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        </div>
+        <h3 style="color: var(--expense);">Delete Permanently?</h3>
+        <p>This will completely remove this item forever. It cannot be recovered.</p>
+        <input type="hidden" id="hard-delete-id">
+        <input type="hidden" id="hard-delete-type">
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal('hard-delete-modal')">Cancel</button>
+            <button style="background: var(--expense); color: white;" onclick="if(typeof executeHardDelete === 'function') executeHardDelete()">Delete Forever</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="emi-congrats-modal" style="display: none; z-index: 100005;">
+    <div class="modal-card" style="border-top: 4px solid var(--primary);">
+        <div class="alert-icon-circle" style="background: rgba(22, 163, 74, 0.1); color: var(--primary);">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
+        <h3 style="color: var(--primary);">Loan Paid Off! 🎉</h3>
+        <p>Outstanding work! You have completely paid off the principal for <strong id="congrats-emi-name" style="color: var(--text-main);"></strong>.</p>
+        <p style="font-size: 0.8rem; margin-top: -10px;">It has been safely moved to your Archive Vault.</p>
+        <div class="modal-footer">
+            <button style="background: var(--primary); color: white; width: 100%;" onclick="closeModal('emi-congrats-modal')">Awesome!</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="simple-confirm-modal" style="display: none; z-index: 100005;">
+    <div class="modal-card" style="border-top: 4px solid var(--expense);">
+        <div class="alert-icon-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+        </div>
+        <h3 style="color: var(--expense);" id="simple-confirm-title">Confirm Action</h3>
+        <p id="simple-confirm-msg">Are you sure?</p>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal('simple-confirm-modal')">Cancel</button>
+            <button style="background: var(--expense); color: white;" id="simple-confirm-btn">Yes, Proceed</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="goal-congrats-modal" style="display: none; z-index: 100005;">
+    <div class="modal-card" style="border-top: 4px solid var(--save);">
+        <div class="alert-icon-circle" style="background: rgba(99, 102, 241, 0.1); color: var(--save);">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
+        <h3 style="color: var(--save);">Goal Completed! 🎉</h3>
+        <p>Congratulations! You have reached 100% of your target for <strong id="congrats-goal-name" style="color: var(--text-main);"></strong>.</p>
+        <p style="font-size: 0.8rem; margin-top: -10px;">Would you like to deactivate this goal and move it to your Archive Vault?</p>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal('goal-congrats-modal')">Keep Active</button>
+            <button style="background: var(--save); color: white;" id="congrats-archive-btn">Archive Goal</button>
+        </div>
     </div>
 </div>
 
