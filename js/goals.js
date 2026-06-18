@@ -30,8 +30,8 @@ function saveNewGoal() {
         title: title,
         targetAmount: targetAmount,
         deadline: deadline || null,
-        status: 'active', // New: Track whether it is active or in the vault
-        congratsShown: false, // New: Prevent the completion popup from showing repeatedly
+        status: 'active', // Track whether it is active or in the vault
+        congratsShown: false, // Prevent the completion popup from showing repeatedly
         createdAt: new Date().toISOString()
     };
 
@@ -57,7 +57,6 @@ function saveNewGoal() {
     };
 }
 
-// FIXED: Now uses the Simple Yes/Cancel Modal instead of forcing the user to type "DELETE"
 function deleteGoal(goalId) {
     document.getElementById('simple-confirm-title').innerText = "Delete Goal?";
     document.getElementById('simple-confirm-msg').innerText = "Are you sure? Any savings linked to this goal will remain in your history, but the goal tracking will be removed.";
@@ -108,7 +107,7 @@ function renderGoals() {
 
     if (!db.objectStoreNames.contains("goals")) return;
 
-    const goalsTx = db.transaction(['goals'], 'readwrite'); // Readwrite in case we need to update congratsShown
+    const goalsTx = db.transaction(['goals'], 'readwrite'); 
     const goalsStore = goalsTx.objectStore('goals');
     const goalsReq = goalsStore.getAll();
 
@@ -165,7 +164,6 @@ function renderGoals() {
                     deadlineText = ` • Target: ${dateObj.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}`;
                 }
 
-                // FIXED: Compact UI layout (Title, Badge, and Delete button on one single line)
                 const goalCard = document.createElement('div');
                 goalCard.className = 'goal-card';
                 goalCard.innerHTML = `
@@ -236,7 +234,7 @@ function populateGoalDropdowns() {
 }
 
 // ==========================================
-// 4. ARCHIVE VAULT LOGIC
+// 4. ARCHIVE VAULT LOGIC & HARD DELETE
 // ==========================================
 function switchArchiveTab(tabId, element) {
     document.querySelectorAll('#archive-vault-modal .tab').forEach(t => t.classList.remove('active'));
@@ -270,6 +268,7 @@ function renderArchivedGoals() {
             return;
         }
 
+        // FIXED: Swapped the download icon for the Hard Delete trash can icon
         container.innerHTML = archivedGoals.map(goal => {
             const formattedTarget = isPrivacyMode ? '••••' : goal.targetAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 });
             return `
@@ -280,12 +279,45 @@ function renderArchivedGoals() {
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--save)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Completed: ₹${formattedTarget}
                     </div>
                 </div>
-                <div style="background: var(--save); color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.62 1.24A2 2 0 0 0 4.41 19H19.6a2 2 0 0 0 1.79-.76L22 17"></path></svg>
-                </div>
+                <button onclick="confirmHardDeleteGoal('${goal.id}')" style="background: transparent; color: var(--expense); border: none; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; cursor: pointer; padding: 0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
             </div>
             `;
         }).join('');
+    };
+}
+
+// Custom handler specifically for permanently deleting goals from the vault
+function confirmHardDeleteGoal(goalId) {
+    document.getElementById('hard-delete-id').value = goalId;
+    document.getElementById('hard-delete-type').value = 'goal';
+    
+    const confirmBtn = document.getElementById('hard-delete-modal').querySelector('.modal-footer button:last-child');
+    
+    // Store original function from HTML if not already stored
+    if (!confirmBtn.dataset.originalOnclick) {
+        confirmBtn.dataset.originalOnclick = confirmBtn.getAttribute('onclick');
+    }
+    
+    // Temporarily replace it for Goal Deletion
+    confirmBtn.setAttribute('onclick', `executeHardDeleteGoal('${goalId}')`);
+    
+    document.getElementById('hard-delete-modal').style.display = 'flex';
+}
+
+function executeHardDeleteGoal(goalId) {
+    const tx = db.transaction("goals", "readwrite");
+    tx.objectStore("goals").delete(goalId);
+    
+    tx.oncomplete = () => {
+        triggerSuccessNotification("Goal permanently deleted.");
+        closeModal('hard-delete-modal');
+        renderArchivedGoals();
+        
+        // Restore the original onclick logic for EMIs
+        const confirmBtn = document.getElementById('hard-delete-modal').querySelector('.modal-footer button:last-child');
+        confirmBtn.setAttribute('onclick', confirmBtn.dataset.originalOnclick);
     };
 }
 
