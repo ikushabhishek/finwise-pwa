@@ -18,28 +18,26 @@ function toggleEndDateField() {
 
 function executeSaveObligation() {
   const title = document.getElementById('ob-title').value.trim();
-  const amount = parseFloat(document.getElementById('ob-amount').value);
   const type = document.getElementById('ob-type').value;
   const category = document.getElementById('ob-category').value;
   const billingDate = parseInt(document.getElementById('ob-date').value);
   const endDate = document.getElementById('ob-end-date').value || null;
   
-  // New Phase 2 EMI Fields
-  const principal = type === 'EMI' ? parseFloat(document.getElementById('ob-principal').value) || 0 : 0;
+  // FIXED: Safely parse the comma-formatted Indian Rupee strings
+  const amount = parseIndianCommaStringToFloat(document.getElementById('ob-amount').value);
+  const principal = type === 'EMI' ? parseIndianCommaStringToFloat(document.getElementById('ob-principal').value) || 0 : 0;
+  
+  // Interest rate remains standard float since it's a simple decimal (e.g., 8.5)
   const interestRate = type === 'EMI' ? parseFloat(document.getElementById('ob-interest').value) || 0 : 0;
 
-  if (!title || isNaN(amount) || isNaN(billingDate)) {
-      if (typeof triggerNativeAppAlert === 'function') {
-          triggerNativeAppAlert("Please fill in all valid details for the commitment.");
-      } else {
-          alert("Please fill in all valid details for the commitment.");
-      }
+  if (!title || isNaN(amount) || amount <= 0 || isNaN(billingDate)) {
+      triggerNativeAppAlert("Please fill in all valid details for the commitment.");
       return;
   }
 
   // Safety constraint: Billing date must be a valid calendar day
   if (billingDate < 1 || billingDate > 31) {
-      if (typeof triggerNativeAppAlert === 'function') triggerNativeAppAlert("Day must be between 1 and 31.");
+      triggerNativeAppAlert("Day must be between 1 and 31.");
       return;
   }
 
@@ -51,8 +49,8 @@ function executeSaveObligation() {
       category, 
       billingDate, 
       endDate,
-      principal,          // Added to DB
-      interest: interestRate, // Added to DB
+      principal,          
+      interest: interestRate, 
       lastProcessedMonth: null,
       createdAt: Date.now()
   });
@@ -65,7 +63,7 @@ function executeSaveObligation() {
       document.getElementById('ob-principal').value = '';
       document.getElementById('ob-interest').value = '';
       
-      if (typeof triggerSuccessNotification === 'function') triggerSuccessNotification("Commitment saved!");
+      triggerSuccessNotification("Commitment saved!");
       renderObligationsList();
   };
 }
@@ -91,16 +89,18 @@ function renderObligationsList() {
           let extraDetails = '';
           
           if (ob.type === 'EMI' && ob.principal > 0) {
-              const displayPrincipal = typeof formatToIndianRupee === 'function' ? formatToIndianRupee(ob.principal) : ob.principal;
+              const displayPrincipal = isPrivacyMode ? '••••' : formatToIndianRupee(ob.principal);
               extraDetails = `<div style="font-size: 0.7rem; color: var(--expense); font-weight: 700; margin-top: 4px;">Remaining Principal: ₹${displayPrincipal}</div>`;
           }
+
+          const displayAmount = isPrivacyMode ? '••••' : formatToIndianRupee(ob.amount).split('.')[0];
 
           return `
           <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
               <div>
                   <div style="font-weight: bold; font-size: 0.9rem; color: var(--text-main);">${ob.title}</div>
                   <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
-                      <span style="color: ${typeColor}; font-weight: bold;">${ob.type}</span> • Day ${ob.billingDate} • ₹${ob.amount}
+                      <span style="color: ${typeColor}; font-weight: bold;">${ob.type}</span> • Day ${ob.billingDate} • ₹${displayAmount}
                   </div>
                   ${extraDetails}
               </div>
@@ -117,7 +117,7 @@ function deleteObligation(id) {
   const tx = db.transaction("obligations", "readwrite");
   tx.objectStore("obligations").delete(id);
   tx.oncomplete = () => {
-      if (typeof triggerSuccessNotification === 'function') triggerSuccessNotification("Deleted successfully.");
+      triggerSuccessNotification("Deleted successfully.");
       renderObligationsList();
   };
 }
@@ -165,21 +165,24 @@ function showGatekeeperModal(pendingObligations) {
   const list = document.getElementById('pending-obligations-list');
   if (!list) return;
 
-  list.innerHTML = pendingObligations.map(ob => `
+  list.innerHTML = pendingObligations.map(ob => {
+      const displayAmount = isPrivacyMode ? '••••' : formatToIndianRupee(ob.amount).split('.')[0];
+      return `
       <div style="background: var(--bg-main); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 8px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
               <div>
                   <div style="font-weight: bold; font-size: 0.95rem; color: var(--text-main);">${ob.title}</div>
                   <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Due on the ${ob.billingDate}th</div>
               </div>
-              <div style="font-weight: 800; font-size: 1.1rem; color: var(--expense);">₹${ob.amount}</div>
+              <div style="font-weight: 800; font-size: 1.1rem; color: var(--expense);">₹${displayAmount}</div>
           </div>
           <div style="display: flex; gap: 8px;">
               <button onclick="processObligation(${ob.id}, 'log')" style="flex: 1; margin: 0; padding: 10px; font-size: 0.8rem; box-shadow: none;">Log Payment</button>
               <button onclick="processObligation(${ob.id}, 'skip')" style="flex: 1; margin: 0; padding: 10px; font-size: 0.8rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); box-shadow: none;">Skip</button>
           </div>
       </div>
-  `).join('');
+      `;
+  }).join('');
 
   document.getElementById('gatekeeper-modal').style.display = 'flex';
 }
@@ -200,7 +203,6 @@ function processObligation(id, action) {
       obligation.lastProcessedMonth = `${istDate.getFullYear()}-${String(istDate.getMonth() + 1).padStart(2, '0')}`;
       
       if(action === 'log') {
-          // --- PHASE 2 MATH LOGIC ---
           let principalDeducted = 0;
           let interestCalculated = 0;
           let logDescription = obligation.title;
@@ -225,11 +227,10 @@ function processObligation(id, action) {
               if (obligation.principal < 0.01) obligation.principal = 0;
 
               // 4. Add smart insights to the description so the user sees the breakdown in their history
-              const displayPrin = typeof formatToIndianRupee === 'function' ? formatToIndianRupee(principalDeducted).split('.')[0] : Math.round(principalDeducted);
-              const displayInt = typeof formatToIndianRupee === 'function' ? formatToIndianRupee(interestCalculated).split('.')[0] : Math.round(interestCalculated);
+              const displayPrin = Math.round(principalDeducted).toLocaleString('en-IN');
+              const displayInt = Math.round(interestCalculated).toLocaleString('en-IN');
               logDescription = `${obligation.title} (Prin: ₹${displayPrin}, Int: ₹${displayInt})`;
           }
-          // ----------------------------
 
           // Log the transaction (The FULL amount comes out of the bank balance)
           tx.objectStore("transactions").add({ 
@@ -237,6 +238,7 @@ function processObligation(id, action) {
               amount: -Math.abs(obligation.amount), 
               type: 'expense',
               category: obligation.category || 'Utilities', 
+              linkedGoal: null,
               date: istDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }), 
               timestamp: istDate.getTime(), 
               dateString: new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(istDate) 
@@ -247,15 +249,13 @@ function processObligation(id, action) {
       obStore.put(obligation);
       
       tx.oncomplete = () => { 
-          if (typeof triggerSuccessNotification === 'function') {
-              if(action === 'log') {
-                  triggerSuccessNotification(`${obligation.title} logged to expenses!`);
-              } else {
-                  triggerSuccessNotification(`${obligation.title} skipped for this month.`);
-              }
+          if (action === 'log') {
+              triggerSuccessNotification(`${obligation.title} logged!`);
+          } else {
+              triggerSuccessNotification(`${obligation.title} skipped.`);
           }
           
-          if (typeof fetchAndDisplay === 'function') fetchAndDisplay();
+          fetchAndDisplay();
           
           // Check if there are more pending, otherwise close the modal
           document.getElementById('gatekeeper-modal').style.display = 'none';

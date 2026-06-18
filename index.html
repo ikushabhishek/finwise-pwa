@@ -1,798 +1,788 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FinWise</title>
-  <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#2e7d32">
-  
-  <link rel="stylesheet" href="./style.css">
-  
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FinWise</title>
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#2e7d32">
+    
+    <link rel="stylesheet" href="./style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
 <div id="security-lock-screen" style="display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; padding: 20px; box-sizing: border-box;">
-  <div class="lock-icon-shield" style="margin-bottom: 16px; display: flex; justify-content: center; width: 100%; color: var(--primary);">
-    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-    </svg>
-  </div>
-  <h2 id="lock-title" style="margin-bottom: 8px; font-size: 1.8rem; text-align: center; width: 100%;">Enter PIN</h2>
-  <p id="lock-subtitle" style="color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem; font-weight: 500; text-align: center; width: 100%;">To access FinWise</p>
-  
-  <div id="pin-entry-ui" style="display: block; width: 100%; max-width: 320px; margin: 0 auto; text-align: center;">
-    
-    <div class="pin-display" id="pin-display" style="display: flex; justify-content: center; align-items: center; gap: 20px; margin: 0 auto 40px auto; width: 100%;">
-      <div class="pin-dot"></div>
-      <div class="pin-dot"></div>
-      <div class="pin-dot"></div>
-      <div class="pin-dot"></div>
-    </div>
-    
-    <div class="numpad" style="margin: 0 auto; justify-content: center;">
-      <div class="num-key" onclick="handlePinInput('1')">1</div>
-      <div class="num-key" onclick="handlePinInput('2')">2</div>
-      <div class="num-key" onclick="handlePinInput('3')">3</div>
-      <div class="num-key" onclick="handlePinInput('4')">4</div>
-      <div class="num-key" onclick="handlePinInput('5')">5</div>
-      <div class="num-key" onclick="handlePinInput('6')">6</div>
-      <div class="num-key" onclick="handlePinInput('7')">7</div>
-      <div class="num-key" onclick="handlePinInput('8')">8</div>
-      <div class="num-key" onclick="handlePinInput('9')">9</div>
-      <div class="num-key" id="pin-cancel-btn" style="background: transparent; border: none; box-shadow: none; font-size: 0.9rem; color: var(--text-muted);" onclick="cancelPinSetup()"></div>
-      <div class="num-key" onclick="handlePinInput('0')">0</div>
-      <div class="num-key" style="background: transparent; border: none; box-shadow: none; color: var(--expense); display: flex; align-items: center; justify-content: center;" onclick="handlePinBackspace()">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
-          <line x1="18" y1="9" x2="12" y2="15"></line>
-          <line x1="12" y1="9" x2="18" y2="15"></line>
+    <div class="lock-icon-shield" style="margin-bottom: 16px; display: flex; justify-content: center; width: 100%; color: var(--primary);">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
         </svg>
-      </div>
     </div>
+    <h2 id="lock-title" style="margin-bottom: 8px; font-size: 1.8rem; text-align: center; width: 100%;">Enter PIN</h2>
+    <p id="lock-subtitle" style="color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem; font-weight: 500; text-align: center; width: 100%;">To access FinWise</p>
+    
+    <div id="pin-entry-ui" style="display: block; width: 100%; max-width: 320px; margin: 0 auto; text-align: center;">
+        <div class="pin-display" id="pin-display" style="display: flex; justify-content: center; align-items: center; gap: 20px; margin: 0 auto 40px auto; width: 100%;">
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+        </div>
+        
+        <div class="numpad" style="margin: 0 auto; justify-content: center;">
+            <div class="num-key" onclick="handlePinInput('1')">1</div>
+            <div class="num-key" onclick="handlePinInput('2')">2</div>
+            <div class="num-key" onclick="handlePinInput('3')">3</div>
+            <div class="num-key" onclick="handlePinInput('4')">4</div>
+            <div class="num-key" onclick="handlePinInput('5')">5</div>
+            <div class="num-key" onclick="handlePinInput('6')">6</div>
+            <div class="num-key" onclick="handlePinInput('7')">7</div>
+            <div class="num-key" onclick="handlePinInput('8')">8</div>
+            <div class="num-key" onclick="handlePinInput('9')">9</div>
+            <div class="num-key" id="pin-cancel-btn" style="background: transparent; border: none; box-shadow: none; font-size: 0.9rem; color: var(--text-muted);" onclick="cancelPinSetup()"></div>
+            <div class="num-key" onclick="handlePinInput('0')">0</div>
+            <div class="num-key" style="background: transparent; border: none; box-shadow: none; color: var(--expense); display: flex; align-items: center; justify-content: center;" onclick="handlePinBackspace()">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+                    <line x1="18" y1="9" x2="12" y2="15"></line>
+                    <line x1="12" y1="9" x2="18" y2="15"></line>
+                </svg>
+            </div>
+        </div>
 
-    <button id="biometric-unlock-btn" onclick="unlockWithBiometrics(false)" style="margin: 30px auto 0 auto; padding: 14px 24px; width: 100%; background: transparent; color: var(--primary); border: 2px dashed var(--primary); box-shadow: none; font-weight: 700; border-radius: 12px; display: none; align-items: center; justify-content: center; gap: 8px;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Retry Biometric Unlock
-    </button>
-  </div>
+        <button id="biometric-unlock-btn" onclick="unlockWithBiometrics(false)" style="margin: 30px auto 0 auto; padding: 14px 24px; width: 100%; background: transparent; color: var(--primary); border: 2px dashed var(--primary); box-shadow: none; font-weight: 700; border-radius: 12px; display: none; align-items: center; justify-content: center; gap: 8px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Retry Biometric Unlock
+        </button>
+    </div>
 </div>
 
 <div class="container">
-  <div class="toast-notification" id="success-toast">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> 
-    <span id="toast-message">Saved successfully</span>
-  </div>
-
-  <div class="update-available-toast" id="update-toast">
-    <div style="display: flex; align-items: center; gap: 6px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
-        <span>New features loaded!</span>
+    <div class="toast-notification" id="success-toast">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> 
+        <span id="toast-message">Saved successfully</span>
     </div>
-    <button class="update-refresh-btn-action" id="update-refresh-btn">Tap to Reload</button>
-  </div>
 
-  <button class="back-to-top-btn" id="scroll-top-trigger" onclick="scrollToLogsTop()">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
-  </button>
-
-  <header>
-    <img src="https://i.ibb.co/0yvTQkSC/finwise.png" alt="FinWise" class="header-logo">
-    <div class="header-actions">
-      <button class="theme-toggle-btn" onclick="toggleTheme()" id="theme-btn" style="display: flex; align-items: center; gap: 6px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg> Dark
-      </button>
-      <button class="settings-gear-btn" onclick="openPreferencesModal()" style="padding: 0; margin: 0;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-      </button>
+    <div class="update-available-toast" id="update-toast">
+        <div style="display: flex; align-items: center; gap: 6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
+            <span>New features loaded!</span>
+        </div>
+        <button class="update-refresh-btn-action" id="update-refresh-btn">Tap to Reload</button>
     </div>
-  </header>
+
+    <button class="back-to-top-btn" id="scroll-top-trigger" onclick="scrollToLogsTop()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+    </button>
+
+    <header>
+        <img src="https://i.ibb.co/0yvTQkSC/finwise.png" alt="FinWise" class="header-logo">
+        <div class="header-actions">
+            <button class="theme-toggle-btn" onclick="toggleTheme()" id="theme-btn" style="display: flex; align-items: center; gap: 6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg> Dark
+            </button>
+            <button class="settings-gear-btn" onclick="openPreferencesModal()" style="padding: 0; margin: 0;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </button>
+        </div>
+    </header>
   
-  <div class="balance-card">
-    <div style="display: flex; justify-content: center; align-items: center; gap: 8px;">
-      <span class="balance-title">Total Balance</span>
-      <button id="privacy-toggle-btn" onclick="togglePrivacyMode()" style="background: transparent; border: none; padding: 0; margin: 0; box-shadow: none; font-size: 1rem; width: auto; color: rgba(255,255,255,0.8); cursor: pointer; display: flex; align-items: center;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-      </button>
-    </div>
-    <h1 id="balance">₹0.00</h1>
-    <div class="stats-row">
-      <div class="stat-box">
-        <p>INCOME</p>
-        <h3 id="total-income">₹0.00</h3>
-      </div>
-      <div class="stat-box">
-        <p>EXPENSES</p>
-        <h3 id="total-expense">₹0.00</h3>
-      </div>
-    </div>
-
-    <div class="budget-velocity-wrapper" id="budget-velocity-tracker" style="display: none;">
-      <div class="velocity-status-container">
-        <span id="velocity-title-label">BUDGET VELOCITY LIMIT</span>
-        <span id="velocity-percentage-label">0% SPENT</span>
-      </div>
-      <div class="velocity-track-bar">
-        <div class="velocity-fill-bar" id="velocity-progress-bar-fill"></div>
-      </div>
-    </div>
-  </div>
-
-  <div id="shared-time-filters" style="display: none; margin-bottom: 20px;">
-    <div class="tabs">
-      <div class="tab active" onclick="switchTab('all', this)">All Time</div>
-      <div class="tab" onclick="switchTab('daily', this)">Daily</div>
-      <div class="tab" onclick="switchTab('weekly', this)">Weekly</div>
-      <div class="tab" onclick="switchTab('monthly', this)">Monthly</div>
-      <div class="tab" onclick="switchTab('custom', this)">Custom</div>
-    </div>
-
-    <div class="period-navigation-bar" id="period-nav-container" style="display: none;">
-      <button class="period-nav-btn" style="display: flex; align-items: center; gap: 4px;" onclick="adjustPeriodOffset(-1)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg> Prev
-      </button>
-      <span id="period-display-label">Current Period Boundaries</span>
-      <button class="period-nav-btn" style="display: flex; align-items: center; gap: 4px;" onclick="adjustPeriodOffset(1)">
-        Next <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </button>
-    </div>
-
-    <div class="search-box" id="custom-range-container" style="display: none; margin-bottom: 0;">
-      <div class="range-inputs">
-        <div>
-          <label>Start Date</label>
-          <input type="date" id="start-date" onchange="applyFilters()">
+    <div class="balance-card">
+        <div style="display: flex; justify-content: center; align-items: center; gap: 8px;">
+            <span class="balance-title">Total Balance</span>
+            <button id="privacy-toggle-btn" onclick="togglePrivacyMode()" style="background: transparent; border: none; padding: 0; margin: 0; box-shadow: none; font-size: 1rem; width: auto; color: rgba(255,255,255,0.8); cursor: pointer; display: flex; align-items: center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
         </div>
-        <div>
-          <label>End Date</label>
-          <input type="date" id="end-date" onchange="applyFilters()">
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="view-home" class="view-panel active-view">
-    
-    <div class="reconcile-view-card" id="reconcile-status-widget">
-      <h4>
-        <span id="config-card-header-title" style="display: flex; align-items: center; gap: 8px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Monthly Budget Setup
-        </span> 
-        <button class="inline-edit-action-link" id="dashboard-config-toggle-btn" style="display: flex; align-items: center; gap: 4px;" onclick="toggleDashboardConfigPanel()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit
-        </button>
-      </h4>
-      
-      <div id="dashboard-config-display-sheet">
-        <div class="reconcile-row">
-          <span style="color: var(--text-muted);">Cycle Start Day:</span>
-          <span id="rec-cycle-label" style="font-weight:bold;">1st of the Month</span>
-        </div>
-        <div class="reconcile-row">
-          <span style="color: var(--text-muted);">Target Budget Limit:</span>
-          <span id="rec-budget-label" style="font-weight:bold; color: var(--primary);">Not Configured</span>
-        </div>
-        <div class="reconcile-row">
-          <span style="color: var(--text-muted);">Opening Statement Balance:</span>
-          <span id="rec-op-label">₹0.00</span>
-        </div>
-        <div class="reconcile-row">
-          <span style="color: var(--text-muted);">Target Closing Balance:</span>
-          <span id="rec-cl-label">₹0.00</span>
-        </div>
-        <div class="reconcile-row" style="border-top: 1px dotted var(--border); padding-top: 6px; margin-top: 6px; font-weight: bold;">
-          <span id="rec-diff-title">Difference:</span>
-          <span id="rec-diff-label">₹0.00</span>
-        </div>
-      </div>
-
-      <div class="dashboard-config-fields-block" id="dashboard-config-fields-sheet" style="display:none; margin-top:4px;">
-        <div style="margin-bottom:10px;">
-          <label>Monthly Cycle Starting Day (1-31)</label>
-          <input type="number" id="dash-cycle-day-input" min="1" max="31" placeholder="e.g. 1" style="width:100%;">
-        </div>
-        <div style="margin-bottom:10px;">
-          <label>Hard Monthly Budget Limit (Optional)</label>
-          <input type="text" id="dash-budget-limit-input" placeholder="e.g. 20,000" oninput="maskInputToIndianCommas(this)" style="width:100%;">
-        </div>
-        <div style="margin-bottom:10px;">
-          <label>Account Opening Statement Cash</label>
-          <input type="text" id="dash-op-bal-input" placeholder="e.g. 15,000.00" oninput="maskInputToIndianCommas(this)" style="width:100%;">
-        </div>
-        <div style="margin-bottom:12px;">
-          <label>Target Bank Statement Close (Optional)</label>
-          <input type="text" id="dash-cl-bal-input" placeholder="e.g. 20,000.00" oninput="maskInputToIndianCommas(this)" style="width:100%;">
-        </div>
-        <button onclick="saveDashboardCycleAndBaselineConfig()" style="background: var(--primary); color: white; padding: 12px; border-radius: 10px; width:100%; font-weight:bold;">Save Configuration</button>
-      </div>
-    </div>
-
-    <div class="breakdown-box">
-      <h4 style="display: flex; align-items: center; gap: 8px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg> Where Your Money Goes
-      </h4>
-      <div id="breakdown-list"></div>
-    </div>
-  </div>
-
-  <div id="view-logs" class="view-panel">
-    
-    <div class="filtered-summary-strip" id="filtered-totals-strip">
-      <div class="filtered-stat">
-        <small>Filtered Bal</small>
-        <span id="filtered-balance">₹0.00</span>
-      </div>
-      <div class="filtered-stat">
-        <small>Income</small>
-        <span id="filtered-inc" class="amt-inc">₹0.00</span>
-      </div>
-      <div class="filtered-stat">
-        <small>Expenses</small>
-        <span id="filtered-exp" class="amt-exp">₹0.00</span>
-      </div>
-    </div>
-
-    <button class="btn-secondary-action" style="margin-bottom:16px; border-style:solid; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="triggerDynamicPeriodFinancialReport()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Generate Monthly Summary Report
-    </button>
-
-    <div class="search-box">
-      <h4 style="display: flex; align-items: center; gap: 8px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Search & Filter
-      </h4>
-      <input type="text" id="search-input" placeholder="Search entries...">
-      
-      <select id="filter-nature" onchange="applyFilters()" style="margin-bottom: 0;">
-        <option value="all">Show All</option>
-        <option value="income">Income</option>
-        <option value="expense">Expenses</option>
-        <option value="save">Savings/Investments</option>
-      </select>
-    </div>
-
-    <div class="action-toolbar" id="toolbar">
-      <span id="toolbar-text">0 items selected</span>
-      <div class="toolbar-buttons">
-        <button class="btn-small btn-edit" onclick="openEditModal()">Edit</button>
-        <button class="btn-small btn-delete" onclick="openDeleteModal()">Delete</button>
-      </div>
-    </div>
-
-    <div class="history-section">
-      <div class="history-header">
-        <h3>History</h3>
-        <label class="select-all-container" id="master-select-label" style="display:none;">
-          <input type="checkbox" id="master-checkbox" onchange="toggleSelectAll(this)">
-          <span>Select All</span>
-        </label>
-      </div>
-      <ul id="list" class="list"></ul>
-      
-      <div id="empty-msg" class="empty-state-premium" style="display:none;">
-        <div class="empty-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
-        </div>
-        <h4>No entries found</h4>
-        <p>You haven't logged any transactions for this period. Clear your filters or add a new entry.</p>
-      </div>
-    </div>
-  </div>
-
-  <div id="view-insights" class="view-panel">
-    
-    <div class="reconcile-view-card" id="goals-section-container" style="margin-bottom: 20px;">
-        <h4 style="display: flex; justify-content: space-between; align-items: center; border-bottom: none; margin-bottom: 12px;">
-            <span style="display: flex; align-items: center; gap: 8px;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--save)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg> 
-                Savings Goals
-            </span>
-            <button onclick="openModal('add-goal-modal')" style="background: var(--save); color: white; border: none; padding: 6px 12px; font-size: 0.75rem; border-radius: 8px; box-shadow: none;">+ New Goal</button>
-        </h4>
-        <div id="goals-list-container" style="display: flex; flex-direction: column; gap: 12px;">
-            <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; margin: 10px 0;">Loading goals...</p>
-        </div>
-    </div>
-    <div class="insights-card" id="insights-card-element">
-      <h4 id="insights-title" style="display: flex; align-items: center; gap: 8px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg> Your Money Insights
-      </h4>
-      <p id="insights-text">Add some income and expenses to see your money tips here.</p>
-    </div>
-
-    <div id="insights-empty-state" class="empty-state-premium" style="display:none; margin-top: 20px;">
-      <div class="empty-icon">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-      </div>
-      <h4>No Insights Yet</h4>
-      <p>Add some income and expenses to unlock your financial analytics.</p>
-    </div>
-
-    <div id="income-expense-comparison" class="breakdown-box" style="display: none; padding: 20px; margin-bottom: 20px;">
-      <h4 style="margin: 0 0 16px 0; border-bottom: none; text-align: center; font-size: 0.95rem;">Cash Flow Ratio</h4>
-      
-      <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; font-weight: 700;">
-        <span style="color: var(--income);">Income: <span id="insight-inc-label">₹0</span></span>
-        <span style="color: var(--expense);">Expense: <span id="insight-exp-label">₹0</span></span>
-      </div>
-      
-      <div style="height: 12px; border-radius: 6px; background: rgba(220, 38, 38, 0.15); display: flex; overflow: hidden; position: relative;">
-        <div id="insight-ratio-bar" style="height: 100%; background: var(--income); width: 50%; transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); border-radius: 6px;"></div>
-      </div>
-      
-      <p id="insight-ratio-text" style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin: 16px 0 0 0; font-weight: 600; line-height: 1.4;"></p>
-    </div>
-
-    <div id="insights-chart-wrapper" class="reconcile-view-card" style="display: none;">
-      <h4 style="text-align: center; border-bottom: none; margin-bottom: 0;">Expense Analytics</h4>
-      <div style="position: relative; height: 300px; width: 100%; margin-top: 10px;">
-        <canvas id="expenseChart"></canvas>
-      </div>
-    </div>
-
-    <div class="breakdown-box" id="insights-detailed-list" style="display: none;"></div>
-
-  </div>
-
-  <div id="view-compare" class="view-panel">
-    <div class="reconcile-view-card">
-      <h4 style="text-align: center; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2h2"></path></svg> Smart Comparison
-      </h4>
-      
-      <div style="margin-bottom: 16px;">
-        <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; margin-bottom: 6px; display: block;">QUICK COMPARE</label>
-        <select id="compare-mode-selector" onchange="if(typeof handleCompareModeChange === 'function') handleCompareModeChange()" style="width: 100%; padding: 12px; border-radius: 8px; font-size: 0.9rem; font-weight: bold;">
-          <option value="month">This Month vs Last Month</option>
-          <option value="week">This Week vs Last Week</option>
-          <option value="day">Today vs Yesterday</option>
-          <option value="custom">Custom Date Range...</option>
-        </select>
-      </div>
-
-      <div id="custom-compare-fields" style="display: none; flex-direction: column; gap: 12px; margin-bottom: 16px;">
-        <div style="background: var(--bg-main); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
-          <label style="font-size: 0.75rem; color: var(--primary); font-weight: bold; margin-bottom: 6px; display: block;">PERIOD 1 (BASE)</label>
-          <div style="display: flex; gap: 8px;">
-             <div style="flex: 1;">
-                 <small style="color: var(--text-muted); font-size: 0.65rem;">Start Date</small>
-                 <input type="date" id="comp-a-start" style="width: 100%; padding: 8px; font-size: 0.8rem; margin: 0;">
-             </div>
-             <div style="flex: 1;">
-                 <small style="color: var(--text-muted); font-size: 0.65rem;">End Date</small>
-                 <input type="date" id="comp-a-end" style="width: 100%; padding: 8px; font-size: 0.8rem; margin: 0;">
-             </div>
-          </div>
+        <h1 id="balance">₹0.00</h1>
+        <div class="stats-row">
+            <div class="stat-box">
+                <p>INCOME</p>
+                <h3 id="total-income">₹0.00</h3>
+            </div>
+            <div class="stat-box">
+                <p>EXPENSES</p>
+                <h3 id="total-expense">₹0.00</h3>
+            </div>
         </div>
 
-        <div style="background: var(--bg-main); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
-          <label style="font-size: 0.75rem; color: var(--expense); font-weight: bold; margin-bottom: 6px; display: block;">PERIOD 2 (COMPARE TO)</label>
-          <div style="display: flex; gap: 8px;">
-             <div style="flex: 1;">
-                 <small style="color: var(--text-muted); font-size: 0.65rem;">Start Date</small>
-                 <input type="date" id="comp-b-start" style="width: 100%; padding: 8px; font-size: 0.8rem; margin: 0;">
-             </div>
-             <div style="flex: 1;">
-                 <small style="color: var(--text-muted); font-size: 0.65rem;">End Date</small>
-                 <input type="date" id="comp-b-end" style="width: 100%; padding: 8px; font-size: 0.8rem; margin: 0;">
-             </div>
-          </div>
+        <div class="budget-velocity-wrapper" id="budget-velocity-tracker" style="display: none;">
+            <div class="velocity-status-container">
+                <span id="velocity-title-label">BUDGET VELOCITY LIMIT</span>
+                <span id="velocity-percentage-label">0% SPENT</span>
+            </div>
+            <div class="velocity-track-bar">
+                <div class="velocity-fill-bar" id="velocity-progress-bar-fill"></div>
+            </div>
         </div>
+    </div>
+
+    <div id="shared-time-filters" style="display: none; margin-bottom: 20px;">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('all', this)">All Time</div>
+            <div class="tab" onclick="switchTab('daily', this)">Daily</div>
+            <div class="tab" onclick="switchTab('weekly', this)">Weekly</div>
+            <div class="tab" onclick="switchTab('monthly', this)">Monthly</div>
+            <div class="tab" onclick="switchTab('custom', this)">Custom</div>
+        </div>
+
+        <div class="period-navigation-bar" id="period-nav-container" style="display: none;">
+            <button class="period-nav-btn" style="display: flex; align-items: center; gap: 4px;" onclick="adjustPeriodOffset(-1)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg> Prev
+            </button>
+            <span id="period-display-label">Current Period Boundaries</span>
+            <button class="period-nav-btn" style="display: flex; align-items: center; gap: 4px;" onclick="adjustPeriodOffset(1)">
+                Next <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+        </div>
+
+        <div class="search-box" id="custom-range-container" style="display: none; margin-bottom: 0;">
+            <div class="range-inputs">
+                <div>
+                    <label>Start Date</label>
+                    <input type="date" id="start-date" onchange="applyFilters()">
+                </div>
+                <div>
+                    <label>End Date</label>
+                    <input type="date" id="end-date" onchange="applyFilters()">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-home" class="view-panel active-view">
+        <div class="reconcile-view-card" id="reconcile-status-widget">
+            <h4>
+                <span id="config-card-header-title" style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Monthly Budget Setup
+                </span> 
+                <button class="inline-edit-action-link" id="dashboard-config-toggle-btn" style="display: flex; align-items: center; gap: 4px;" onclick="toggleDashboardConfigPanel()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit
+                </button>
+            </h4>
+            
+            <div id="dashboard-config-display-sheet">
+                <div class="reconcile-row">
+                    <span style="color: var(--text-muted);">Cycle Start Day:</span>
+                    <span id="rec-cycle-label" style="font-weight:bold;">1st of the Month</span>
+                </div>
+                <div class="reconcile-row">
+                    <span style="color: var(--text-muted);">Target Budget Limit:</span>
+                    <span id="rec-budget-label" style="font-weight:bold; color: var(--primary);">Not Configured</span>
+                </div>
+                <div class="reconcile-row">
+                    <span style="color: var(--text-muted);">Opening Statement Balance:</span>
+                    <span id="rec-op-label">₹0.00</span>
+                </div>
+                <div class="reconcile-row">
+                    <span style="color: var(--text-muted);">Target Closing Balance:</span>
+                    <span id="rec-cl-label">₹0.00</span>
+                </div>
+                <div class="reconcile-row" style="border-top: 1px dotted var(--border); padding-top: 6px; margin-top: 6px; font-weight: bold;">
+                    <span id="rec-diff-title">Difference:</span>
+                    <span id="rec-diff-label">₹0.00</span>
+                </div>
+            </div>
+
+            <div class="dashboard-config-fields-block" id="dashboard-config-fields-sheet" style="display:none; margin-top:4px;">
+                <div style="margin-bottom:10px;">
+                    <label>Monthly Cycle Starting Day (1-31)</label>
+                    <input type="number" id="dash-cycle-day-input" min="1" max="31" placeholder="e.g. 1" style="width:100%;">
+                </div>
+                <div style="margin-bottom:10px;">
+                    <label>Hard Monthly Budget Limit (Optional)</label>
+                    <input type="text" id="dash-budget-limit-input" placeholder="e.g. 20,000" oninput="maskInputToIndianCommas(this)" style="width:100%;">
+                </div>
+                <div style="margin-bottom:10px;">
+                    <label>Account Opening Statement Cash</label>
+                    <input type="text" id="dash-op-bal-input" placeholder="e.g. 15,000.00" oninput="maskInputToIndianCommas(this)" style="width:100%;">
+                </div>
+                <div style="margin-bottom:12px;">
+                    <label>Target Bank Statement Close (Optional)</label>
+                    <input type="text" id="dash-cl-bal-input" placeholder="e.g. 20,000.00" oninput="maskInputToIndianCommas(this)" style="width:100%;">
+                </div>
+                <button onclick="saveDashboardCycleAndBaselineConfig()" style="background: var(--primary); color: white; padding: 12px; border-radius: 10px; width:100%; font-weight:bold;">Save Configuration</button>
+            </div>
+        </div>
+
+        <div class="insights-card" id="insights-card-element">
+            <h4 id="insights-title" style="display: flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg> Your Money Insights
+            </h4>
+            <p id="insights-text">Add some income and expenses to see your money tips here.</p>
+        </div>
+
+        <div class="breakdown-box">
+            <h4 style="display: flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg> Where Your Money Goes
+            </h4>
+            <div id="breakdown-list"></div>
+        </div>
+    </div>
+
+    <div id="view-logs" class="view-panel">
         
-        <button onclick="if(typeof runPeriodComparison === 'function') runPeriodComparison()" style="background: var(--text-main); color: var(--bg-card); width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 4px;">Run Custom Comparison</button>
-      </div>
-    </div>
-
-    <div id="compare-empty-state" class="empty-state-premium" style="display:none; margin-top: 20px;">
-      <div class="empty-icon">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-      </div>
-      <h4>No Data Found</h4>
-      <p>Try selecting different dates or log some transactions.</p>
-    </div>
-
-    <div id="compare-results-container" style="display: none;">
-      
-      <div class="insights-card" id="compare-smart-insights" style="margin-bottom: 20px;"></div>
-
-      <div class="reconcile-view-card" style="margin-bottom: 20px;">
-        <h4 style="text-align: center; border-bottom: none; margin-bottom: 10px;">Visual Breakdown</h4>
-        <div style="position: relative; height: 260px; width: 100%;">
-          <canvas id="compareBarChart"></canvas>
+        <div class="filtered-summary-strip" id="filtered-totals-strip">
+            <div class="filtered-stat">
+                <small>Filtered Bal</small>
+                <span id="filtered-balance">₹0.00</span>
+            </div>
+            <div class="filtered-stat">
+                <small>Income</small>
+                <span id="filtered-inc" class="amt-inc">₹0.00</span>
+            </div>
+            <div class="filtered-stat">
+                <small>Expenses</small>
+                <span id="filtered-exp" class="amt-exp">₹0.00</span>
+            </div>
         </div>
-      </div>
 
-      <div class="breakdown-box" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
-         <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
-            <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: bold;">Metrics</span>
-            <span id="comp-header-a" style="font-size: 0.85rem; font-weight: bold; color: var(--primary);">Period 1</span>
-            <span id="comp-header-b" style="font-size: 0.85rem; font-weight: bold; color: var(--expense);">Period 2</span>
-         </div>
-         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: 600; font-size: 0.9rem;">Total Income</span>
-            <span id="comp-metric-inc-a" class="amt-inc" style="font-weight: bold;">₹0</span>
-            <span id="comp-metric-inc-b" class="amt-inc" style="font-weight: bold;">₹0</span>
-         </div>
-         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: 600; font-size: 0.9rem;">Total Spent</span>
-            <span id="comp-metric-exp-a" class="amt-exp" style="font-weight: bold;">₹0</span>
-            <span id="comp-metric-exp-b" class="amt-exp" style="font-weight: bold;">₹0</span>
-         </div>
-         <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border); padding-top: 8px; margin-top: 4px;">
-            <span style="font-weight: 800; font-size: 0.95rem;">Net Savings</span>
-            <span id="comp-metric-sav-a" style="font-weight: 800; font-size: 0.95rem;">₹0</span>
-            <span id="comp-metric-sav-b" style="font-weight: 800; font-size: 0.95rem;">₹0</span>
-         </div>
-      </div>
+        <button class="btn-secondary-action" style="margin-bottom:16px; border-style:solid; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="triggerDynamicPeriodFinancialReport()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Generate Monthly Summary Report
+        </button>
 
-      <div class="breakdown-box">
-        <h4>Expense Categories Compared</h4>
-        <div id="compare-category-list"></div>
-      </div>
-    </div>
-  </div>
+        <div class="search-box">
+            <h4 style="display: flex; align-items: center; gap: 8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Search & Filter
+            </h4>
+            <input type="text" id="search-input" placeholder="Search entries...">
+            
+            <select id="filter-nature" onchange="applyFilters()" style="margin-bottom: 0;">
+                <option value="all">Show All</option>
+                <option value="income">Income</option>
+                <option value="expense">Expenses</option>
+                <option value="save">Savings/Investments</option>
+            </select>
+        </div>
 
-  <nav class="bottom-nav">
-    <button class="nav-item nav-active" id="nav-btn-home" onclick="switchMainScreen('home')">
-      <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
-      <span>Home</span>
-    </button>
-    <button class="nav-item" id="nav-btn-logs" onclick="switchMainScreen('logs')">
-      <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
-      <span>History</span>
-    </button>
-    
-    <div class="fab-wrapper">
-       <div class="fab-cutout"></div>
-       <button class="fab-add-btn" onclick="openLightningAdd()">
-         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-           <line x1="12" y1="5" x2="12" y2="19"></line>
-           <line x1="5" y1="12" x2="19" y2="12"></line>
-         </svg>
-       </button>
+        <div class="action-toolbar" id="toolbar">
+            <span id="toolbar-text">0 items selected</span>
+            <div class="toolbar-buttons">
+                <button class="btn-small btn-edit" onclick="openEditModal()">Edit</button>
+                <button class="btn-small btn-delete" onclick="openDeleteModal()">Delete</button>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-header">
+                <h3>History</h3>
+                <label class="select-all-container" id="master-select-label" style="display:none;">
+                    <input type="checkbox" id="master-checkbox" onchange="toggleSelectAll(this)">
+                    <span>Select All</span>
+                </label>
+            </div>
+            <ul id="list" class="list"></ul>
+            
+            <div id="empty-msg" class="empty-state-premium" style="display:none;">
+                <div class="empty-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+                </div>
+                <h4>No entries found</h4>
+                <p>You haven't logged any transactions for this period. Clear your filters or add a new entry.</p>
+            </div>
+        </div>
     </div>
 
-    <button class="nav-item" id="nav-btn-insights" onclick="switchMainScreen('insights')">
-      <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></span>
-      <span>Insights</span>
-    </button>
-    <button class="nav-item" id="nav-btn-compare" onclick="switchMainScreen('compare')">
-      <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2h2"></path></svg></span>
-      <span>Compare</span>
-    </button>
-  </nav>
+    <div id="view-insights" class="view-panel">
+        
+        <div class="reconcile-view-card" id="goals-section-container" style="margin-bottom: 20px;">
+            <h4 style="display: flex; justify-content: space-between; align-items: center; border-bottom: none; margin-bottom: 12px;">
+                <span style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--save)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg> 
+                    Savings Goals
+                </span>
+                <button onclick="document.getElementById('add-goal-modal').style.display='flex'" style="background: var(--save); color: white; border: none; padding: 6px 12px; font-size: 0.75rem; border-radius: 8px; box-shadow: none; width: auto; margin: 0;">+ New Goal</button>
+            </h4>
+            <div id="goals-list-container" style="display: flex; flex-direction: column; gap: 12px;">
+                <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; margin: 10px 0;">Loading goals...</p>
+            </div>
+        </div>
+        <div id="insights-empty-state" class="empty-state-premium" style="display:none; margin-top: 20px;">
+            <div class="empty-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            </div>
+            <h4>No Insights Yet</h4>
+            <p>Add some income and expenses to unlock your financial analytics.</p>
+        </div>
 
+        <div id="income-expense-comparison" class="breakdown-box" style="display: none; padding: 20px; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 16px 0; border-bottom: none; text-align: center; font-size: 0.95rem;">Cash Flow Ratio</h4>
+            
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; font-weight: 700;">
+                <span style="color: var(--income);">Income: <span id="insight-inc-label">₹0</span></span>
+                <span style="color: var(--expense);">Expense: <span id="insight-exp-label">₹0</span></span>
+            </div>
+            
+            <div style="height: 12px; border-radius: 6px; background: rgba(220, 38, 38, 0.15); display: flex; overflow: hidden; position: relative;">
+                <div id="insight-ratio-bar" style="height: 100%; background: var(--income); width: 50%; transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); border-radius: 6px;"></div>
+            </div>
+            
+            <p id="insight-ratio-text" style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin: 16px 0 0 0; font-weight: 600; line-height: 1.4;"></p>
+        </div>
+
+        <div id="insights-chart-wrapper" class="reconcile-view-card" style="display: none;">
+            <h4 style="text-align: center; border-bottom: none; margin-bottom: 0;">Expense Analytics</h4>
+            <div style="position: relative; height: 300px; width: 100%; margin-top: 10px;">
+                <canvas id="expenseChart"></canvas>
+            </div>
+        </div>
+
+        <div class="breakdown-box" id="insights-detailed-list" style="display: none;"></div>
+    </div>
+
+    <div id="view-compare" class="view-panel">
+        <div class="reconcile-view-card">
+            <h4 style="text-align: center; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2h2"></path></svg> Smart Comparison
+            </h4>
+            
+            <div style="margin-bottom: 16px;">
+                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; margin-bottom: 6px; display: block;">QUICK COMPARE</label>
+                <select id="compare-mode-selector" onchange="if(typeof handleCompareModeChange === 'function') handleCompareModeChange()" style="width: 100%; padding: 12px; border-radius: 8px; font-size: 0.9rem; font-weight: bold;">
+                    <option value="month">This Month vs Last Month</option>
+                    <option value="week">This Week vs Last Week</option>
+                    <option value="day">Today vs Yesterday</option>
+                    <option value="custom">Custom Date Range...</option>
+                </select>
+            </div>
+
+            <div id="custom-compare-fields" style="display: none; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+                <div style="background: var(--bg-main); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                    <label style="font-size: 0.75rem; color: var(--primary); font-weight: bold; margin-bottom: 6px; display: block;">PERIOD 1 (BASE)</label>
+                    <div style="display: flex; gap: 8px;">
+                         <div style="flex: 1;">
+                                 <small style="color: var(--text-muted); font-size: 0.65rem;">Start Date</small>
+                                 <input type="date" id="comp-a-start" style="width: 100%; padding: 8px; font-size: 0.8rem; margin: 0;">
+                         </div>
+                         <div style="flex: 1;">
+                                 <small style="color: var(--text-muted); font-size: 0.65rem;">End Date</small>
+                                 <input type="date" id="comp-a-end" style="width: 100%; padding: 8px; font-size: 0.8rem; margin: 0;">
+                         </div>
+                    </div>
+                </div>
+
+                <div style="background: var(--bg-main); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                    <label style="font-size: 0.75rem; color: var(--expense); font-weight: bold; margin-bottom: 6px; display: block;">PERIOD 2 (COMPARE TO)</label>
+                    <div style="display: flex; gap: 8px;">
+                         <div style="flex: 1;">
+                                 <small style="color: var(--text-muted); font-size: 0.65rem;">Start Date</small>
+                                 <input type="date" id="comp-b-start" style="width: 100%; padding: 8px; font-size: 0.8rem; margin: 0;">
+                         </div>
+                         <div style="flex: 1;">
+                                 <small style="color: var(--text-muted); font-size: 0.65rem;">End Date</small>
+                                 <input type="date" id="comp-b-end" style="width: 100%; padding: 8px; font-size: 0.8rem; margin: 0;">
+                         </div>
+                    </div>
+                </div>
+                
+                <button onclick="if(typeof runPeriodComparison === 'function') runPeriodComparison()" style="background: var(--text-main); color: var(--bg-card); width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 4px;">Run Custom Comparison</button>
+            </div>
+        </div>
+
+        <div id="compare-empty-state" class="empty-state-premium" style="display:none; margin-top: 20px;">
+            <div class="empty-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            </div>
+            <h4>No Data Found</h4>
+            <p>Try selecting different dates or log some transactions.</p>
+        </div>
+
+        <div id="compare-results-container" style="display: none;">
+            <div class="insights-card" id="compare-smart-insights" style="margin-bottom: 20px;"></div>
+
+            <div class="reconcile-view-card" style="margin-bottom: 20px;">
+                <h4 style="text-align: center; border-bottom: none; margin-bottom: 10px;">Visual Breakdown</h4>
+                <div style="position: relative; height: 260px; width: 100%;">
+                    <canvas id="compareBarChart"></canvas>
+                </div>
+            </div>
+
+            <div class="breakdown-box" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
+                 <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                        <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: bold;">Metrics</span>
+                        <span id="comp-header-a" style="font-size: 0.85rem; font-weight: bold; color: var(--primary);">Period 1</span>
+                        <span id="comp-header-b" style="font-size: 0.85rem; font-weight: bold; color: var(--expense);">Period 2</span>
+                 </div>
+                 <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 600; font-size: 0.9rem;">Total Income</span>
+                        <span id="comp-metric-inc-a" class="amt-inc" style="font-weight: bold;">₹0</span>
+                        <span id="comp-metric-inc-b" class="amt-inc" style="font-weight: bold;">₹0</span>
+                 </div>
+                 <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 600; font-size: 0.9rem;">Total Spent</span>
+                        <span id="comp-metric-exp-a" class="amt-exp" style="font-weight: bold;">₹0</span>
+                        <span id="comp-metric-exp-b" class="amt-exp" style="font-weight: bold;">₹0</span>
+                 </div>
+                 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border); padding-top: 8px; margin-top: 4px;">
+                        <span style="font-weight: 800; font-size: 0.95rem;">Net Savings</span>
+                        <span id="comp-metric-sav-a" style="font-weight: 800; font-size: 0.95rem;">₹0</span>
+                        <span id="comp-metric-sav-b" style="font-weight: 800; font-size: 0.95rem;">₹0</span>
+                 </div>
+            </div>
+
+            <div class="breakdown-box">
+                <h4>Expense Categories Compared</h4>
+                <div id="compare-category-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item nav-active" id="nav-btn-home" onclick="switchMainScreen('home')">
+            <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
+            <span>Home</span>
+        </button>
+        <button class="nav-item" id="nav-btn-logs" onclick="switchMainScreen('logs')">
+            <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
+            <span>History</span>
+        </button>
+        
+        <div class="fab-wrapper">
+             <div class="fab-cutout"></div>
+             <button class="fab-add-btn" onclick="openLightningAdd()">
+                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                     <line x1="12" y1="5" x2="12" y2="19"></line>
+                     <line x1="5" y1="12" x2="19" y2="12"></line>
+                 </svg>
+             </button>
+        </div>
+
+        <button class="nav-item" id="nav-btn-insights" onclick="switchMainScreen('insights')">
+            <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></span>
+            <span>Insights</span>
+        </button>
+        <button class="nav-item" id="nav-btn-compare" onclick="switchMainScreen('compare')">
+            <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2h2"></path></svg></span>
+            <span>Compare</span>
+        </button>
+    </nav>
 </div>
 
-
 <div id="lightning-add-modal" style="display: none; z-index: 100000; overflow: hidden; height: 100dvh; width: 100vw; position: fixed; top: 0; left: 0; background: var(--bg-main); padding-bottom: env(safe-area-inset-bottom, 20px);">
-  <div class="settings-page-content" style="display: flex; flex-direction: column; height: 100%; max-width: 500px; margin: 0 auto; padding: 20px;">
-    
-    <div class="settings-page-header" style="justify-content: flex-start; gap: 8px; margin-top: 0; margin-bottom: 12px; padding-bottom: 10px;">
-      <h2 style="font-size: 1.4rem; display: flex; align-items: center; gap: 8px; margin: 0; flex: 1;">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Quick Add
-      </h2>
-      <button class="btn-close-page" style="width: 36px; height: 36px; font-size: 1.1rem;" onclick="closeModal('lightning-add-modal')">✕</button>
-    </div>
+    <div class="settings-page-content" style="display: flex; flex-direction: column; height: 100%; max-width: 500px; margin: 0 auto; padding: 20px;">
+        
+        <div class="settings-page-header" style="justify-content: flex-start; gap: 8px; margin-top: 0; margin-bottom: 12px; padding-bottom: 10px;">
+            <h2 style="font-size: 1.4rem; display: flex; align-items: center; gap: 8px; margin: 0; flex: 1;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Quick Add
+            </h2>
+            <button class="btn-close-page" style="width: 36px; height: 36px; font-size: 1.1rem;" onclick="closeModal('lightning-add-modal')">✕</button>
+        </div>
 
-    <div class="nature-segmented-control" id="lightning-nature-slider" style="margin-bottom: 14px; flex-shrink: 0; padding: 3px;">
-      <div class="segment-slider-highlight"></div>
-      <button class="segment-btn segment-btn-expense" style="padding: 8px 0;" onclick="setLightningNature('expense')">Expense</button>
-      <button class="segment-btn segment-btn-income" style="padding: 8px 0;" onclick="setLightningNature('income')">Income</button>
-      <button class="segment-btn segment-btn-save" style="padding: 8px 0;" onclick="setLightningNature('save')">Save</button>
-    </div>
+        <div class="nature-segmented-control" id="lightning-nature-slider" style="margin-bottom: 14px; flex-shrink: 0; padding: 3px;">
+            <div class="segment-slider-highlight"></div>
+            <button class="segment-btn segment-btn-expense" style="padding: 8px 0;" onclick="setLightningNature('expense')">Expense</button>
+            <button class="segment-btn segment-btn-income" style="padding: 8px 0;" onclick="setLightningNature('income')">Income</button>
+            <button class="segment-btn segment-btn-save" style="padding: 8px 0;" onclick="setLightningNature('save')">Save</button>
+        </div>
 
-    <div style="text-align: center; margin-bottom: 4px; flex-shrink: 0;">
-      <div style="font-size: 2.8rem; font-weight: 800; color: var(--expense);" id="lightning-amount-display">₹0</div>
-    </div>
+        <div style="text-align: center; margin-bottom: 4px; flex-shrink: 0;">
+            <div style="font-size: 2.8rem; font-weight: 800; color: var(--expense);" id="lightning-amount-display">₹0</div>
+        </div>
 
-    <input type="text" id="lightning-desc" placeholder="What was this for? (Optional)" style="text-align: center; font-size: 0.9rem; border: none; background: transparent; border-bottom: 2px dashed var(--border); border-radius: 0; box-shadow: none; margin-bottom: 14px; width: 100%; padding-bottom: 6px; flex-shrink: 0;">
+        <input type="text" id="lightning-desc" placeholder="What was this for? (Optional)" style="text-align: center; font-size: 0.9rem; border: none; background: transparent; border-bottom: 2px dashed var(--border); border-radius: 0; box-shadow: none; margin-bottom: 14px; width: 100%; padding-bottom: 6px; flex-shrink: 0;">
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0;">
-      <label style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted);">SELECT CATEGORY</label>
-      <button class="inline-edit-action-link" style="display: flex; align-items: center; gap: 4px;" onclick="openCategoryManagerModal()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Manage Tags
-      </button>
-    </div>
-    
-    <div id="lightning-category-chips" style="flex-grow: 1; overflow-y: auto; align-content: flex-start; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 12px; padding-bottom: 10px;">
-    </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0;">
+            <label style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted);">SELECT CATEGORY</label>
+            <button class="inline-edit-action-link" style="display: flex; align-items: center; gap: 4px;" onclick="openCategoryManagerModal()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Manage Tags
+            </button>
+        </div>
+        
+        <div id="lightning-category-chips" style="flex-grow: 1; overflow-y: auto; align-content: flex-start; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 12px; padding-bottom: 10px;">
+        </div>
 
-    <div id="lightning-goal-link-container" style="display: none; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-shrink: 0;">
-      <label style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted);">LINK TO GOAL</label>
-      <select id="lightning-linked-goal" style="width: 60%; padding: 8px 12px; margin-bottom: 0; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);">
-        <option value="" selected>No Goal Linked (Optional)</option>
-        </select>
-    </div>
+        <div id="lightning-goal-link-container" style="display: none; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-shrink: 0;">
+            <label style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted);">LINK TO GOAL</label>
+            <select id="lightning-linked-goal" style="width: 60%; padding: 8px 12px; margin-bottom: 0; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);">
+                <option value="" selected>No Goal Linked (Optional)</option>
+            </select>
+        </div>
 
-    <div class="numpad" style="margin: 0 auto 12px auto; justify-content: center; gap: 12px; max-width: 320px; width: 100%; flex-shrink: 0;">
-      <div class="num-key" onclick="handleLightningNumpad('1')">1</div>
-      <div class="num-key" onclick="handleLightningNumpad('2')">2</div>
-      <div class="num-key" onclick="handleLightningNumpad('3')">3</div>
-      <div class="num-key" onclick="handleLightningNumpad('4')">4</div>
-      <div class="num-key" onclick="handleLightningNumpad('5')">5</div>
-      <div class="num-key" onclick="handleLightningNumpad('6')">6</div>
-      <div class="num-key" onclick="handleLightningNumpad('7')">7</div>
-      <div class="num-key" onclick="handleLightningNumpad('8')">8</div>
-      <div class="num-key" onclick="handleLightningNumpad('9')">9</div>
-      <div class="num-key" onclick="handleLightningNumpad('.')">.</div>
-      <div class="num-key" onclick="handleLightningNumpad('0')">0</div>
-      <div class="num-key" style="background: transparent; border: none; box-shadow: none; color: var(--expense); display: flex; align-items: center; justify-content: center;" onclick="handleLightningBackspace()">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
-          <line x1="18" y1="9" x2="12" y2="15"></line>
-          <line x1="12" y1="9" x2="18" y2="15"></line>
-        </svg>
-      </div>
-    </div>
+        <div class="numpad" style="margin: 0 auto 12px auto; justify-content: center; gap: 12px; max-width: 320px; width: 100%; flex-shrink: 0;">
+            <div class="num-key" onclick="handleLightningNumpad('1')">1</div>
+            <div class="num-key" onclick="handleLightningNumpad('2')">2</div>
+            <div class="num-key" onclick="handleLightningNumpad('3')">3</div>
+            <div class="num-key" onclick="handleLightningNumpad('4')">4</div>
+            <div class="num-key" onclick="handleLightningNumpad('5')">5</div>
+            <div class="num-key" onclick="handleLightningNumpad('6')">6</div>
+            <div class="num-key" onclick="handleLightningNumpad('7')">7</div>
+            <div class="num-key" onclick="handleLightningNumpad('8')">8</div>
+            <div class="num-key" onclick="handleLightningNumpad('9')">9</div>
+            <div class="num-key" onclick="handleLightningNumpad('.')">.</div>
+            <div class="num-key" onclick="handleLightningNumpad('0')">0</div>
+            <div class="num-key" style="background: transparent; border: none; box-shadow: none; color: var(--expense); display: flex; align-items: center; justify-content: center;" onclick="handleLightningBackspace()">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+                    <line x1="18" y1="9" x2="12" y2="15"></line>
+                    <line x1="12" y1="9" x2="18" y2="15"></line>
+                </svg>
+            </div>
+        </div>
 
-    <button onclick="if(typeof executeLightningSave === 'function') executeLightningSave()" style="width: 100%; padding: 14px; font-size: 1.1rem; font-weight: 800; background: var(--primary); color: white; border: none; border-radius: 14px; box-shadow: 0 4px 14px rgba(46, 125, 50, 0.4); flex-shrink: 0;">Save Transaction</button>
-  
-  </div>
+        <button onclick="if(typeof executeLightningSave === 'function') executeLightningSave()" style="width: 100%; padding: 14px; font-size: 1.1rem; font-weight: 800; background: var(--primary); color: white; border: none; border-radius: 14px; box-shadow: 0 4px 14px rgba(46, 125, 50, 0.4); flex-shrink: 0;">Save Transaction</button>
+    </div>
 </div>
 
 <div class="modal-overlay" id="category-manager-modal" style="display: none; z-index: 100005;">
-  <div class="modal-card" style="text-align: left; max-width:420px;">
-    <h3 style="text-align:center; display: flex; align-items: center; justify-content: center; gap: 8px;">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg> Custom Tags
-    </h3>
-    <p style="text-align:center; margin-bottom:12px;">Add or delete custom expense categories.</p>
-    
-    <div style="display:flex; gap:6px; margin-bottom:14px;">
-      <input type="text" id="new-custom-tag-input" placeholder="e.g. 🧘 Health, 🎓 Fees" style="margin-bottom:0; flex:2;">
-      <button onclick="executeSaveNewCustomCategoryTag()" style="width:auto; padding:0 20px; margin-bottom:0; flex:0.8;">Add Tag</button>
-    </div>
+    <div class="modal-card" style="text-align: left; max-width:420px;">
+        <h3 style="text-align:center; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg> Custom Tags
+        </h3>
+        <p style="text-align:center; margin-bottom:12px;">Add or delete custom expense categories.</p>
+        
+        <div style="display:flex; gap:6px; margin-bottom:14px;">
+            <input type="text" id="new-custom-tag-input" placeholder="e.g. 🧘 Health, 🎓 Fees" style="margin-bottom:0; flex:2;">
+            <button onclick="executeSaveNewCustomCategoryTag()" style="width:auto; padding:0 20px; margin-bottom:0; flex:0.8;">Add Tag</button>
+        </div>
 
-    <label style="font-size:0.72rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:6px; letter-spacing:0.5px;">ACTIVE WORKSPACE TAGS</label>
-    <div id="category-tags-list-container" style="max-height:180px; overflow-y:auto; border:1px solid var(--border); border-radius:12px; padding:8px; background:var(--bg-main);"></div>
+        <label style="font-size:0.72rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:6px; letter-spacing:0.5px;">ACTIVE WORKSPACE TAGS</label>
+        <div id="category-tags-list-container" style="max-height:180px; overflow-y:auto; border:1px solid var(--border); border-radius:12px; padding:8px; background:var(--bg-main);"></div>
 
-    <div class="modal-footer" style="margin-top:14px;">
-      <button class="btn-cancel" onclick="closeModal('category-manager-modal')">Close</button>
+        <div class="modal-footer" style="margin-top:14px;">
+            <button class="btn-cancel" onclick="closeModal('category-manager-modal')">Close</button>
+        </div>
     </div>
-  </div>
 </div>
 
 <div class="modal-overlay" id="add-goal-modal" style="display: none; z-index: 100005;">
-  <div class="modal-card" style="text-align: left; border-top: 4px solid var(--save);">
-    <h3 style="text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--save);">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg> 
-      New Savings Goal
-    </h3>
-    <p style="text-align: center; margin-bottom: 16px;">Set a target and track your progress.</p>
-    
-    <input type="text" id="goal-title-input" placeholder="Goal Name (e.g., New Laptop, Goa Trip)" style="width: 100%; margin-bottom: 12px; padding: 12px;">
-    <input type="number" id="goal-target-input" placeholder="Target Amount (₹)" style="width: 100%; margin-bottom: 12px; padding: 12px;">
-    
-    <div style="margin-bottom: 16px;">
-        <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; margin-bottom: 6px; display: block;">TARGET DATE (OPTIONAL)</label>
-        <input type="date" id="goal-deadline-input" style="width: 100%; margin-bottom: 0; padding: 12px;">
-    </div>
+    <div class="modal-card" style="text-align: left; border-top: 4px solid var(--save);">
+        <h3 style="text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--save);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg> 
+            New Savings Goal
+        </h3>
+        <p style="text-align: center; margin-bottom: 16px;">Set a target and track your progress.</p>
+        
+        <input type="text" id="goal-title-input" placeholder="Goal Name (e.g., New Laptop, Goa Trip)" style="width: 100%; margin-bottom: 12px; padding: 12px;">
+        
+        <input type="text" id="goal-target-input" placeholder="Target Amount (₹)" style="width: 100%; margin-bottom: 12px; padding: 12px;" oninput="maskInputToIndianCommas(this)">
+        
+        <div style="margin-bottom: 16px;">
+            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; margin-bottom: 6px; display: block;">TARGET DATE (OPTIONAL)</label>
+            <input type="date" id="goal-deadline-input" style="width: 100%; margin-bottom: 0; padding: 12px;">
+        </div>
 
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal('add-goal-modal')">Cancel</button>
-      <button style="background: var(--save); color: white;" onclick="if(typeof saveNewGoal === 'function') saveNewGoal()">Save Goal</button>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal('add-goal-modal')">Cancel</button>
+            <button style="background: var(--save); color: white;" onclick="if(typeof saveNewGoal === 'function') saveNewGoal()">Save Goal</button>
+        </div>
     </div>
-  </div>
 </div>
 
 <div class="modal-overlay" id="financial-report-modal" style="display: none; z-index: 100005;">
-  <div class="modal-card" style="text-align: left; max-width:440px; border-top:4px solid var(--primary);">
-    <h3 style="text-align:center; margin-bottom:4px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg> Active Period Summary Report
-    </h3>
-    <p style="text-align:center; font-size:0.78rem; margin-bottom:16px;" id="report-window-date-bounds-label">Timeline Boundaries</p>
-    
-    <div id="financial-report-metrics-sheet-body"></div>
+    <div class="modal-card" style="text-align: left; max-width:440px; border-top:4px solid var(--primary);">
+        <h3 style="text-align:center; margin-bottom:4px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg> Active Period Summary Report
+        </h3>
+        <p style="text-align:center; font-size:0.78rem; margin-bottom:16px;" id="report-window-date-bounds-label">Timeline Boundaries</p>
+        
+        <div id="financial-report-metrics-sheet-body"></div>
 
-    <div class="modal-footer" style="margin-top:16px;">
-      <button style="background:var(--text-main); color:var(--bg-card);" onclick="closeModal('financial-report-modal')">Close Statement</button>
+        <div class="modal-footer" style="margin-top:16px;">
+            <button style="background:var(--text-main); color:var(--bg-card);" onclick="closeModal('financial-report-modal')">Close Statement</button>
+        </div>
     </div>
-  </div>
 </div>
 
 <div class="dedicated-page-overlay" id="preferences-modal" style="display: none; z-index: 10000;">
-  <div class="settings-page-content">
-      
-    <div class="settings-page-header" style="justify-content: flex-start; gap: 8px;">
-      <h2 style="display: flex; align-items: center; gap: 8px; margin: 0; flex: 1;">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Settings
-      </h2>
-      <button class="btn-close-page" onclick="closeModal('preferences-modal')">✕</button>
-    </div>
-
-    <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px; font-weight: 500;">Manage your app configuration here.</p>
-
-    <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
-      <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; justify-content: flex-start; color: var(--text-main); border-bottom: none;">
-        <span style="display: flex; align-items: center; gap: 8px; flex: 1;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> App Lock (PIN)
-        </span>
-        <label class="toggle-container" style="margin:0;">
-          <div class="switch">
-            <input type="checkbox" id="pin-enable-checkbox" onchange="togglePinSetupMode(this)">
-            <span class="slider"></span>
-          </div>
-        </label>
-      </h4>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin:0;">Require a 4-digit passcode to open FinWise.</p>
-    </div>
-
-    <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
-      <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: var(--text-main); border-bottom: none; display: flex; align-items: center; gap: 8px; justify-content: flex-start;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Upcoming Bills & EMIs
-      </h4>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Automate your EMIs and subscriptions.</p>
-
-      <div style="background: var(--bg-main); padding: 14px; border-radius: 12px; border: 1px solid var(--border);">
-        <input type="text" id="ob-title" placeholder="Title (e.g. Netflix, Car EMI)" style="margin-bottom: 10px; width: 100%; box-sizing: border-box; padding: 12px;">
-        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-          <input type="number" id="ob-amount" placeholder="Amount (₹)" style="margin-bottom: 0; flex: 1; padding: 12px;">
-          <input type="number" id="ob-date" placeholder="Day (1-31)" min="1" max="31" style="margin-bottom: 0; flex: 1; padding: 12px;">
+    <div class="settings-page-content">
+        <div class="settings-page-header" style="justify-content: flex-start; gap: 8px;">
+            <h2 style="display: flex; align-items: center; gap: 8px; margin: 0; flex: 1;">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Settings
+            </h2>
+            <button class="btn-close-page" onclick="closeModal('preferences-modal')">✕</button>
         </div>
-        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-          <select id="ob-type" onchange="toggleEndDateField()" style="margin-bottom: 0; flex: 1; padding: 12px;">
-            <option value="Subscription">Subscription</option>
-            <option value="EMI">EMI (Fixed Term)</option>
-          </select>
-          <select id="ob-category" style="margin-bottom: 0; flex: 1; padding: 12px;"></select>
+
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px; font-weight: 500;">Manage your app configuration here.</p>
+
+        <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
+            <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; justify-content: flex-start; color: var(--text-main); border-bottom: none;">
+                <span style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> App Lock (PIN)
+                </span>
+                <label class="toggle-container" style="margin:0;">
+                    <div class="switch">
+                        <input type="checkbox" id="pin-enable-checkbox" onchange="togglePinSetupMode(this)">
+                        <span class="slider"></span>
+                    </div>
+                </label>
+            </h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin:0;">Require a 4-digit passcode to open FinWise.</p>
         </div>
-        
-        <div id="emi-details-container" style="display: none; flex-direction: column; gap: 8px; margin-bottom: 10px; background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px dashed var(--border);">
-          <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">LOAN DETAILS (EMI ONLY)</label>
-          <input type="number" id="ob-principal" placeholder="Outstanding Principal (₹)" style="margin-bottom: 0; width: 100%; padding: 12px;">
-          <div style="display: flex; gap: 8px;">
-            <input type="number" id="ob-interest" placeholder="Interest Rate (%)" step="0.1" style="margin-bottom: 0; flex: 1; padding: 12px;">
-            <div style="flex: 1; position: relative;">
-               <input type="date" id="ob-end-date" style="width: 100%; padding: 12px; margin-bottom: 0;" title="Loan End Date">
+
+        <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
+            <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: var(--text-main); border-bottom: none; display: flex; align-items: center; gap: 8px; justify-content: flex-start;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Upcoming Bills & EMIs
+            </h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Automate your EMIs and subscriptions.</p>
+
+            <div style="background: var(--bg-main); padding: 14px; border-radius: 12px; border: 1px solid var(--border);">
+                <input type="text" id="ob-title" placeholder="Title (e.g. Netflix, Car EMI)" style="margin-bottom: 10px; width: 100%; box-sizing: border-box; padding: 12px;">
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <input type="text" id="ob-amount" placeholder="Amount (₹)" style="margin-bottom: 0; flex: 1; padding: 12px;" oninput="maskInputToIndianCommas(this)">
+                    <input type="number" id="ob-date" placeholder="Day (1-31)" min="1" max="31" style="margin-bottom: 0; flex: 1; padding: 12px;">
+                </div>
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <select id="ob-type" onchange="toggleEndDateField()" style="margin-bottom: 0; flex: 1; padding: 12px;">
+                        <option value="Subscription">Subscription</option>
+                        <option value="EMI">EMI (Fixed Term)</option>
+                    </select>
+                    <select id="ob-category" style="margin-bottom: 0; flex: 1; padding: 12px;"></select>
+                </div>
+                
+                <div id="emi-details-container" style="display: none; flex-direction: column; gap: 8px; margin-bottom: 10px; background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px dashed var(--border);">
+                    <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">LOAN DETAILS (EMI ONLY)</label>
+                    <input type="text" id="ob-principal" placeholder="Outstanding Principal (₹)" style="margin-bottom: 0; width: 100%; padding: 12px;" oninput="maskInputToIndianCommas(this)">
+                    <div style="display: flex; gap: 8px;">
+                        <input type="number" id="ob-interest" placeholder="Interest Rate (%)" step="0.1" style="margin-bottom: 0; flex: 1; padding: 12px;">
+                        <div style="flex: 1; position: relative;">
+                             <input type="date" id="ob-end-date" style="width: 100%; padding: 12px; margin-bottom: 0;" title="Loan End Date">
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="executeSaveObligation()" style="background: var(--primary); color: white; width: 100%; box-shadow: none; padding: 14px; border: none; border-radius: 8px;">Save Commitment</button>
             </div>
-          </div>
+
+            <div id="obligations-list" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;"></div>
         </div>
 
-        <button onclick="executeSaveObligation()" style="background: var(--primary); color: white; width: 100%; box-shadow: none; padding: 14px; border: none; border-radius: 8px;">Save Commitment</button>
-      </div>
+        <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
+            <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: var(--text-main); border-bottom: none; display: flex; align-items: center; gap: 8px; justify-content: flex-start;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> Backup & Restore Data
+            </h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Export your transactions to a CSV file or import an existing one.</p>
+            <div style="display: flex; gap: 8px;">
+                <button onclick="exportToCSV()" style="flex: 1; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); margin: 0; box-shadow: none;">Export CSV</button>
 
-      <div id="obligations-list" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
-      </div>
+                <label style="flex: 1; margin: 0; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.95rem; font-weight: 700;">
+                    Import CSV
+                    <input type="file" accept=".csv" onchange="importFromCSV(event)" style="display: none;">
+                </label>
+            </div>
+        </div>
+
+        <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h4 style="margin: 0; font-size: 1.05rem; color: var(--text-main); border-bottom: none;">🕒 Import History</h4>
+                <button onclick="deleteSelectedImports()" style="width: auto; padding: 6px 12px; font-size: 0.75rem; background: var(--expense); color: white; margin: 0; border-radius: 8px; box-shadow: none;">Delete Selected</button>
+            </div>
+            <div id="import-history-list" style="background: var(--bg-main); border-radius: 12px; padding: 10px; border: 1px solid var(--border);"></div>
+        </div>
+
+        <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 40px; border-left: 4px solid var(--expense);">
+            <h4 style="color: #dc2626; margin: 0 0 6px 0; font-size: 1.05rem; border-bottom: none; display: flex; align-items: center; gap: 8px; justify-content: flex-start;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Danger Zone
+            </h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Want to delete all your data and start fresh?</p>
+            <button class="btn-reset-isolated" onclick="openResetModal()">Erase All Data</button>
+        </div>
+
     </div>
-
-    <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
-      <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: var(--text-main); border-bottom: none; display: flex; align-items: center; gap: 8px; justify-content: flex-start;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> Backup & Restore Data
-      </h4>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Export your transactions to a CSV file or import an existing one.</p>
-      <div style="display: flex; gap: 8px;">
-        <button onclick="exportToCSV()" style="flex: 1; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); margin: 0; box-shadow: none;">Export CSV</button>
-
-        <label style="flex: 1; margin: 0; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.95rem; font-weight: 700;">
-          Import CSV
-          <input type="file" accept=".csv" onchange="importFromCSV(event)" style="display: none;">
-        </label>
-      </div>
-    </div>
-
-    <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-        <h4 style="margin: 0; font-size: 1.05rem; color: var(--text-main); border-bottom: none;">🕒 Import History</h4>
-        <button onclick="deleteSelectedImports()" style="width: auto; padding: 6px 12px; font-size: 0.75rem; background: var(--expense); color: white; margin: 0; border-radius: 8px; box-shadow: none;">Delete Selected</button>
-      </div>
-      <div id="import-history-list" style="background: var(--bg-main); border-radius: 12px; padding: 10px; border: 1px solid var(--border);">
-      </div>
-    </div>
-
-    <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 40px; border-left: 4px solid var(--expense);">
-      <h4 style="color: #dc2626; margin: 0 0 6px 0; font-size: 1.05rem; border-bottom: none; display: flex; align-items: center; gap: 8px; justify-content: flex-start;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Danger Zone
-      </h4>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Want to delete all your data and start fresh?</p>
-      <button class="btn-reset-isolated" onclick="openResetModal()">Erase All Data</button>
-    </div>
-
-  </div>
 </div>
 
 <div class="modal-overlay" id="delete-modal" style="display: none; z-index: 100005;">
-  <div class="modal-card" style="border-top: 4px solid var(--expense);">
-    <div class="alert-icon-circle">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="3 6 5 6 21 6"></polyline>
-        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-      </svg>
+    <div class="modal-card" style="border-top: 4px solid var(--expense);">
+        <div class="alert-icon-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+        </div>
+        <h3 style="color: var(--expense);">Delete Entries?</h3>
+        <p id="delete-modal-msg">You are about to delete the selected entries.</p>
+        <input type="text" id="delete-confirm-input" placeholder="Type DELETE here" style="text-align: center; font-weight: bold; letter-spacing: 1px;">
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal('delete-modal')">Cancel</button>
+            <button style="background: var(--expense); color: white;" onclick="confirmBatchDelete()">Delete</button>
+        </div>
     </div>
-    <h3 style="color: var(--expense);">Delete Entries?</h3>
-    <p id="delete-modal-msg">You are about to delete the selected entries.</p>
-    <input type="text" id="delete-confirm-input" placeholder="Type DELETE here" style="text-align: center; font-weight: bold; letter-spacing: 1px;">
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal('delete-modal')">Cancel</button>
-      <button style="background: var(--expense); color: white;" onclick="confirmBatchDelete()">Delete</button>
-    </div>
-  </div>
 </div>
 
 <div class="modal-overlay" id="reset-modal" style="display: none; z-index: 100005;">
-  <div class="modal-card" style="border-top: 4px solid var(--expense);">
-    <div class="alert-icon-circle">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-        <line x1="12" y1="9" x2="12" y2="13"></line>
-        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-      </svg>
+    <div class="modal-card" style="border-top: 4px solid var(--expense);">
+        <div class="alert-icon-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+        </div>
+        <h3 style="color: var(--expense);">Erase All Data?</h3>
+        <p>This permanently deletes <strong>EVERY ENTRY</strong>. You <strong>CANNOT GET THIS BACK</strong>.</p>
+        <input type="text" id="reset-confirm-input" placeholder="Type RESET here" style="text-align: center; font-weight: bold; letter-spacing: 1px;">
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal('reset-modal')">Cancel</button>
+            <button style="background: var(--expense); color: white;" onclick="confirmSystemReset()">Erase Everything</button>
+        </div>
     </div>
-    <h3 style="color: var(--expense);">Erase All Data?</h3>
-    <p>This permanently deletes <strong>EVERY ENTRY</strong>. You <strong>CANNOT GET THIS BACK</strong>.</p>
-    <input type="text" id="reset-confirm-input" placeholder="Type RESET here" style="text-align: center; font-weight: bold; letter-spacing: 1px;">
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal('reset-modal')">Cancel</button>
-      <button style="background: var(--expense); color: white;" onclick="confirmSystemReset()">Erase Everything</button>
-    </div>
-  </div>
 </div>
 
 <div class="modal-overlay" id="edit-modal" style="display: none; z-index: 100005;">
-  <div class="modal-card" style="text-align: left;">
-    <h3 style="text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit Entry
-    </h3>
-    <p id="edit-modal-desc" style="text-align: center;">Update your entry details.</p>
-    
-    <div id="single-edit-fields" style="width: 100%;">
-      <input type="text" id="edit-text" placeholder="Description">
-      <input type="text" id="edit-amount" placeholder="0.00" oninput="maskInputToIndianCommas(this)">
-    </div>
+    <div class="modal-card" style="text-align: left;">
+        <h3 style="text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit Entry
+        </h3>
+        <p id="edit-modal-desc" style="text-align: center;">Update your entry details.</p>
+        
+        <div id="single-edit-fields" style="width: 100%;">
+            <input type="text" id="edit-text" placeholder="Description">
+            <input type="text" id="edit-amount" placeholder="0.00" oninput="maskInputToIndianCommas(this)">
+        </div>
 
-    <select id="edit-type" onchange="toggleCategoryInput('edit')" style="width: 100%;">
-      <option value="expense">Expense</option>
-      <option value="income">Income</option>
-    </select>
+        <select id="edit-type" onchange="toggleCategoryInput('edit')" style="width: 100%;">
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+        </select>
 
-    <div id="edit-expense-cat-container" style="width: 100%;">
-      <select id="edit-expense-category"></select>
-    </div>
+        <div id="edit-expense-cat-container" style="width: 100%;">
+            <select id="edit-expense-category"></select>
+        </div>
 
-    <div id="edit-income-cat-container" style="width: 100%;">
-      <input type="text" id="edit-income-category" placeholder="Where did this come from? (e.g., Salary)">
-    </div>
+        <div id="edit-income-cat-container" style="width: 100%;">
+            <input type="text" id="edit-income-category" placeholder="Where did this come from? (e.g., Salary)">
+        </div>
 
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal('edit-modal')">Cancel</button>
-      <button style="background: var(--primary); color: white;" onclick="saveBatchEdit()">Save Changes</button>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal('edit-modal')">Cancel</button>
+            <button style="background: var(--primary); color: white;" onclick="saveBatchEdit()">Save Changes</button>
+        </div>
     </div>
-  </div>
 </div>
 
 <div class="modal-overlay" id="app-alert-modal" style="display: none; z-index: 100010;">
-  <div class="modal-card" style="border-top: 4px solid var(--expense);">
-    <div class="alert-icon-circle">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="8" x2="12" y2="12"></line>
-        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-      </svg>
+    <div class="modal-card" style="border-top: 4px solid var(--expense);">
+        <div class="alert-icon-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+        </div>
+        <h3 style="color: var(--expense);">Wait a moment...</h3>
+        <p id="app-alert-message"></p>
+        <div class="modal-footer">
+            <button style="background: var(--text-main); color: var(--bg-card);" onclick="closeModal('app-alert-modal')">Okay</button>
+        </div>
     </div>
-    <h3 style="color: var(--expense);">Wait a moment...</h3>
-    <p id="app-alert-message"></p>
-    <div class="modal-footer">
-      <button style="background: var(--text-main); color: var(--bg-card);" onclick="closeModal('app-alert-modal')">Okay</button>
-    </div>
-  </div>
 </div>
 
 <div class="modal-overlay" id="gatekeeper-modal" style="display: none; z-index: 100005;">
-  <div class="modal-card" style="text-align: left; border-top: 4px solid var(--primary); width: 100%; max-width: 400px;">
-    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-      <span style="color: var(--primary);">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-      </span>
-      <h3 style="margin: 0; color: var(--text-main);">Payments Due</h3>
-    </div>
-    <p style="margin-bottom: 16px; font-size: 0.85rem;">You have upcoming bills & EMIs due. Have you processed these yet?</p>
-    
-    <div id="pending-obligations-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
-    </div>
+    <div class="modal-card" style="text-align: left; border-top: 4px solid var(--primary); width: 100%; max-width: 400px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+            <span style="color: var(--primary);">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            </span>
+            <h3 style="margin: 0; color: var(--text-main);">Payments Due</h3>
+        </div>
+        <p style="margin-bottom: 16px; font-size: 0.85rem;">You have upcoming bills & EMIs due. Have you processed these yet?</p>
+        
+        <div id="pending-obligations-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;"></div>
 
-    <div class="modal-footer">
-      <button style="background: var(--text-main); color: var(--bg-card); width: 100%;" onclick="document.getElementById('gatekeeper-modal').style.display='none'">Close for now</button>
+        <div class="modal-footer">
+            <button style="background: var(--text-main); color: var(--bg-card); width: 100%;" onclick="document.getElementById('gatekeeper-modal').style.display='none'">Close for now</button>
+        </div>
     </div>
-  </div>
 </div>
 
 <script src="./js/goals.js"></script>
