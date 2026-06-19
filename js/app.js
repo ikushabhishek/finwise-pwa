@@ -70,7 +70,6 @@ function toggleWealthView(view) {
         }
     }
     
-    // Refresh the Master Card using existing data
     if (typeof fetchAndDisplay === 'function') fetchAndDisplay();
 }
 
@@ -704,13 +703,64 @@ function applyFilters() {
 // 8. LIST ACTIONS & SUMMARY RENDERING
 // ==========================================
 
+function updateMasterBalanceCard(allTx, allObs) {
+    let totalIncome = 0;
+    let totalExpense = 0;
+    let totalSaved = 0;
+
+    allTx.forEach(t => {
+        const amt = parseFloat(t.amount);
+        if (t.type === 'income') totalIncome += amt;
+        if (t.type === 'expense') totalExpense += Math.abs(amt);
+        if (t.type === 'save') totalSaved += Math.abs(amt);
+    });
+
+    const liquidBalance = totalIncome - totalExpense - totalSaved;
+
+    let totalDebt = 0;
+    allObs.forEach(ob => {
+        // FIXED: Parsing the comma string so that Debt actually adds up correctly
+        let pAmt = parseIndianCommaStringToFloat(ob.principal);
+        if (ob.type === 'EMI' && ob.status !== 'archived' && pAmt > 0) {
+            totalDebt += pAmt;
+        }
+    });
+
+    const totalAssets = liquidBalance + totalSaved;
+    const netWorth = totalAssets - totalDebt;
+
+    const balEl = document.getElementById('balance');
+    const valLeft = document.getElementById('stat-value-left') || document.getElementById('total-income');
+    const valRight = document.getElementById('stat-value-right') || document.getElementById('total-expense');
+    const labelLeft = document.getElementById('stat-label-left');
+    const labelRight = document.getElementById('stat-label-right');
+    const titleLabel = document.getElementById('master-balance-label');
+
+    if (currentWealthView === 'cash') {
+        if (titleLabel) titleLabel.innerText = "Total Liquid Balance";
+        if (labelLeft) labelLeft.innerText = "INCOME";
+        if (labelRight) labelRight.innerText = "EXPENSES";
+        
+        if(balEl) balEl.innerText = isPrivacyMode ? '₹••••' : `₹${formatToIndianRupee(liquidBalance)}`;
+        if(valLeft) valLeft.innerText = isPrivacyMode ? '₹••••' : `₹${formatToIndianRupee(totalIncome)}`;
+        if(valRight) valRight.innerText = isPrivacyMode ? '₹••••' : `₹${formatToIndianRupee(totalExpense)}`;
+    } else {
+        if (titleLabel) titleLabel.innerText = "Total Net Worth";
+        if (labelLeft) labelLeft.innerText = "TOTAL ASSETS";
+        if (labelRight) labelRight.innerText = "TOTAL DEBT";
+        
+        if(balEl) balEl.innerText = isPrivacyMode ? '₹••••' : `₹${formatToIndianRupee(netWorth)}`;
+        if(valLeft) valLeft.innerText = isPrivacyMode ? '₹••••' : `₹${formatToIndianRupee(totalAssets)}`;
+        if(valRight) valRight.innerText = isPrivacyMode ? '₹••••' : `₹${formatToIndianRupee(totalDebt)}`;
+    }
+}
+
 function calculateMasterSummaryTotals(masterArray) {
   let openingBalanceBaseline = parseIndianCommaStringToFloat(localStorage.getItem('finwise-op-bal') || '0'); 
   let closingBalanceTarget = localStorage.getItem('finwise-cl-bal') ? parseIndianCommaStringToFloat(localStorage.getItem('finwise-cl-bal')) : null; 
   let cycleDayValueSetting = localStorage.getItem('finwise-cycle-day') || '1'; 
   let manualBudgetLimitSetting = parseIndianCommaStringToFloat(localStorage.getItem('finwise-budget-limit') || '0');
   
-  // FIXED: Properly added "saved" to the core calculation tracker
   let balance = openingBalanceBaseline, income = 0, expense = 0, saved = 0;
   
   masterArray.forEach(t => { 
@@ -720,10 +770,9 @@ function calculateMasterSummaryTotals(masterArray) {
       
       if (txType === 'income') income += t.amount; 
       if (txType === 'expense') expense += Math.abs(t.amount); 
-      if (txType === 'save') saved += Math.abs(t.amount); // Tracks goal savings
+      if (txType === 'save') saved += Math.abs(t.amount); 
   });
   
-  // Update Header Labels immediately and safely based on view
   const titleLabel = document.getElementById('master-balance-label');
   const labelLeft = document.getElementById('stat-label-left');
   const labelRight = document.getElementById('stat-label-right');
@@ -746,8 +795,10 @@ function calculateMasterSummaryTotals(masterArray) {
           let totalDebt = 0;
           
           allObs.forEach(ob => {
-              if (ob.type === 'EMI' && ob.status !== 'archived' && ob.principal > 0) {
-                  totalDebt += parseFloat(ob.principal);
+              // FIXED: Correctly parse comma strings for Debt calculations
+              let parsedPrincipal = parseIndianCommaStringToFloat(ob.principal);
+              if (ob.type === 'EMI' && ob.status !== 'archived' && parsedPrincipal > 0) {
+                  totalDebt += parsedPrincipal;
               }
           });
 
@@ -759,14 +810,12 @@ function calculateMasterSummaryTotals(masterArray) {
               if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(income)}`;
               if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(expense)}`;
           } else {
-              // FIXED: Correctly outputs the total assets and total debts now
               if(DOM.balance) DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${netWorth >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(netWorth))}`;
               if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(totalAssets)}`;
               if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(totalDebt)}`;
           }
       };
   } else {
-      // Fallback if obligations store isn't available
       const totalAssets = balance + saved;
       const netWorth = totalAssets;
 
@@ -839,7 +888,6 @@ function calculateMasterSummaryTotals(masterArray) {
       
   if(recOpLabel) recOpLabel.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(openingBalanceBaseline)}`;
 
-  // FIXED: Restored exactly correct standard Settings Gear SVG
   const SETTINGS_ICON_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`;
 
   if(!localStorage.getItem('finwise-op-bal') && fieldsSheet && fieldsSheet.style.display === 'none') {
