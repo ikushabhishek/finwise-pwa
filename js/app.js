@@ -70,16 +70,17 @@ function toggleWealthView(view) {
         }
     }
     
-    applyFilters(); 
+    // Instantly refresh the UI
+    calculateMasterSummaryTotals(allTransactions);
 }
 
 function formatToIndianRupee(number) { 
     return Number(number).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
 }
 
-// FIXED: Bulletproof Indian Comma Parser (strips ₹, spaces, and commas seamlessly)
+// BULLETPROOF PARSER: Strips currency symbols, spaces, and commas cleanly
 function parseIndianCommaStringToFloat(strValue) { 
-    if (!strValue && strValue !== 0) return 0; 
+    if (strValue === null || strValue === undefined || strValue === '') return 0; 
     const cleanString = strValue.toString().replace(/[^0-9.-]+/g, ""); 
     const parsed = parseFloat(cleanString);
     return isNaN(parsed) ? 0 : parsed; 
@@ -310,11 +311,11 @@ function openConfigurationModal() {
     document.getElementById('setup-init-saved').value = localStorage.getItem('finwise-init-saved') || '';
     document.getElementById('setup-init-debt').value = localStorage.getItem('finwise-init-debt') || '';
 
+    // Hide preferences if it was open
     document.getElementById('preferences-modal').style.display = 'none';
     document.getElementById('configuration-modal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
     
-    // Only show close button if they have already onboarded before
     const hasOnboarded = localStorage.getItem('finwise-onboarded') === 'true';
     document.getElementById('config-close-btn').style.display = hasOnboarded ? 'block' : 'none';
 }
@@ -335,11 +336,11 @@ function saveAppConfiguration() {
     localStorage.setItem('finwise-onboarded', 'true');
 
     closeModal('configuration-modal');
-    triggerSuccessNotification("Configuration Saved Successfully!");
+    triggerSuccessNotification("Configuration Saved!");
     
-    // Trigger Master Math Engine Re-calculate
     if (typeof fetchAndDisplay === 'function') fetchAndDisplay();
 }
+
 
 // ==========================================
 // 6. LIGHTNING ADD (CUSTOM NUMPAD ENGINE)
@@ -485,6 +486,7 @@ function executeLightningSave() {
     const istDateFormatted = today.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
     const istDateStringForFiltering = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(today);
     
+    // Core Logic: Both Expense and Save deduct from Bank Balance internally here via negative numbers
     const finalAmount = (lightningNature === 'expense' || lightningNature === 'save') ? -amount : amount;
     
     const linkedGoalDropdown = document.getElementById('lightning-linked-goal');
@@ -511,6 +513,7 @@ function executeLightningSave() {
         triggerSuccessNotification("Saved successfully"); 
     };
 }
+
 
 // ==========================================
 // 7. FILTERS & DISPLAY LOGIC
@@ -665,12 +668,11 @@ function applyFilters() {
   const masterCheckbox = document.getElementById('master-checkbox'); 
   masterCheckbox.checked = currentVisibleIds.length > 0 && currentVisibleIds.every(id => checkedItemIds.includes(id));
   
+  // Filtered strip just shows basic numbers
   let fBalance = 0, fIncome = 0, fExpense = 0; 
   filtered.forEach(t => { 
       const txType = t.type || (t.amount < 0 ? 'expense' : 'income');
-      
       fBalance += t.amount; 
-      
       if (txType === 'income') fIncome += t.amount; 
       if (txType === 'expense') fExpense += Math.abs(t.amount); 
   });
@@ -681,7 +683,10 @@ function applyFilters() {
   DOM.fExp.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(fExpense)}`;
 
   renderUI(filtered); 
+  
+  // Phase 4: Run the deep Math Engine
   calculateMasterSummaryTotals(allTransactions); 
+  
   renderPercentageBreakdown(filtered); 
   generateSmartInsights(filtered); 
   syncToolbarState();
@@ -695,25 +700,40 @@ function applyFilters() {
 // 8. MASTER BALANCE ENGINE (NET WORTH FIX)
 // ==========================================
 
+function updateBalanceUI(liquidBalance, income, expense, netWorth, totalAssets, totalDebt) {
+    if (currentWealthView === 'cash') {
+        if(DOM.balance) DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${liquidBalance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(liquidBalance))}`;
+        if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(income)}`;
+        if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(expense)}`;
+    } else {
+        if(DOM.balance) DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${netWorth >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(netWorth))}`;
+        if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(totalAssets)}`;
+        if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(totalDebt)}`;
+    }
+}
+
 function calculateMasterSummaryTotals(masterArray) {
-  // Pulling baselines established in the Configuration Modal
-  let openingBalanceBaseline = parseIndianCommaStringToFloat(localStorage.getItem('finwise-op-bal')); 
-  let initSavedBaseline = parseIndianCommaStringToFloat(localStorage.getItem('finwise-init-saved'));
-  let initDebtBaseline = parseIndianCommaStringToFloat(localStorage.getItem('finwise-init-debt'));
-  let manualBudgetLimitSetting = parseIndianCommaStringToFloat(localStorage.getItem('finwise-budget-limit'));
+  // 1. Pulling Baselines from Configuration
+  let opBal = parseIndianCommaStringToFloat(localStorage.getItem('finwise-op-bal')); 
+  let initSaved = parseIndianCommaStringToFloat(localStorage.getItem('finwise-init-saved'));
+  let initDebt = parseIndianCommaStringToFloat(localStorage.getItem('finwise-init-debt'));
+  let budgetLimit = parseIndianCommaStringToFloat(localStorage.getItem('finwise-budget-limit'));
   
-  let balance = openingBalanceBaseline, income = 0, expense = 0, saved = 0;
+  let income = 0, expense = 0, saved = 0;
   
+  // 2. Accumulate Transaction Flow
   masterArray.forEach(t => { 
       const txType = t.type || (t.amount < 0 ? 'expense' : 'income');
-      
-      balance += t.amount; 
       
       if (txType === 'income') income += t.amount; 
       if (txType === 'expense') expense += Math.abs(t.amount); 
       if (txType === 'save') saved += Math.abs(t.amount); 
   });
+
+  // 3. Liquid Cash Math = (Starting Cash) + In - Out - Saved
+  let liquidBalance = opBal + income - expense - saved;
   
+  // Update Labels Structurally First
   const titleLabel = document.getElementById('master-balance-label');
   const labelLeft = document.getElementById('stat-label-left');
   const labelRight = document.getElementById('stat-label-right');
@@ -728,63 +748,46 @@ function calculateMasterSummaryTotals(masterArray) {
       if (labelRight) labelRight.innerText = "TOTAL DEBT";
   }
 
-  // Phase 4 Math Engine - Calculating Net Worth (Assets - Debt)
+  // 4. Asset & Debt Math (Async Fetch from Obligations)
   if (window.db && db.objectStoreNames.contains("obligations")) {
       const tx = db.transaction("obligations", "readonly");
       tx.objectStore("obligations").getAll().onsuccess = (e) => {
           const allObs = e.target.result || [];
           
-          // Debt calculation begins with Pre-existing Debt baseline
-          let totalDebt = initDebtBaseline;
-          
+          let activeDebt = 0;
           allObs.forEach(ob => {
               let parsedPrincipal = parseIndianCommaStringToFloat(ob.principal);
               if (ob.type === 'EMI' && ob.status !== 'archived' && parsedPrincipal > 0) {
-                  totalDebt += parsedPrincipal;
+                  activeDebt += parsedPrincipal;
               }
           });
 
-          // Asset calculation includes Pre-existing Savings baseline
-          const totalAssets = balance + initSavedBaseline + saved;
-          const netWorth = totalAssets - totalDebt;
+          let totalDebt = initDebt + activeDebt;
+          let totalAssets = liquidBalance + initSaved + saved;
+          let netWorth = totalAssets - totalDebt;
 
-          if (currentWealthView === 'cash') {
-              if(DOM.balance) DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${balance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(balance))}`;
-              if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(income)}`;
-              if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(expense)}`;
-          } else {
-              if(DOM.balance) DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${netWorth >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(netWorth))}`;
-              if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(totalAssets)}`;
-              if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(totalDebt)}`;
-          }
+          updateBalanceUI(liquidBalance, income, expense, netWorth, totalAssets, totalDebt);
       };
   } else {
       // Fallback
-      const totalAssets = balance + initSavedBaseline + saved;
-      const totalDebt = initDebtBaseline;
-      const netWorth = totalAssets - totalDebt;
+      let totalDebt = initDebt;
+      let totalAssets = liquidBalance + initSaved + saved;
+      let netWorth = totalAssets - totalDebt;
 
-      if (currentWealthView === 'cash') {
-          if(DOM.balance) DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${balance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(balance))}`;
-          if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(income)}`;
-          if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(expense)}`;
-      } else {
-          if(DOM.balance) DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${netWorth >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(netWorth))}`;
-          if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(totalAssets)}`;
-          if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(totalDebt)}`;
-      }
+      updateBalanceUI(liquidBalance, income, expense, netWorth, totalAssets, totalDebt);
   }
 
+  // Handle Budget Velocity Tracker
   const velocityWrapper = document.getElementById('budget-velocity-tracker'); 
   const velocityTitle = document.getElementById('velocity-title-label'); 
   const velocityLabel = document.getElementById('velocity-percentage-label'); 
   const velocityFill = document.getElementById('velocity-progress-bar-fill');
   
-  let computationalLimitAnchor = manualBudgetLimitSetting > 0 ? manualBudgetLimitSetting : income;
+  let computationalLimitAnchor = budgetLimit > 0 ? budgetLimit : income;
 
   if (computationalLimitAnchor > 0) {
     if(velocityWrapper) velocityWrapper.style.display = 'block'; 
-    if(velocityTitle) velocityTitle.innerText = manualBudgetLimitSetting > 0 ? "MONTHLY SPENDING LIMIT" : "INCOME SPENT";
+    if(velocityTitle) velocityTitle.innerText = budgetLimit > 0 ? "MONTHLY SPENDING LIMIT" : "INCOME SPENT";
     let velocityPercentageValue = (expense / computationalLimitAnchor) * 100; 
     
     if(velocityLabel) velocityLabel.innerText = isPrivacyMode ? `••% SPENT` : `${Math.round(velocityPercentageValue)}% SPENT`; 
@@ -929,7 +932,7 @@ function confirmSystemReset() {
         checkedItemIds = []; 
         closeModal('reset-modal'); 
         
-        // Phase 4: Clear baselines upon absolute reset
+        // Phase 4: Clear all baselines upon absolute reset
         localStorage.removeItem('finwise-op-bal');
         localStorage.removeItem('finwise-init-saved');
         localStorage.removeItem('finwise-init-debt');
@@ -1711,9 +1714,10 @@ const savedTheme = localStorage.getItem('rupee-tracker-theme') || 'light';
 document.documentElement.setAttribute('data-theme', savedTheme); 
 
 window.addEventListener('DOMContentLoaded', () => {
-    // Phase 4 Onboarding Interceptor (Shows config modal on very first app load)
+    // PHASE 4: Core Onboarding Execution 
+    // Triggers instantly if the user hasn't set their baseline variables
     if (!localStorage.getItem('finwise-onboarded')) {
-        setTimeout(openConfigurationModal, 300);
+        setTimeout(openConfigurationModal, 150);
     }
 
     const tb = document.getElementById('theme-btn');

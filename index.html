@@ -168,31 +168,38 @@
             <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: var(--text-main); border-bottom: none; display: flex; align-items: center; gap: 8px; justify-content: flex-start;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Upcoming Bills & EMIs
             </h4>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Automate your EMIs and subscriptions.</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Manage your active subscriptions and loan EMIs.</p>
 
             <div style="background: var(--bg-main); padding: 14px; border-radius: 12px; border: 1px solid var(--border);">
                 <input type="text" id="ob-title" placeholder="Title (e.g. Netflix, Car EMI)" style="margin-bottom: 10px; width: 100%; box-sizing: border-box; padding: 12px;">
                 <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                    <input type="text" id="ob-amount" placeholder="Amount (₹)" style="margin-bottom: 0; flex: 1; padding: 12px;" oninput="maskInputToIndianCommas(this)">
+                    <input type="text" id="ob-amount" placeholder="EMI Amount (₹)" style="margin-bottom: 0; flex: 1; padding: 12px;" oninput="maskInputToIndianCommas(this)">
                     <input type="number" id="ob-date" placeholder="Day (1-31)" min="1" max="31" style="margin-bottom: 0; flex: 1; padding: 12px;">
                 </div>
                 <div style="display: flex; gap: 8px; margin-bottom: 10px;">
                     <select id="ob-type" onchange="toggleEndDateField()" style="margin-bottom: 0; flex: 1; padding: 12px;">
                         <option value="Subscription">Subscription</option>
-                        <option value="EMI">EMI (Fixed Term)</option>
+                        <option value="EMI">EMI (Loan)</option>
                     </select>
                     <select id="ob-category" style="margin-bottom: 0; flex: 1; padding: 12px;"></select>
                 </div>
                 
                 <div id="emi-details-container" style="display: none; flex-direction: column; gap: 8px; margin-bottom: 10px; background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px dashed var(--border);">
                     <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">LOAN DETAILS (EMI ONLY)</label>
-                    <input type="text" id="ob-principal" placeholder="Outstanding Principal (₹)" style="margin-bottom: 0; width: 100%; padding: 12px;" oninput="maskInputToIndianCommas(this)">
+                    <input type="text" id="ob-principal" placeholder="Remaining Principal (₹)" style="margin-bottom: 0; width: 100%; padding: 12px;" oninput="maskInputToIndianCommas(this)">
                     <div style="display: flex; gap: 8px;">
                         <input type="number" id="ob-interest" placeholder="Interest Rate (%)" step="0.1" style="margin-bottom: 0; flex: 1; padding: 12px;">
                         <div style="flex: 1; position: relative;">
                              <input type="date" id="ob-end-date" style="width: 100%; padding: 12px; margin-bottom: 0;" title="Loan End Date">
                         </div>
                     </div>
+                    <label style="display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; color: var(--text-main); margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--border);">
+                        <span>Add Principal to Bank Balance? <br><small style="color: var(--text-muted); font-size: 0.7rem;">(Check for new loans, uncheck for pre-existing)</small></span>
+                        <div class="switch" style="transform: scale(0.8); margin: 0;">
+                            <input type="checkbox" id="ob-add-to-balance">
+                            <span class="slider"></span>
+                        </div>
+                    </label>
                 </div>
 
                 <button onclick="executeSaveObligation()" style="background: var(--primary); color: white; width: 100%; box-shadow: none; padding: 14px; border: none; border-radius: 8px;">Save Commitment</button>
@@ -523,7 +530,7 @@
 <div class="modal-overlay" id="category-manager-modal" style="display: none; z-index: 100005;">
     <div class="modal-card" style="text-align: left; max-width:420px;">
         <h3 style="text-align:center; display: flex; align-items: center; justify-content: center; gap: 8px;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg> Custom Tags
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 0 1 1.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 0 1-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71-.505-.78.929l-.15.894z"></path><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"></path></svg> Custom Tags
         </h3>
         <p style="text-align:center; margin-bottom:12px;">Add or delete custom expense categories.</p>
         
@@ -707,15 +714,10 @@
                 <label style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); display: block; margin-bottom: 6px;">CURRENT LIQUID BALANCE (BANK CASH)</label>
                 <input type="text" id="setup-op-bal" placeholder="e.g. 50,000" oninput="maskInputToIndianCommas(this)" style="width:100%; padding: 12px; margin: 0;">
             </div>
-            <div style="margin-bottom:16px;">
+            <div style="margin-bottom:0;">
                 <label style="font-size: 0.75rem; font-weight: 800; color: var(--save); display: block; margin-bottom: 6px;">PRE-EXISTING SAVINGS / INVESTMENTS</label>
                 <input type="text" id="setup-init-saved" placeholder="e.g. 1,00,000" oninput="maskInputToIndianCommas(this)" style="width:100%; padding: 12px; margin: 0;">
                 <small style="color: var(--text-muted); font-size: 0.7rem; display: block; margin-top: 6px;">Money you already have invested in the Share Market, FDs, etc.</small>
-            </div>
-            <div style="margin-bottom:0;">
-                <label style="font-size: 0.75rem; font-weight: 800; color: var(--expense); display: block; margin-bottom: 6px;">CURRENT LOAN OUTSTANDING (TOTAL DEBT)</label>
-                <input type="text" id="setup-init-debt" placeholder="e.g. 3,00,000" oninput="maskInputToIndianCommas(this)" style="width:100%; padding: 12px; margin: 0;">
-                <small style="color: var(--text-muted); font-size: 0.7rem; display: block; margin-top: 6px;">Your current total remaining principal on all active loans.</small>
             </div>
         </div>
         
