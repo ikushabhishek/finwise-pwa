@@ -312,7 +312,6 @@ function toggleDashboardConfigPanel() {
     displaySheet.style.display = 'none'; 
     fieldsSheet.style.display = 'block'; 
     
-    // Cancel Icon
     actionBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Cancel`;
     
     document.getElementById('dash-cycle-day-input').max = daysInMonth; 
@@ -323,7 +322,6 @@ function toggleDashboardConfigPanel() {
   } else { 
     displaySheet.style.display = 'block'; 
     fieldsSheet.style.display = 'none'; 
-    // FIXED: Properly restored the Pencil Edit icon instead of the broken gear!
     actionBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit`; 
   }
 }
@@ -346,7 +344,6 @@ function saveDashboardCycleAndBaselineConfig() {
   document.getElementById('dashboard-config-display-sheet').style.display = 'block'; 
   document.getElementById('dashboard-config-fields-sheet').style.display = 'none'; 
   
-  // FIXED: Restored Pencil Edit Icon
   document.getElementById('dashboard-config-toggle-btn').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit`;
   
   triggerSuccessNotification("Budget settings updated!"); 
@@ -438,10 +435,12 @@ function handleLightningNumpad(val) {
         lightningAmountStr = val;
     } else {
         if(val === '.' && lightningAmountStr.includes('.')) return;
+        
         if (lightningAmountStr.includes('.') && val !== '.') {
             const parts = lightningAmountStr.split('.');
             if (parts[1] && parts[1].length >= 2) return; 
         }
+
         if(lightningAmountStr.length > 10) return; 
         
         lightningAmountStr += val;
@@ -521,7 +520,6 @@ function executeLightningSave() {
         triggerSuccessNotification("Saved successfully"); 
     };
 }
-
 
 // ==========================================
 // 7. FILTERS & DISPLAY LOGIC
@@ -705,12 +703,14 @@ function applyFilters() {
 // ==========================================
 // 8. LIST ACTIONS & SUMMARY RENDERING
 // ==========================================
+
 function calculateMasterSummaryTotals(masterArray) {
   let openingBalanceBaseline = parseIndianCommaStringToFloat(localStorage.getItem('finwise-op-bal') || '0'); 
   let closingBalanceTarget = localStorage.getItem('finwise-cl-bal') ? parseIndianCommaStringToFloat(localStorage.getItem('finwise-cl-bal')) : null; 
   let cycleDayValueSetting = localStorage.getItem('finwise-cycle-day') || '1'; 
   let manualBudgetLimitSetting = parseIndianCommaStringToFloat(localStorage.getItem('finwise-budget-limit') || '0');
   
+  // FIXED: Properly added "saved" to the core calculation tracker
   let balance = openingBalanceBaseline, income = 0, expense = 0, saved = 0;
   
   masterArray.forEach(t => { 
@@ -720,10 +720,10 @@ function calculateMasterSummaryTotals(masterArray) {
       
       if (txType === 'income') income += t.amount; 
       if (txType === 'expense') expense += Math.abs(t.amount); 
-      if (txType === 'save') saved += Math.abs(t.amount);
+      if (txType === 'save') saved += Math.abs(t.amount); // Tracks goal savings
   });
   
-  // Phase 4 Text Flip Logic ensuring it sets safely outside DB call to prevent flashing
+  // Update Header Labels immediately and safely based on view
   const titleLabel = document.getElementById('master-balance-label');
   const labelLeft = document.getElementById('stat-label-left');
   const labelRight = document.getElementById('stat-label-right');
@@ -737,8 +737,8 @@ function calculateMasterSummaryTotals(masterArray) {
       if (labelLeft) labelLeft.innerText = "TOTAL ASSETS";
       if (labelRight) labelRight.innerText = "TOTAL DEBT";
   }
-  
-  // Phase 4 Math Engine
+
+  // Phase 4 Math Engine - Calculating Net Worth (Assets - Debt)
   if (window.db && db.objectStoreNames.contains("obligations")) {
       const tx = db.transaction("obligations", "readonly");
       tx.objectStore("obligations").getAll().onsuccess = (e) => {
@@ -747,7 +747,7 @@ function calculateMasterSummaryTotals(masterArray) {
           
           allObs.forEach(ob => {
               if (ob.type === 'EMI' && ob.status !== 'archived' && ob.principal > 0) {
-                  totalDebt += ob.principal;
+                  totalDebt += parseFloat(ob.principal);
               }
           });
 
@@ -759,15 +759,26 @@ function calculateMasterSummaryTotals(masterArray) {
               if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(income)}`;
               if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(expense)}`;
           } else {
+              // FIXED: Correctly outputs the total assets and total debts now
               if(DOM.balance) DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${netWorth >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(netWorth))}`;
               if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(totalAssets)}`;
               if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(totalDebt)}`;
           }
       };
   } else {
-      if(DOM.balance) DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${balance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(balance))}`;
-      if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(income)}`;
-      if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(expense)}`;
+      // Fallback if obligations store isn't available
+      const totalAssets = balance + saved;
+      const netWorth = totalAssets;
+
+      if (currentWealthView === 'cash') {
+          if(DOM.balance) DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${balance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(balance))}`;
+          if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(income)}`;
+          if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(expense)}`;
+      } else {
+          if(DOM.balance) DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${netWorth >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(netWorth))}`;
+          if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(totalAssets)}`;
+          if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(0)}`;
+      }
   }
 
   const velocityWrapper = document.getElementById('budget-velocity-tracker'); 
@@ -778,27 +789,27 @@ function calculateMasterSummaryTotals(masterArray) {
   let computationalLimitAnchor = manualBudgetLimitSetting > 0 ? manualBudgetLimitSetting : income;
 
   if (computationalLimitAnchor > 0) {
-    velocityWrapper.style.display = 'block'; 
-    velocityTitle.innerText = manualBudgetLimitSetting > 0 ? "MONTHLY SPENDING LIMIT" : "INCOME SPENT";
+    if(velocityWrapper) velocityWrapper.style.display = 'block'; 
+    if(velocityTitle) velocityTitle.innerText = manualBudgetLimitSetting > 0 ? "MONTHLY SPENDING LIMIT" : "INCOME SPENT";
     let velocityPercentageValue = (expense / computationalLimitAnchor) * 100; 
     
-    velocityLabel.innerText = isPrivacyMode ? `••% SPENT` : `${Math.round(velocityPercentageValue)}% SPENT`; 
-    velocityFill.style.width = `${Math.min(velocityPercentageValue, 100)}%`;
+    if(velocityLabel) velocityLabel.innerText = isPrivacyMode ? `••% SPENT` : `${Math.round(velocityPercentageValue)}% SPENT`; 
+    if(velocityFill) velocityFill.style.width = `${Math.min(velocityPercentageValue, 100)}%`;
     
     if (velocityPercentageValue >= 85) { 
-        velocityFill.style.backgroundColor = '#f87171'; 
-        velocityFill.style.boxShadow = '0 0 10px rgba(248, 113, 113, 0.4)'; 
+        if(velocityFill) velocityFill.style.backgroundColor = '#f87171'; 
+        if(velocityFill) velocityFill.style.boxShadow = '0 0 10px rgba(248, 113, 113, 0.4)'; 
     } 
     else if (velocityPercentageValue >= 70) { 
-        velocityFill.style.backgroundColor = '#fbbf24'; 
-        velocityFill.style.boxShadow = '0 0 10px rgba(251, 191, 36, 0.4)'; 
+        if(velocityFill) velocityFill.style.backgroundColor = '#fbbf24'; 
+        if(velocityFill) velocityFill.style.boxShadow = '0 0 10px rgba(251, 191, 36, 0.4)'; 
     } 
     else { 
-        velocityFill.style.backgroundColor = '#ffffff'; 
-        velocityFill.style.boxShadow = '0 0 8px rgba(255, 255, 255, 0.4)'; 
+        if(velocityFill) velocityFill.style.backgroundColor = '#ffffff'; 
+        if(velocityFill) velocityFill.style.boxShadow = '0 0 8px rgba(255, 255, 255, 0.4)'; 
     }
   } else { 
-      velocityWrapper.style.display = 'none'; 
+      if(velocityWrapper) velocityWrapper.style.display = 'none'; 
   }
 
   const widgetCard = document.getElementById('reconcile-status-widget'); 
@@ -814,57 +825,74 @@ function calculateMasterSummaryTotals(masterArray) {
   
   if(!widgetCard) return;
 
-  document.getElementById('rec-cycle-label').innerText = `${cycleDayValueSetting}${suffixMarker} of the Month`; 
-  
-  document.getElementById('rec-budget-label').innerText = manualBudgetLimitSetting > 0 ? 
-      (isPrivacyMode ? '₹ •••••• (Fixed)' : `₹${formatToIndianRupee(manualBudgetLimitSetting).split('.')[0]} (Fixed limit)`) 
-      : "Not Set (Using Income)"; 
-      
-  document.getElementById('rec-op-label').innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(openingBalanceBaseline)}`;
+  const recCycleLabel = document.getElementById('rec-cycle-label');
+  const recBudgetLabel = document.getElementById('rec-budget-label');
+  const recOpLabel = document.getElementById('rec-op-label');
 
-  if(!localStorage.getItem('finwise-op-bal') && fieldsSheet.style.display === 'none') {
+  if(recCycleLabel) recCycleLabel.innerText = `${cycleDayValueSetting}${suffixMarker} of the Month`; 
+  
+  if(recBudgetLabel) {
+      recBudgetLabel.innerText = manualBudgetLimitSetting > 0 ? 
+          (isPrivacyMode ? '₹ •••••• (Fixed)' : `₹${formatToIndianRupee(manualBudgetLimitSetting).split('.')[0]} (Fixed limit)`) 
+          : "Not Set (Using Income)"; 
+  }
+      
+  if(recOpLabel) recOpLabel.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(openingBalanceBaseline)}`;
+
+  // FIXED: Restored exactly correct standard Settings Gear SVG
+  const SETTINGS_ICON_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`;
+
+  if(!localStorage.getItem('finwise-op-bal') && fieldsSheet && fieldsSheet.style.display === 'none') {
     widgetCard.style.display = 'block'; 
-    displaySheet.style.display = 'none'; 
-    fieldsSheet.style.display = 'block'; 
-    actionLinkBtn.style.display = 'none'; 
-    // FIXED: Setup Budget uses the Settings Sliders Icon
-    titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Setup Monthly Budget`;
+    if(displaySheet) displaySheet.style.display = 'none'; 
+    if(fieldsSheet) fieldsSheet.style.display = 'block'; 
+    if(actionLinkBtn) actionLinkBtn.style.display = 'none'; 
+    
+    if(titleHeaderSpan) titleHeaderSpan.innerHTML = `${SETTINGS_ICON_SVG} Setup Monthly Budget`;
   } else {
     widgetCard.style.display = 'block'; 
-    actionLinkBtn.style.display = 'inline-flex';
+    if(actionLinkBtn) actionLinkBtn.style.display = 'inline-flex';
     
-    if(fieldsSheet.style.display === 'none') { 
-        // FIXED: Monthly Budget Setup uses the Settings Sliders Icon
-        titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Monthly Budget Setup`; 
-    } else { 
-        // FIXED: Edit Configuration uses the Settings Sliders Icon
-        titleHeaderSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Edit Configuration`; 
+    if(titleHeaderSpan) {
+        if(fieldsSheet && fieldsSheet.style.display === 'none') { 
+            titleHeaderSpan.innerHTML = `${SETTINGS_ICON_SVG} Monthly Budget Setup`; 
+        } else { 
+            titleHeaderSpan.innerHTML = `${SETTINGS_ICON_SVG} Edit Configuration`; 
+        }
     }
     
     const svgBalanced = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:middle; margin-left:2px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
     const svgAlert = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:middle; margin-left:2px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
     
+    const recClLabel = document.getElementById('rec-cl-label');
+    const diffTitle = document.getElementById('rec-diff-title');
+    const diffLabel = document.getElementById('rec-diff-label');
+
     if(closingBalanceTarget !== null) {
-      document.getElementById('rec-cl-label').innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(closingBalanceTarget)}`; 
+      if(recClLabel) recClLabel.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(closingBalanceTarget)}`; 
       let variance = balance - closingBalanceTarget; 
-      const diffTitle = document.getElementById('rec-diff-title'); 
-      const diffLabel = document.getElementById('rec-diff-label');
       
       if(Math.abs(variance) < 0.01) { 
-          diffTitle.innerHTML = `Budget Status: <span class="reconcile-status-badge" style="background-color: rgba(22, 163, 74, 0.2); color: var(--income);">On Track ${svgBalanced}</span>`; 
-          diffLabel.innerText = "Perfect Match"; 
-          diffLabel.className = "amt-inc"; 
+          if(diffTitle) diffTitle.innerHTML = `Budget Status: <span class="reconcile-status-badge" style="background-color: rgba(22, 163, 74, 0.2); color: var(--income);">On Track ${svgBalanced}</span>`; 
+          if(diffLabel) {
+              diffLabel.innerText = "Perfect Match"; 
+              diffLabel.className = "amt-inc"; 
+          }
       } 
       else { 
-          diffTitle.innerHTML = `Budget Status: <span class="reconcile-status-badge" style="background-color: rgba(220, 38, 38, 0.1); color: var(--expense);">Off Target ${svgAlert}</span>`; 
-          diffLabel.innerText = isPrivacyMode ? '₹ ••••••' : `${variance >= 0 ? '+' : '-'}₹${formatToIndianRupee(Math.abs(variance))}`; 
-          diffLabel.className = variance >= 0 ? "amt-inc" : "amt-exp"; 
+          if(diffTitle) diffTitle.innerHTML = `Budget Status: <span class="reconcile-status-badge" style="background-color: rgba(220, 38, 38, 0.1); color: var(--expense);">Off Target ${svgAlert}</span>`; 
+          if(diffLabel) {
+              diffLabel.innerText = isPrivacyMode ? '₹ ••••••' : `${variance >= 0 ? '+' : '-'}₹${formatToIndianRupee(Math.abs(variance))}`; 
+              diffLabel.className = variance >= 0 ? "amt-inc" : "amt-exp"; 
+          }
       }
     } else {
-      document.getElementById('rec-cl-label').innerText = "Not Configured"; 
-      document.getElementById('rec-diff-title').innerHTML = `Tracking Status: <span class="reconcile-status-badge" style="background-color: var(--badge-bg); color: var(--badge-text);">Active</span>`; 
-      document.getElementById('rec-diff-label').innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(balance)}`; 
-      document.getElementById('rec-diff-label').className = balance >= 0 ? "amt-inc" : "amt-exp";
+      if(recClLabel) recClLabel.innerText = "Not Configured"; 
+      if(diffTitle) diffTitle.innerHTML = `Tracking Status: <span class="reconcile-status-badge" style="background-color: var(--badge-bg); color: var(--badge-text);">Active</span>`; 
+      if(diffLabel) {
+          diffLabel.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(balance)}`; 
+          diffLabel.className = balance >= 0 ? "amt-inc" : "amt-exp";
+      }
     }
   }
 }
@@ -1268,8 +1296,6 @@ function renderChart(transactionsToRender) {
   const svgAlert = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
   const svgRocket = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg>`;
   const svgIdea = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg>`;
-  
-  // FIXED: SVG Scale swapped for the new Side-by-Side Compare Icon
   const svgScale = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom;"><rect width="8" height="18" x="3" y="3" rx="2"></rect><rect width="8" height="18" x="13" y="3" rx="2"></rect></svg>`;
 
   let ratioText = "";
@@ -1586,10 +1612,7 @@ function runPeriodComparison() {
   const svgIdea = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg>`;
   const svgUp = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>`;
   const svgDown = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><polyline points="12 5 12 19"></polyline><polyline points="19 12 12 19 5 12"></polyline></svg>`;
-  
-  // FIXED: SVG Scale swapped for the new Compare Side-by-Side icon
   const svgScale = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><rect width="8" height="18" x="3" y="3" rx="2"></rect><rect width="8" height="18" x="13" y="3" rx="2"></rect></svg>`;
-  
   const svgMoney = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>`;
   const svgAlert = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:text-bottom; margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
 
