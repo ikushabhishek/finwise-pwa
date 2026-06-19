@@ -70,17 +70,20 @@ function toggleWealthView(view) {
         }
     }
     
-    if (typeof fetchAndDisplay === 'function') fetchAndDisplay();
+    // Using applyFilters() instantly recalculates and re-renders the Master Balance UI
+    applyFilters(); 
 }
 
 function formatToIndianRupee(number) { 
     return Number(number).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
 }
 
+// FIXED: Bulletproof Indian Comma Parser. Will strip out Rupee symbols, spaces, and commas properly!
 function parseIndianCommaStringToFloat(strValue) { 
     if (!strValue) return 0; 
-    const cleanString = strValue.toString().replace(/,/g, '').trim(); 
-    return parseFloat(cleanString); 
+    const cleanString = strValue.toString().replace(/[^0-9.-]+/g, ""); 
+    const parsed = parseFloat(cleanString);
+    return isNaN(parsed) ? 0 : parsed; 
 }
 
 function maskInputToIndianCommas(inputField) {
@@ -700,60 +703,8 @@ function applyFilters() {
 }
 
 // ==========================================
-// 8. LIST ACTIONS & SUMMARY RENDERING
+// 8. MASTER BALANCE ENGINE & DASHBOARD
 // ==========================================
-
-function updateMasterBalanceCard(allTx, allObs) {
-    let totalIncome = 0;
-    let totalExpense = 0;
-    let totalSaved = 0;
-
-    allTx.forEach(t => {
-        const amt = parseFloat(t.amount);
-        if (t.type === 'income') totalIncome += amt;
-        if (t.type === 'expense') totalExpense += Math.abs(amt);
-        if (t.type === 'save') totalSaved += Math.abs(amt);
-    });
-
-    const liquidBalance = totalIncome - totalExpense - totalSaved;
-
-    let totalDebt = 0;
-    allObs.forEach(ob => {
-        // FIXED: Parsing the comma string so that Debt actually adds up correctly
-        let pAmt = parseIndianCommaStringToFloat(ob.principal);
-        if (ob.type === 'EMI' && ob.status !== 'archived' && pAmt > 0) {
-            totalDebt += pAmt;
-        }
-    });
-
-    const totalAssets = liquidBalance + totalSaved;
-    const netWorth = totalAssets - totalDebt;
-
-    const balEl = document.getElementById('balance');
-    const valLeft = document.getElementById('stat-value-left') || document.getElementById('total-income');
-    const valRight = document.getElementById('stat-value-right') || document.getElementById('total-expense');
-    const labelLeft = document.getElementById('stat-label-left');
-    const labelRight = document.getElementById('stat-label-right');
-    const titleLabel = document.getElementById('master-balance-label');
-
-    if (currentWealthView === 'cash') {
-        if (titleLabel) titleLabel.innerText = "Total Liquid Balance";
-        if (labelLeft) labelLeft.innerText = "INCOME";
-        if (labelRight) labelRight.innerText = "EXPENSES";
-        
-        if(balEl) balEl.innerText = isPrivacyMode ? '₹••••' : `₹${formatToIndianRupee(liquidBalance)}`;
-        if(valLeft) valLeft.innerText = isPrivacyMode ? '₹••••' : `₹${formatToIndianRupee(totalIncome)}`;
-        if(valRight) valRight.innerText = isPrivacyMode ? '₹••••' : `₹${formatToIndianRupee(totalExpense)}`;
-    } else {
-        if (titleLabel) titleLabel.innerText = "Total Net Worth";
-        if (labelLeft) labelLeft.innerText = "TOTAL ASSETS";
-        if (labelRight) labelRight.innerText = "TOTAL DEBT";
-        
-        if(balEl) balEl.innerText = isPrivacyMode ? '₹••••' : `₹${formatToIndianRupee(netWorth)}`;
-        if(valLeft) valLeft.innerText = isPrivacyMode ? '₹••••' : `₹${formatToIndianRupee(totalAssets)}`;
-        if(valRight) valRight.innerText = isPrivacyMode ? '₹••••' : `₹${formatToIndianRupee(totalDebt)}`;
-    }
-}
 
 function calculateMasterSummaryTotals(masterArray) {
   let openingBalanceBaseline = parseIndianCommaStringToFloat(localStorage.getItem('finwise-op-bal') || '0'); 
@@ -773,6 +724,7 @@ function calculateMasterSummaryTotals(masterArray) {
       if (txType === 'save') saved += Math.abs(t.amount); 
   });
   
+  // Phase 4 - Safe DOM Updates for the Master Labels (Instant visual update)
   const titleLabel = document.getElementById('master-balance-label');
   const labelLeft = document.getElementById('stat-label-left');
   const labelRight = document.getElementById('stat-label-right');
@@ -787,7 +739,7 @@ function calculateMasterSummaryTotals(masterArray) {
       if (labelRight) labelRight.innerText = "TOTAL DEBT";
   }
 
-  // Phase 4 Math Engine - Calculating Net Worth (Assets - Debt)
+  // Phase 4 Math Engine - Deep calculation across all databases
   if (window.db && db.objectStoreNames.contains("obligations")) {
       const tx = db.transaction("obligations", "readonly");
       tx.objectStore("obligations").getAll().onsuccess = (e) => {
@@ -795,13 +747,14 @@ function calculateMasterSummaryTotals(masterArray) {
           let totalDebt = 0;
           
           allObs.forEach(ob => {
-              // FIXED: Correctly parse comma strings for Debt calculations
+              // FIXED: Successfully strips symbols and commas to calculate math properly!
               let parsedPrincipal = parseIndianCommaStringToFloat(ob.principal);
               if (ob.type === 'EMI' && ob.status !== 'archived' && parsedPrincipal > 0) {
                   totalDebt += parsedPrincipal;
               }
           });
 
+          // Core Wealth Formula
           const totalAssets = balance + saved;
           const netWorth = totalAssets - totalDebt;
 
@@ -816,6 +769,7 @@ function calculateMasterSummaryTotals(masterArray) {
           }
       };
   } else {
+      // Fallback Engine
       const totalAssets = balance + saved;
       const netWorth = totalAssets;
 
