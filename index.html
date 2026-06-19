@@ -83,11 +83,10 @@
             <button class="theme-toggle-btn" onclick="toggleTheme()" id="theme-btn" style="display: flex; align-items: center; gap: 6px;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg> Dark
             </button>
-            
-            <button class="settings-gear-btn" onclick="openPreferencesModal()">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 0 1 1.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 0 1-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71-.505-.78.929l-.15.894z"></path>
-                    <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"></path>
+            <button class="settings-gear-btn" onclick="openPreferencesModal()" style="padding: 0; margin: 0; width: 38px; height: 38px; min-width: 38px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
             </button>
         </div>
@@ -164,58 +163,42 @@
     </div>
 
     <div id="view-home" class="view-panel active-view">
-        <div class="reconcile-view-card" id="reconcile-status-widget">
-            <h4>
-                <span id="config-card-header-title" style="display: flex; align-items: center; gap: 8px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Monthly Budget Setup
-                </span> 
-                <button class="inline-edit-action-link" id="dashboard-config-toggle-btn" style="display: flex; align-items: center; gap: 4px;" onclick="toggleDashboardConfigPanel()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit
-                </button>
+        
+        <div class="reconcile-view-card" id="home-obligations-widget" style="text-align: left; margin-bottom: 16px;">
+            <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: var(--text-main); border-bottom: none; display: flex; align-items: center; gap: 8px; justify-content: flex-start;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Upcoming Bills & EMIs
             </h4>
-            
-            <div id="dashboard-config-display-sheet">
-                <div class="reconcile-row">
-                    <span style="color: var(--text-muted);">Cycle Start Day:</span>
-                    <span id="rec-cycle-label" style="font-weight:bold;">1st of the Month</span>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Automate your EMIs and subscriptions.</p>
+
+            <div style="background: var(--bg-main); padding: 14px; border-radius: 12px; border: 1px solid var(--border);">
+                <input type="text" id="ob-title" placeholder="Title (e.g. Netflix, Car EMI)" style="margin-bottom: 10px; width: 100%; box-sizing: border-box; padding: 12px;">
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <input type="text" id="ob-amount" placeholder="Amount (₹)" style="margin-bottom: 0; flex: 1; padding: 12px;" oninput="maskInputToIndianCommas(this)">
+                    <input type="number" id="ob-date" placeholder="Day (1-31)" min="1" max="31" style="margin-bottom: 0; flex: 1; padding: 12px;">
                 </div>
-                <div class="reconcile-row">
-                    <span style="color: var(--text-muted);">Target Budget Limit:</span>
-                    <span id="rec-budget-label" style="font-weight:bold; color: var(--primary);">Not Configured</span>
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <select id="ob-type" onchange="toggleEndDateField()" style="margin-bottom: 0; flex: 1; padding: 12px;">
+                        <option value="Subscription">Subscription</option>
+                        <option value="EMI">EMI (Fixed Term)</option>
+                    </select>
+                    <select id="ob-category" style="margin-bottom: 0; flex: 1; padding: 12px;"></select>
                 </div>
-                <div class="reconcile-row">
-                    <span style="color: var(--text-muted);">Opening Statement Balance:</span>
-                    <span id="rec-op-label">₹0.00</span>
+                
+                <div id="emi-details-container" style="display: none; flex-direction: column; gap: 8px; margin-bottom: 10px; background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px dashed var(--border);">
+                    <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">LOAN DETAILS (EMI ONLY)</label>
+                    <input type="text" id="ob-principal" placeholder="Outstanding Principal (₹)" style="margin-bottom: 0; width: 100%; padding: 12px;" oninput="maskInputToIndianCommas(this)">
+                    <div style="display: flex; gap: 8px;">
+                        <input type="number" id="ob-interest" placeholder="Interest Rate (%)" step="0.1" style="margin-bottom: 0; flex: 1; padding: 12px;">
+                        <div style="flex: 1; position: relative;">
+                             <input type="date" id="ob-end-date" style="width: 100%; padding: 12px; margin-bottom: 0;" title="Loan End Date">
+                        </div>
+                    </div>
                 </div>
-                <div class="reconcile-row">
-                    <span style="color: var(--text-muted);">Target Closing Balance:</span>
-                    <span id="rec-cl-label">₹0.00</span>
-                </div>
-                <div class="reconcile-row" style="border-top: 1px dotted var(--border); padding-top: 6px; margin-top: 6px; font-weight: bold;">
-                    <span id="rec-diff-title">Difference:</span>
-                    <span id="rec-diff-label">₹0.00</span>
-                </div>
+
+                <button onclick="executeSaveObligation()" style="background: var(--primary); color: white; width: 100%; box-shadow: none; padding: 14px; border: none; border-radius: 8px;">Save Commitment</button>
             </div>
 
-            <div class="dashboard-config-fields-block" id="dashboard-config-fields-sheet" style="display:none; margin-top:4px;">
-                <div style="margin-bottom:10px;">
-                    <label>Monthly Cycle Starting Day (1-31)</label>
-                    <input type="number" id="dash-cycle-day-input" min="1" max="31" placeholder="e.g. 1" style="width:100%;">
-                </div>
-                <div style="margin-bottom:10px;">
-                    <label>Hard Monthly Budget Limit (Optional)</label>
-                    <input type="text" id="dash-budget-limit-input" placeholder="e.g. 20,000" oninput="maskInputToIndianCommas(this)" style="width:100%;">
-                </div>
-                <div style="margin-bottom:10px;">
-                    <label>Account Opening Statement Cash</label>
-                    <input type="text" id="dash-op-bal-input" placeholder="e.g. 15,000.00" oninput="maskInputToIndianCommas(this)" style="width:100%;">
-                </div>
-                <div style="margin-bottom:12px;">
-                    <label>Target Bank Statement Close (Optional)</label>
-                    <input type="text" id="dash-cl-bal-input" placeholder="e.g. 20,000.00" oninput="maskInputToIndianCommas(this)" style="width:100%;">
-                </div>
-                <button onclick="saveDashboardCycleAndBaselineConfig()" style="background: var(--primary); color: white; padding: 12px; border-radius: 10px; width:100%; font-weight:bold;">Save Configuration</button>
-            </div>
+            <div id="obligations-list" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;"></div>
         </div>
 
         <div class="insights-card" id="insights-card-element">
@@ -540,7 +523,7 @@
 <div class="modal-overlay" id="category-manager-modal" style="display: none; z-index: 100005;">
     <div class="modal-card" style="text-align: left; max-width:420px;">
         <h3 style="text-align:center; display: flex; align-items: center; justify-content: center; gap: 8px;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 0 1 1.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 0 1-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71-.505-.78.929l-.15.894z"></path><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"></path></svg> Custom Tags
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg> Custom Tags
         </h3>
         <p style="text-align:center; margin-bottom:12px;">Add or delete custom expense categories.</p>
         
@@ -608,6 +591,16 @@
         <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px; font-weight: 500;">Manage your app configuration here.</p>
 
         <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
+            <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: var(--text-main); border-bottom: none; display: flex; align-items: center; gap: 8px; justify-content: flex-start;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Finance Configuration
+            </h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Update your starting balances, active loans, and budget limits.</p>
+            <button onclick="if(typeof openConfigurationModal === 'function') openConfigurationModal()" style="width: 100%; padding: 12px; font-size: 0.85rem; background: var(--tab-bg); color: var(--text-main); border: 1px solid var(--border); border-radius: 8px; box-shadow: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit Configuration
+            </button>
+        </div>
+
+        <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
             <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; justify-content: flex-start; color: var(--text-main); border-bottom: none;">
                 <span style="display: flex; align-items: center; gap: 8px; flex: 1;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> App Lock (PIN)
@@ -620,43 +613,6 @@
                 </label>
             </h4>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin:0;">Require a 4-digit passcode to open FinWise.</p>
-        </div>
-
-        <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
-            <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: var(--text-main); border-bottom: none; display: flex; align-items: center; gap: 8px; justify-content: flex-start;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Upcoming Bills & EMIs
-            </h4>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Automate your EMIs and subscriptions.</p>
-
-            <div style="background: var(--bg-main); padding: 14px; border-radius: 12px; border: 1px solid var(--border);">
-                <input type="text" id="ob-title" placeholder="Title (e.g. Netflix, Car EMI)" style="margin-bottom: 10px; width: 100%; box-sizing: border-box; padding: 12px;">
-                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                    <input type="text" id="ob-amount" placeholder="Amount (₹)" style="margin-bottom: 0; flex: 1; padding: 12px;" oninput="maskInputToIndianCommas(this)">
-                    <input type="number" id="ob-date" placeholder="Day (1-31)" min="1" max="31" style="margin-bottom: 0; flex: 1; padding: 12px;">
-                </div>
-                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                    <select id="ob-type" onchange="toggleEndDateField()" style="margin-bottom: 0; flex: 1; padding: 12px;">
-                        <option value="Subscription">Subscription</option>
-                        <option value="EMI">EMI (Fixed Term)</option>
-                    </select>
-                    <select id="ob-category" style="margin-bottom: 0; flex: 1; padding: 12px;"></select>
-                </div>
-                
-                <div id="emi-details-container" style="display: none; flex-direction: column; gap: 8px; margin-bottom: 10px; background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px dashed var(--border);">
-                    <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">LOAN DETAILS (EMI ONLY)</label>
-                    <input type="text" id="ob-principal" placeholder="Outstanding Principal (₹)" style="margin-bottom: 0; width: 100%; padding: 12px;" oninput="maskInputToIndianCommas(this)">
-                    <div style="display: flex; gap: 8px;">
-                        <input type="number" id="ob-interest" placeholder="Interest Rate (%)" step="0.1" style="margin-bottom: 0; flex: 1; padding: 12px;">
-                        <div style="flex: 1; position: relative;">
-                             <input type="date" id="ob-end-date" style="width: 100%; padding: 12px; margin-bottom: 0;" title="Loan End Date">
-                        </div>
-                    </div>
-                </div>
-
-                <button onclick="executeSaveObligation()" style="background: var(--primary); color: white; width: 100%; box-shadow: none; padding: 14px; border: none; border-radius: 8px;">Save Commitment</button>
-            </div>
-
-            <div id="obligations-list" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;"></div>
         </div>
 
         <div class="reconcile-view-card" style="text-align: left; padding: 20px; margin-bottom: 16px;">
@@ -724,6 +680,46 @@
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">Past EMIs and inactive subscriptions.</p>
             <div id="archived-obligations-list-container" style="display: flex; flex-direction: column; gap: 12px;"></div>
         </div>
+    </div>
+</div>
+
+<div class="dedicated-page-overlay" id="configuration-modal" style="display: none; z-index: 100030; background: var(--bg-main);">
+    <div class="settings-page-content" style="max-width: 500px; margin: 0 auto; padding: 20px;">
+        <div class="settings-page-header" style="justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 20px;">
+            <h2 style="display: flex; align-items: center; gap: 8px; margin: 0; font-size: 1.4rem; color: var(--text-main);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> App Setup
+            </h2>
+            <button class="btn-close-page" id="config-close-btn" onclick="closeModal('configuration-modal')" style="display: none;">✕</button>
+        </div>
+        
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px; font-weight: 500; line-height: 1.5;">Set your starting numbers. This gives FinWise the baseline it needs to accurately calculate your Net Worth and budget tracking.</p>
+
+        <div style="background: var(--bg-card); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px;">
+            <div style="margin-bottom:16px;">
+                <label style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); display: block; margin-bottom: 6px;">MONTHLY CYCLE START DAY (1-31)</label>
+                <input type="number" id="setup-cycle-day" min="1" max="31" placeholder="e.g. 1" style="width:100%; padding: 12px; margin: 0;">
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); display: block; margin-bottom: 6px;">TARGET MONTHLY SPENDING LIMIT</label>
+                <input type="text" id="setup-budget-limit" placeholder="e.g. 20,000" oninput="maskInputToIndianCommas(this)" style="width:100%; padding: 12px; margin: 0;">
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); display: block; margin-bottom: 6px;">CURRENT LIQUID BALANCE (BANK CASH)</label>
+                <input type="text" id="setup-op-bal" placeholder="e.g. 50,000" oninput="maskInputToIndianCommas(this)" style="width:100%; padding: 12px; margin: 0;">
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="font-size: 0.75rem; font-weight: 800; color: var(--save); display: block; margin-bottom: 6px;">PRE-EXISTING SAVINGS / INVESTMENTS</label>
+                <input type="text" id="setup-init-saved" placeholder="e.g. 1,00,000" oninput="maskInputToIndianCommas(this)" style="width:100%; padding: 12px; margin: 0;">
+                <small style="color: var(--text-muted); font-size: 0.7rem; display: block; margin-top: 6px;">Money you already have invested in the Share Market, FDs, etc.</small>
+            </div>
+            <div style="margin-bottom:0;">
+                <label style="font-size: 0.75rem; font-weight: 800; color: var(--expense); display: block; margin-bottom: 6px;">CURRENT LOAN OUTSTANDING (TOTAL DEBT)</label>
+                <input type="text" id="setup-init-debt" placeholder="e.g. 3,00,000" oninput="maskInputToIndianCommas(this)" style="width:100%; padding: 12px; margin: 0;">
+                <small style="color: var(--text-muted); font-size: 0.7rem; display: block; margin-top: 6px;">Your current total remaining principal on all active loans.</small>
+            </div>
+        </div>
+        
+        <button onclick="if(typeof saveAppConfiguration === 'function') saveAppConfiguration()" style="background: var(--primary); color: white; padding: 16px; border-radius: 12px; width:100%; font-weight:800; font-size: 1.1rem; box-shadow: 0 4px 14px rgba(46, 125, 50, 0.4); border: none;">Save Configuration</button>
     </div>
 </div>
 

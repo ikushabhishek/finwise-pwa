@@ -70,7 +70,6 @@ function toggleWealthView(view) {
         }
     }
     
-    // Using applyFilters() instantly recalculates and re-renders the Master Balance UI
     applyFilters(); 
 }
 
@@ -78,9 +77,9 @@ function formatToIndianRupee(number) {
     return Number(number).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
 }
 
-// FIXED: Bulletproof Indian Comma Parser. Will strip out Rupee symbols, spaces, and commas properly!
+// FIXED: Bulletproof Indian Comma Parser (strips ₹, spaces, and commas seamlessly)
 function parseIndianCommaStringToFloat(strValue) { 
-    if (!strValue) return 0; 
+    if (!strValue && strValue !== 0) return 0; 
     const cleanString = strValue.toString().replace(/[^0-9.-]+/g, ""); 
     const parsed = parseFloat(cleanString);
     return isNaN(parsed) ? 0 : parsed; 
@@ -301,55 +300,45 @@ function executeDeleteCustomCategoryTag(indexPointer) {
 }
 
 // ==========================================
-// 5. DASHBOARD CYCLE & BASELINE
+// 5. PHASE 4: GET STARTED ONBOARDING
 // ==========================================
-function toggleDashboardConfigPanel() {
-  const displaySheet = document.getElementById('dashboard-config-display-sheet'); 
-  const fieldsSheet = document.getElementById('dashboard-config-fields-sheet'); 
-  const actionBtn = document.getElementById('dashboard-config-toggle-btn');
-  const now = new Date(); 
-  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  
-  if(fieldsSheet.style.display === 'none') {
-    displaySheet.style.display = 'none'; 
-    fieldsSheet.style.display = 'block'; 
+
+function openConfigurationModal() {
+    document.getElementById('setup-cycle-day').value = localStorage.getItem('finwise-cycle-day') || '1';
+    document.getElementById('setup-budget-limit').value = localStorage.getItem('finwise-budget-limit') || '';
+    document.getElementById('setup-op-bal').value = localStorage.getItem('finwise-op-bal') || '';
+    document.getElementById('setup-init-saved').value = localStorage.getItem('finwise-init-saved') || '';
+    document.getElementById('setup-init-debt').value = localStorage.getItem('finwise-init-debt') || '';
+
+    document.getElementById('preferences-modal').style.display = 'none';
+    document.getElementById('configuration-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
     
-    actionBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Cancel`;
-    
-    document.getElementById('dash-cycle-day-input').max = daysInMonth; 
-    document.getElementById('dash-cycle-day-input').value = localStorage.getItem('finwise-cycle-day') || '1';
-    document.getElementById('dash-budget-limit-input').value = localStorage.getItem('finwise-budget-limit') || '';
-    document.getElementById('dash-op-bal-input').value = localStorage.getItem('finwise-op-bal') || ''; 
-    document.getElementById('dash-cl-bal-input').value = localStorage.getItem('finwise-cl-bal') || '';
-  } else { 
-    displaySheet.style.display = 'block'; 
-    fieldsSheet.style.display = 'none'; 
-    actionBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit`; 
-  }
+    // Only show close button if they have already onboarded before
+    const hasOnboarded = localStorage.getItem('finwise-onboarded') === 'true';
+    document.getElementById('config-close-btn').style.display = hasOnboarded ? 'block' : 'none';
 }
 
-function saveDashboardCycleAndBaselineConfig() {
-  const cycleInput = document.getElementById('dash-cycle-day-input'); 
-  const maxDays = parseInt(cycleInput.max) || 31; 
-  let day = parseInt(cycleInput.value);
-  
-  if (isNaN(day) || day < 1 || day > maxDays) { 
-      triggerNativeAppAlert(`Please enter a valid start date between 1 and ${maxDays}.`); 
-      return; 
-  }
-  
-  localStorage.setItem('finwise-cycle-day', day); 
-  localStorage.setItem('finwise-budget-limit', document.getElementById('dash-budget-limit-input').value.trim());
-  localStorage.setItem('finwise-op-bal', document.getElementById('dash-op-bal-input').value.trim()); 
-  localStorage.setItem('finwise-cl-bal', document.getElementById('dash-cl-bal-input').value.trim());
-  
-  document.getElementById('dashboard-config-display-sheet').style.display = 'block'; 
-  document.getElementById('dashboard-config-fields-sheet').style.display = 'none'; 
-  
-  document.getElementById('dashboard-config-toggle-btn').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit`;
-  
-  triggerSuccessNotification("Budget settings updated!"); 
-  applyFilters();
+function saveAppConfiguration() {
+    const cycleDay = parseInt(document.getElementById('setup-cycle-day').value) || 1;
+    const budgetLimit = document.getElementById('setup-budget-limit').value.trim();
+    const opBal = document.getElementById('setup-op-bal').value.trim();
+    const initSaved = document.getElementById('setup-init-saved').value.trim();
+    const initDebt = document.getElementById('setup-init-debt').value.trim();
+
+    localStorage.setItem('finwise-cycle-day', cycleDay);
+    localStorage.setItem('finwise-budget-limit', budgetLimit);
+    localStorage.setItem('finwise-op-bal', opBal);
+    localStorage.setItem('finwise-init-saved', initSaved);
+    localStorage.setItem('finwise-init-debt', initDebt);
+    
+    localStorage.setItem('finwise-onboarded', 'true');
+
+    closeModal('configuration-modal');
+    triggerSuccessNotification("Configuration Saved Successfully!");
+    
+    // Trigger Master Math Engine Re-calculate
+    if (typeof fetchAndDisplay === 'function') fetchAndDisplay();
 }
 
 // ==========================================
@@ -703,14 +692,15 @@ function applyFilters() {
 }
 
 // ==========================================
-// 8. MASTER BALANCE ENGINE & DASHBOARD
+// 8. MASTER BALANCE ENGINE (NET WORTH FIX)
 // ==========================================
 
 function calculateMasterSummaryTotals(masterArray) {
-  let openingBalanceBaseline = parseIndianCommaStringToFloat(localStorage.getItem('finwise-op-bal') || '0'); 
-  let closingBalanceTarget = localStorage.getItem('finwise-cl-bal') ? parseIndianCommaStringToFloat(localStorage.getItem('finwise-cl-bal')) : null; 
-  let cycleDayValueSetting = localStorage.getItem('finwise-cycle-day') || '1'; 
-  let manualBudgetLimitSetting = parseIndianCommaStringToFloat(localStorage.getItem('finwise-budget-limit') || '0');
+  // Pulling baselines established in the Configuration Modal
+  let openingBalanceBaseline = parseIndianCommaStringToFloat(localStorage.getItem('finwise-op-bal')); 
+  let initSavedBaseline = parseIndianCommaStringToFloat(localStorage.getItem('finwise-init-saved'));
+  let initDebtBaseline = parseIndianCommaStringToFloat(localStorage.getItem('finwise-init-debt'));
+  let manualBudgetLimitSetting = parseIndianCommaStringToFloat(localStorage.getItem('finwise-budget-limit'));
   
   let balance = openingBalanceBaseline, income = 0, expense = 0, saved = 0;
   
@@ -724,7 +714,6 @@ function calculateMasterSummaryTotals(masterArray) {
       if (txType === 'save') saved += Math.abs(t.amount); 
   });
   
-  // Phase 4 - Safe DOM Updates for the Master Labels (Instant visual update)
   const titleLabel = document.getElementById('master-balance-label');
   const labelLeft = document.getElementById('stat-label-left');
   const labelRight = document.getElementById('stat-label-right');
@@ -739,23 +728,24 @@ function calculateMasterSummaryTotals(masterArray) {
       if (labelRight) labelRight.innerText = "TOTAL DEBT";
   }
 
-  // Phase 4 Math Engine - Deep calculation across all databases
+  // Phase 4 Math Engine - Calculating Net Worth (Assets - Debt)
   if (window.db && db.objectStoreNames.contains("obligations")) {
       const tx = db.transaction("obligations", "readonly");
       tx.objectStore("obligations").getAll().onsuccess = (e) => {
           const allObs = e.target.result || [];
-          let totalDebt = 0;
+          
+          // Debt calculation begins with Pre-existing Debt baseline
+          let totalDebt = initDebtBaseline;
           
           allObs.forEach(ob => {
-              // FIXED: Successfully strips symbols and commas to calculate math properly!
               let parsedPrincipal = parseIndianCommaStringToFloat(ob.principal);
               if (ob.type === 'EMI' && ob.status !== 'archived' && parsedPrincipal > 0) {
                   totalDebt += parsedPrincipal;
               }
           });
 
-          // Core Wealth Formula
-          const totalAssets = balance + saved;
+          // Asset calculation includes Pre-existing Savings baseline
+          const totalAssets = balance + initSavedBaseline + saved;
           const netWorth = totalAssets - totalDebt;
 
           if (currentWealthView === 'cash') {
@@ -769,9 +759,10 @@ function calculateMasterSummaryTotals(masterArray) {
           }
       };
   } else {
-      // Fallback Engine
-      const totalAssets = balance + saved;
-      const netWorth = totalAssets;
+      // Fallback
+      const totalAssets = balance + initSavedBaseline + saved;
+      const totalDebt = initDebtBaseline;
+      const netWorth = totalAssets - totalDebt;
 
       if (currentWealthView === 'cash') {
           if(DOM.balance) DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${balance >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(balance))}`;
@@ -780,7 +771,7 @@ function calculateMasterSummaryTotals(masterArray) {
       } else {
           if(DOM.balance) DOM.balance.innerText = isPrivacyMode ? '₹ ••••••' : `${netWorth >= 0 ? '' : '-'}₹${formatToIndianRupee(Math.abs(netWorth))}`;
           if (DOM.income) DOM.income.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(totalAssets)}`;
-          if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(0)}`;
+          if (DOM.expense) DOM.expense.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(totalDebt)}`;
       }
   }
 
@@ -813,89 +804,6 @@ function calculateMasterSummaryTotals(masterArray) {
     }
   } else { 
       if(velocityWrapper) velocityWrapper.style.display = 'none'; 
-  }
-
-  const widgetCard = document.getElementById('reconcile-status-widget'); 
-  const displaySheet = document.getElementById('dashboard-config-display-sheet'); 
-  const fieldsSheet = document.getElementById('dashboard-config-fields-sheet'); 
-  const actionLinkBtn = document.getElementById('dashboard-config-toggle-btn'); 
-  const titleHeaderSpan = document.getElementById('config-card-header-title');
-  
-  let suffixMarker = "th"; 
-  if(cycleDayValueSetting == '1') suffixMarker = "st"; 
-  else if(cycleDayValueSetting == '2') suffixMarker = "nd"; 
-  else if(cycleDayValueSetting == '3') suffixMarker = "rd";
-  
-  if(!widgetCard) return;
-
-  const recCycleLabel = document.getElementById('rec-cycle-label');
-  const recBudgetLabel = document.getElementById('rec-budget-label');
-  const recOpLabel = document.getElementById('rec-op-label');
-
-  if(recCycleLabel) recCycleLabel.innerText = `${cycleDayValueSetting}${suffixMarker} of the Month`; 
-  
-  if(recBudgetLabel) {
-      recBudgetLabel.innerText = manualBudgetLimitSetting > 0 ? 
-          (isPrivacyMode ? '₹ •••••• (Fixed)' : `₹${formatToIndianRupee(manualBudgetLimitSetting).split('.')[0]} (Fixed limit)`) 
-          : "Not Set (Using Income)"; 
-  }
-      
-  if(recOpLabel) recOpLabel.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(openingBalanceBaseline)}`;
-
-  const SETTINGS_ICON_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`;
-
-  if(!localStorage.getItem('finwise-op-bal') && fieldsSheet && fieldsSheet.style.display === 'none') {
-    widgetCard.style.display = 'block'; 
-    if(displaySheet) displaySheet.style.display = 'none'; 
-    if(fieldsSheet) fieldsSheet.style.display = 'block'; 
-    if(actionLinkBtn) actionLinkBtn.style.display = 'none'; 
-    
-    if(titleHeaderSpan) titleHeaderSpan.innerHTML = `${SETTINGS_ICON_SVG} Setup Monthly Budget`;
-  } else {
-    widgetCard.style.display = 'block'; 
-    if(actionLinkBtn) actionLinkBtn.style.display = 'inline-flex';
-    
-    if(titleHeaderSpan) {
-        if(fieldsSheet && fieldsSheet.style.display === 'none') { 
-            titleHeaderSpan.innerHTML = `${SETTINGS_ICON_SVG} Monthly Budget Setup`; 
-        } else { 
-            titleHeaderSpan.innerHTML = `${SETTINGS_ICON_SVG} Edit Configuration`; 
-        }
-    }
-    
-    const svgBalanced = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:middle; margin-left:2px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
-    const svgAlert = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:middle; margin-left:2px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
-    
-    const recClLabel = document.getElementById('rec-cl-label');
-    const diffTitle = document.getElementById('rec-diff-title');
-    const diffLabel = document.getElementById('rec-diff-label');
-
-    if(closingBalanceTarget !== null) {
-      if(recClLabel) recClLabel.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(closingBalanceTarget)}`; 
-      let variance = balance - closingBalanceTarget; 
-      
-      if(Math.abs(variance) < 0.01) { 
-          if(diffTitle) diffTitle.innerHTML = `Budget Status: <span class="reconcile-status-badge" style="background-color: rgba(22, 163, 74, 0.2); color: var(--income);">On Track ${svgBalanced}</span>`; 
-          if(diffLabel) {
-              diffLabel.innerText = "Perfect Match"; 
-              diffLabel.className = "amt-inc"; 
-          }
-      } 
-      else { 
-          if(diffTitle) diffTitle.innerHTML = `Budget Status: <span class="reconcile-status-badge" style="background-color: rgba(220, 38, 38, 0.1); color: var(--expense);">Off Target ${svgAlert}</span>`; 
-          if(diffLabel) {
-              diffLabel.innerText = isPrivacyMode ? '₹ ••••••' : `${variance >= 0 ? '+' : '-'}₹${formatToIndianRupee(Math.abs(variance))}`; 
-              diffLabel.className = variance >= 0 ? "amt-inc" : "amt-exp"; 
-          }
-      }
-    } else {
-      if(recClLabel) recClLabel.innerText = "Not Configured"; 
-      if(diffTitle) diffTitle.innerHTML = `Tracking Status: <span class="reconcile-status-badge" style="background-color: var(--badge-bg); color: var(--badge-text);">Active</span>`; 
-      if(diffLabel) {
-          diffLabel.innerText = isPrivacyMode ? '₹ ••••••' : `₹${formatToIndianRupee(balance)}`; 
-          diffLabel.className = balance >= 0 ? "amt-inc" : "amt-exp";
-      }
-    }
   }
 }
 
@@ -1020,6 +928,14 @@ function confirmSystemReset() {
     tx.oncomplete = () => { 
         checkedItemIds = []; 
         closeModal('reset-modal'); 
+        
+        // Phase 4: Clear baselines upon absolute reset
+        localStorage.removeItem('finwise-op-bal');
+        localStorage.removeItem('finwise-init-saved');
+        localStorage.removeItem('finwise-init-debt');
+        localStorage.removeItem('finwise-budget-limit');
+        localStorage.removeItem('finwise-onboarded');
+        
         fetchAndDisplay(); 
         triggerSuccessNotification("App Reset Successfully"); 
     }; 
@@ -1793,7 +1709,13 @@ function toggleTheme() {
 
 const savedTheme = localStorage.getItem('rupee-tracker-theme') || 'light'; 
 document.documentElement.setAttribute('data-theme', savedTheme); 
+
 window.addEventListener('DOMContentLoaded', () => {
+    // Phase 4 Onboarding Interceptor (Shows config modal on very first app load)
+    if (!localStorage.getItem('finwise-onboarded')) {
+        setTimeout(openConfigurationModal, 300);
+    }
+
     const tb = document.getElementById('theme-btn');
     const lightSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
     const darkSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
