@@ -78,7 +78,7 @@ function formatToIndianRupee(number) {
     return Number(number).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
 }
 
-// BULLETPROOF PARSER: Strips currency symbols, spaces, and commas cleanly
+// BULLETPROOF PARSER: Strips currency symbols, spaces, and commas seamlessly
 function parseIndianCommaStringToFloat(strValue) { 
     if (strValue === null || strValue === undefined || strValue === '') return 0; 
     const cleanString = strValue.toString().replace(/[^0-9.-]+/g, ""); 
@@ -305,19 +305,21 @@ function executeDeleteCustomCategoryTag(indexPointer) {
 // ==========================================
 
 function openConfigurationModal() {
+    // Populate form with existing data (or defaults)
     document.getElementById('setup-cycle-day').value = localStorage.getItem('finwise-cycle-day') || '1';
     document.getElementById('setup-budget-limit').value = localStorage.getItem('finwise-budget-limit') || '';
     document.getElementById('setup-op-bal').value = localStorage.getItem('finwise-op-bal') || '';
     document.getElementById('setup-init-saved').value = localStorage.getItem('finwise-init-saved') || '';
-    document.getElementById('setup-init-debt').value = localStorage.getItem('finwise-init-debt') || '';
 
-    // Hide preferences if it was open
+    // Hide preferences menu if it was open
     document.getElementById('preferences-modal').style.display = 'none';
     document.getElementById('configuration-modal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
     
+    // Only show close button if user has completed onboarding before
     const hasOnboarded = localStorage.getItem('finwise-onboarded') === 'true';
-    document.getElementById('config-close-btn').style.display = hasOnboarded ? 'block' : 'none';
+    const closeBtn = document.getElementById('config-close-btn');
+    if (closeBtn) closeBtn.style.display = hasOnboarded ? 'block' : 'none';
 }
 
 function saveAppConfiguration() {
@@ -325,19 +327,19 @@ function saveAppConfiguration() {
     const budgetLimit = document.getElementById('setup-budget-limit').value.trim();
     const opBal = document.getElementById('setup-op-bal').value.trim();
     const initSaved = document.getElementById('setup-init-saved').value.trim();
-    const initDebt = document.getElementById('setup-init-debt').value.trim();
 
     localStorage.setItem('finwise-cycle-day', cycleDay);
     localStorage.setItem('finwise-budget-limit', budgetLimit);
     localStorage.setItem('finwise-op-bal', opBal);
     localStorage.setItem('finwise-init-saved', initSaved);
-    localStorage.setItem('finwise-init-debt', initDebt);
     
+    // Mark onboarding as complete
     localStorage.setItem('finwise-onboarded', 'true');
 
     closeModal('configuration-modal');
     triggerSuccessNotification("Configuration Saved!");
     
+    // Re-render UI to update Net Worth math
     if (typeof fetchAndDisplay === 'function') fetchAndDisplay();
 }
 
@@ -486,7 +488,7 @@ function executeLightningSave() {
     const istDateFormatted = today.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
     const istDateStringForFiltering = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(today);
     
-    // Core Logic: Both Expense and Save deduct from Bank Balance internally here via negative numbers
+    // Both Expense and Save deduct from Bank Balance internally via negative numbers
     const finalAmount = (lightningNature === 'expense' || lightningNature === 'save') ? -amount : amount;
     
     const linkedGoalDropdown = document.getElementById('lightning-linked-goal');
@@ -684,7 +686,7 @@ function applyFilters() {
 
   renderUI(filtered); 
   
-  // Phase 4: Run the deep Math Engine
+  // Run the Deep Math Engine
   calculateMasterSummaryTotals(allTransactions); 
   
   renderPercentageBreakdown(filtered); 
@@ -716,7 +718,6 @@ function calculateMasterSummaryTotals(masterArray) {
   // 1. Pulling Baselines from Configuration
   let opBal = parseIndianCommaStringToFloat(localStorage.getItem('finwise-op-bal')); 
   let initSaved = parseIndianCommaStringToFloat(localStorage.getItem('finwise-init-saved'));
-  let initDebt = parseIndianCommaStringToFloat(localStorage.getItem('finwise-init-debt'));
   let budgetLimit = parseIndianCommaStringToFloat(localStorage.getItem('finwise-budget-limit'));
   
   let income = 0, expense = 0, saved = 0;
@@ -754,15 +755,14 @@ function calculateMasterSummaryTotals(masterArray) {
       tx.objectStore("obligations").getAll().onsuccess = (e) => {
           const allObs = e.target.result || [];
           
-          let activeDebt = 0;
+          let totalDebt = 0; // ALL debt calculates purely from active EMIs now
           allObs.forEach(ob => {
               let parsedPrincipal = parseIndianCommaStringToFloat(ob.principal);
               if (ob.type === 'EMI' && ob.status !== 'archived' && parsedPrincipal > 0) {
-                  activeDebt += parsedPrincipal;
+                  totalDebt += parsedPrincipal;
               }
           });
 
-          let totalDebt = initDebt + activeDebt;
           let totalAssets = liquidBalance + initSaved + saved;
           let netWorth = totalAssets - totalDebt;
 
@@ -770,7 +770,7 @@ function calculateMasterSummaryTotals(masterArray) {
       };
   } else {
       // Fallback
-      let totalDebt = initDebt;
+      let totalDebt = 0;
       let totalAssets = liquidBalance + initSaved + saved;
       let netWorth = totalAssets - totalDebt;
 
@@ -932,15 +932,17 @@ function confirmSystemReset() {
         checkedItemIds = []; 
         closeModal('reset-modal'); 
         
-        // Phase 4: Clear all baselines upon absolute reset
+        // Wipe baselines upon absolute reset so Onboarding shows up again
         localStorage.removeItem('finwise-op-bal');
         localStorage.removeItem('finwise-init-saved');
-        localStorage.removeItem('finwise-init-debt');
         localStorage.removeItem('finwise-budget-limit');
         localStorage.removeItem('finwise-onboarded');
         
         fetchAndDisplay(); 
         triggerSuccessNotification("App Reset Successfully"); 
+        
+        // Re-trigger onboarding modal
+        setTimeout(openConfigurationModal, 500);
     }; 
 }
 
